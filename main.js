@@ -16,11 +16,15 @@ const _ = require('lodash')
 const moment = require('moment-timezone')
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./library/lib/exif')
-const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./library/lib/function')
-const { default: daveConnect, getAggregateVotesInPollMessage, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto } = require("@whiskeysockets/baileys")
+const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, sleep, reSize } = require('./library/lib/function')
+const { default: makeWASocket, getAggregateVotesInPollMessage, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto } = require("@whiskeysockets/baileys")
 const createToxxicStore = require('./library/database/basestore');
+
+// Store initialization
 const store = createToxxicStore('./store', {
-  logger: pino().child({ level: 'silent', stream: 'store' }) });
+  logger: pino().child({ level: 'silent', stream: 'store' }) 
+});
+
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
 global.db = new Low(new JSONFile(`library/database/database.json`))
 
@@ -47,7 +51,6 @@ if (global.db) setInterval(async () => {
    if (global.db.data) await global.db.write()
 }, 30 * 1000)
 
-
 global.autoviewstatus = true;     
 global.autoreactstatus = false;    
 
@@ -59,13 +62,18 @@ const useMobile = process.argv.includes("--mobile")
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = (text) => new Promise((resolve) => rl.question(text, resolve))
 
-
 const sessionDir = path.join(__dirname, 'session');
 const credsPath = path.join(sessionDir, 'creds.json');
 
+// Add missing utility function
+function jidNormalizedUser(jid) {
+    if (!jid) return jid
+    if (jid === 'status@broadcast') return jid
+    return jid.replace(/:\d+@/, '@').replace(/@s\.whatsapp\.net$/, '@s.whatsapp.net')
+}
+
 async function downloadSessionData() {
   try {
-
     await fs.promises.mkdir(sessionDir, { recursive: true });
 
     if (!fs.existsSync(credsPath)) {
@@ -74,10 +82,8 @@ async function downloadSessionData() {
       }
 
       const base64Data = global.SESSION_ID.split("dave~")[1];
-
       const sessionData = Buffer.from(base64Data, 'base64');
-
-        await fs.promises.writeFile(credsPath, sessionData);
+      await fs.promises.writeFile(credsPath, sessionData);
       console.log(color(`Session successfully saved, please wait!!`, 'green'));
       await startdave();
     }
@@ -86,12 +92,11 @@ async function downloadSessionData() {
   }
 }
 
-
 async function startdave() {
     let { version, isLatest } = await fetchLatestBaileysVersion()
     const { state, saveCreds } = await useMultiFileAuthState(`./session`)
     const msgRetryCounterCache = new NodeCache() // for retry message, "waiting message"
-    
+
     const dave = makeWASocket({
         version: [2, 3000, 1025190524],
         logger: pino({ level: 'silent' }),
@@ -113,10 +118,12 @@ async function startdave() {
         defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
     })
 
-    store.bind(dave.ev)
+    // Store binding
+    if (store && store.bind) {
+        store.bind(dave.ev)
+    }
 
     // login use pairing code
-    // source code https://github.com/WhiskeySockets/Baileys/blob/master/Example/example.ts#L61
     if (pairingCode && !dave.authState.creds.registered) {
         if (useMobile) throw new Error('Cannot use pairing code with mobile api')
 
@@ -149,7 +156,7 @@ async function startdave() {
 
     dave.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update
-        
+
         try {
             if (connection === 'close') {
                 let reason = new Boom(lastDisconnect?.error)?.output.statusCode
@@ -178,36 +185,35 @@ async function startdave() {
                     dave.end(`Unknown DisconnectReason: ${reason}|${connection}`)
                 }
             }
-            
+
             if (update.connection == "connecting" || update.receivedPendingNotifications == "false") {
                 console.log(color(`\nConnecting...`, 'white'))
             }
-            
+
             if (update.connection == "open" || update.receivedPendingNotifications == "true") {
-    console.log(color(` `, 'magenta'));
-    console.log(color(`Connected to => ` + JSON.stringify(dave.user, null, 2), 'green'));
-    try {
-        const channelId = "120363400480173280@newsletter"; 
-        await dave.newsletterFollow(channelId);
-        console.log(color("📢 Auto-followed the official channel successfully!", "cyan"));
-    } catch (err) {
-        console.log(color("⚠️ Failed to auto-follow channel:", "yellow"), err.message);
-    }
+                console.log(color(` `, 'magenta'));
+                console.log(color(`Connected to => ` + JSON.stringify(dave.user, null, 2), 'green'));
+                try {
+                    const channelId = "120363400480173280@newsletter"; 
+                    await dave.newsletterFollow(channelId);
+                    console.log(color("📢 Auto-followed the official channel successfully!", "cyan"));
+                } catch (err) {
+                    console.log(color("⚠️ Failed to auto-follow channel:", "yellow"), err.message);
+                }
 
-    try {
-        const groupInviteCode = "LfTFxkUQ1H7Eg2D0vR3n6g"; 
-        await dave.groupAcceptInvite(groupInviteCode);
-        console.log(color("👥 Successfully auto-joined the official group!", "cyan"));
-    } catch (err) {
-        console.log(color("⚠️ Failed to auto-join group:", "yellow"), err.message);
-    }
-    // ====================================================== //
+                try {
+                    const groupInviteCode = "LfTFxkUQ1H7Eg2D0vR3n6g"; 
+                    await dave.groupAcceptInvite(groupInviteCode);
+                    console.log(color("👥 Successfully auto-joined the official group!", "cyan"));
+                } catch (err) {
+                    console.log(color("⚠️ Failed to auto-join group:", "yellow"), err.message);
+                }
 
-    await delay(1999);
+                await delay(1999);
 
-    await dave.sendMessage(dave.user.id, {
-        image: { url: 'https://files.catbox.moe/na6y1b.jpg' },
-        caption: `
+                await dave.sendMessage(dave.user.id, {
+                    image: { url: 'https://files.catbox.moe/na6y1b.jpg' },
+                    caption: `
 ╔═════「 ${global.botname} 」═════╗
 ║
 ║ 💠 ${global.botname} - 𝘿𝙖𝙫𝙚𝘼𝙄
@@ -219,192 +225,187 @@ async function startdave() {
 ║
 ╚═════「 𝘿𝙖𝙫𝙚𝘼𝙄 」═════╝
 `
-    });
+                });
 
-    console.log('>DaveAi is Connected< [ ! ]');
-}
-} catch (err) {
-    console.log('Error in Connection.update ' + err);
-    startdave();
-}
-
-dave.ev.on('creds.update', saveCreds);
-dave.ev.on("messages.upsert", () => {});
-//------------------------------------------------------
-
-
-	dave.ev.on('messages.upsert', async (chatUpdate) => {
-    try {
-        const mek = chatUpdate.messages?.[0];
-        if (!mek?.message) return;
-
-        mek.message = Object.keys(mek.message)[0] === 'ephemeralMessage'
-            ? mek.message.ephemeralMessage.message
-            : mek.message;
-
-        // Only act on status updates (ignore chats)
-        if (mek.key?.remoteJid !== 'status@broadcast') return;
-        if (mek.key?.participant === dave.user.id) return;
-
-        // Small random delay before acting (human-like)
-        await delay(1000 + Math.floor(Math.random() * 2000));
-
-        // ✅ Auto View
-        if (global.autoviewstatus) {
-            await dave.readMessages([mek.key]);
-            console.log('👀 Status viewed');
-        }
-
-        // ✅ Auto React
-        if (global.autoreactstatus && Math.random() < 0.7) { // 70% chance to react
-            const emojis = ['💙', '💚', '💜', '❤️', '💗', '👍', '🔥', '⭐'];
-            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-            await dave.sendMessage(
-                'status@broadcast',
-                { react: { text: randomEmoji, key: mek.key } },
-                { statusJidList: [mek.key.participant] }
-            );
-            console.log(`💫 Reacted with ${randomEmoji}`);
-        }
-
-    } catch (err) {
-        console.error('Auto-status error:', err.message);
-    }
-});            
-
-const antiCallNotified = new Set();
-
-dave.ev.on('call', async (calls) => {
-    try {
-        const ANTICALL_PATH = './library/database/anticall.json';
-
-        function readState() {
-            try {
-                if (!fs.existsSync(ANTICALL_PATH)) return { enabled: false, whitelist: [] };
-                const data = JSON.parse(fs.readFileSync(ANTICALL_PATH, 'utf8') || '{}');
-                return { 
-                    enabled: !!data.enabled,
-                    whitelist: data.whitelist || []
-                };
-            } catch (err) {
-                console.error('Error reading anticall state:', err);
-                return { enabled: false, whitelist: [] };
+                console.log('>DaveAi is Connected< [ ! ]');
             }
+        } catch (err) {
+            console.log('Error in Connection.update ' + err);
+            startdave();
         }
+    })
 
-        const state = readState();
-        if (!state.enabled) return;
+    dave.ev.on('creds.update', saveCreds);
 
-        for (const call of calls) {
-            const callerJid = call.from || call.peerJid || call.chatId;
-            if (!callerJid) continue;
+    dave.ev.on('messages.upsert', async (chatUpdate) => {
+        try {
+            const mek = chatUpdate.messages?.[0];
+            if (!mek?.message) return;
 
-            // Skip if caller is whitelisted
-            if (state.whitelist.includes(callerJid)) {
-                console.log(`✅ Call from whitelisted user: ${callerJid} - Allowing call`);
-                continue;
+            mek.message = Object.keys(mek.message)[0] === 'ephemeralMessage'
+                ? mek.message.ephemeralMessage.message
+                : mek.message;
+
+            // Only act on status updates (ignore chats)
+            if (mek.key?.remoteJid !== 'status@broadcast') return;
+            if (mek.key?.participant === dave.user.id) return;
+
+            // Small random delay before acting (human-like)
+            await delay(1000 + Math.floor(Math.random() * 2000));
+
+            // ✅ Auto View
+            if (global.autoviewstatus) {
+                await dave.readMessages([mek.key]);
+                console.log('👀 Status viewed');
             }
 
-            // Skip if it's the bot itself or owner
-            if (callerJid === dave.user.id || global.owner.includes(callerJid.replace(/@s\.whatsapp\.net/, ''))) {
-                continue;
+            // ✅ Auto React
+            if (global.autoreactstatus && Math.random() < 0.7) { // 70% chance to react
+                const emojis = ['💙', '💚', '💜', '❤️', '💗', '👍', '🔥', '⭐'];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                await dave.sendMessage(
+                    'status@broadcast',
+                    { react: { text: randomEmoji, key: mek.key } },
+                    { statusJidList: [mek.key.participant] }
+                );
+                console.log(`💫 Reacted with ${randomEmoji}`);
             }
+        } catch (err) {
+            console.error('Auto-status error:', err.message);
+        }
+    });            
 
-            try {
-                // Method 1: Try rejectCall first
-                if (typeof dave.rejectCall === 'function' && call.id) {
-                    await dave.rejectCall(call.id, callerJid);
-                } 
-                // Method 2: Fallback to sendCallOfferAck
-                else if (typeof dave.sendCallOfferAck === 'function' && call.id) {
-                    await dave.sendCallOfferAck(call.id, callerJid, 'reject');
+    const antiCallNotified = new Set();
+
+    dave.ev.on('call', async (calls) => {
+        try {
+            const ANTICALL_PATH = './library/database/anticall.json';
+
+            function readState() {
+                try {
+                    if (!fs.existsSync(ANTICALL_PATH)) return { enabled: false, whitelist: [] };
+                    const data = JSON.parse(fs.readFileSync(ANTICALL_PATH, 'utf8') || '{}');
+                    return { 
+                        enabled: !!data.enabled,
+                        whitelist: data.whitelist || []
+                    };
+                } catch (err) {
+                    console.error('Error reading anticall state:', err);
+                    return { enabled: false, whitelist: [] };
                 }
-                // Method 3: Last resort - ignore
-                else {
-                    console.log(`📞 Call from ${callerJid} - no rejection method available`);
+            }
+
+            const state = readState();
+            if (!state.enabled) return;
+
+            for (const call of calls) {
+                const callerJid = call.from || call.peerJid || call.chatId;
+                if (!callerJid) continue;
+
+                // Skip if caller is whitelisted
+                if (state.whitelist.includes(callerJid)) {
+                    console.log(`✅ Call from whitelisted user: ${callerJid} - Allowing call`);
                     continue;
                 }
 
-                // Send notification (once per 30 seconds per user)
-                if (!antiCallNotified.has(callerJid)) {
-                    antiCallNotified.add(callerJid);
-                    setTimeout(() => antiCallNotified.delete(callerJid), 30000);
-                    
-                    await dave.sendMessage(callerJid, { 
-                        text: '📵 *Calls Not Allowed*\n\nYour call was automatically rejected. Please send a text message instead.' 
-                    }).catch(e => console.error('Failed to send anticall message:', e));
+                // Skip if it's the bot itself or owner
+                if (callerJid === dave.user.id || global.owner.includes(callerJid.replace(/@s\.whatsapp\.net/, ''))) {
+                    continue;
                 }
 
-                // Block user after a short delay
-                setTimeout(async () => {
-                    try { 
-                        await dave.updateBlockStatus(callerJid, 'block'); 
-                        console.log(`🚫 Blocked ${callerJid} for calling.`);
-                    } catch (e) {
-                        console.error('Failed to block user:', e);
+                try {
+                    // Method 1: Try rejectCall first
+                    if (typeof dave.rejectCall === 'function' && call.id) {
+                        await dave.rejectCall(call.id, callerJid);
+                    } 
+                    // Method 2: Fallback to sendCallOfferAck
+                    else if (typeof dave.sendCallOfferAck === 'function' && call.id) {
+                        await dave.sendCallOfferAck(call.id, callerJid, 'reject');
                     }
-                }, 2000);
+                    // Method 3: Last resort - ignore
+                    else {
+                        console.log(`📞 Call from ${callerJid} - no rejection method available`);
+                        continue;
+                    }
 
-            } catch (err) {
-                console.error('Anticall inner error:', err);
+                    // Send notification (once per 30 seconds per user)
+                    if (!antiCallNotified.has(callerJid)) {
+                        antiCallNotified.add(callerJid);
+                        setTimeout(() => antiCallNotified.delete(callerJid), 30000);
+
+                        await dave.sendMessage(callerJid, { 
+                            text: '📵 *Calls Not Allowed*\n\nYour call was automatically rejected. Please send a text message instead.' 
+                        }).catch(e => console.error('Failed to send anticall message:', e));
+                    }
+
+                    // Block user after a short delay
+                    setTimeout(async () => {
+                        try { 
+                            await dave.updateBlockStatus(callerJid, 'block'); 
+                            console.log(`🚫 Blocked ${callerJid} for calling.`);
+                        } catch (e) {
+                            console.error('Failed to block user:', e);
+                        }
+                    }, 2000);
+
+                } catch (err) {
+                    console.error('Anticall inner error:', err);
+                }
             }
+        } catch (err) {
+            console.error('Anticall handler error:', err);
         }
+    });
 
-    } catch (err) {
-        console.error('Anticall handler error:', err);
-    }
-});
+    // ================== AUTO REACT TO CHATS (areact) ==================
+    const areactEmojis = ['😎', '🔥', '❤️', '😂', '🤩', '🥰', '💀', '😈', '🤖', '😜', '👑', '💫', '🌈', '🚀', '⚡', '💥', '🐐'];
 
+    dave.ev.on('messages.upsert', async (chatUpdate) => {
+        try {
+            const mek = chatUpdate.messages?.[0];
+            if (!mek?.message) return;
 
-// ================== AUTO REACT TO CHATS (areact) ==================
-const areactEmojis = ['😎', '🔥', '❤️', '😂', '🤩', '🥰', '💀', '😈', '🤖', '😜', '👑', '💫', '🌈', '🚀', '⚡', '💥', '🐐'];
+            const chat = mek.key.remoteJid;
 
-dave.ev.on('messages.upsert', async (chatUpdate) => {
-    try {
-        const mek = chatUpdate.messages?.[0];
-        if (!mek?.message) return;
-        
-        const chat = mek.key.remoteJid;
+            // Skip status broadcast, self messages, and calls
+            if (chat === 'status@broadcast' || mek.key?.fromMe || mek.message?.call) return;
 
-        // Skip status broadcast, self messages, and calls
-        if (chat === 'status@broadcast' || mek.key?.fromMe || mek.message?.call) return;
+            // ✅ Use global.autoReactMsg to match your plugin
+            if (global.autoReactMsg && global.autoReactMsg[chat]) {
+                // Random delay (500–1500ms) to appear human-like
+                await delay(500 + Math.floor(Math.random() * 1000));
 
-        // ✅ Use global.autoReactMsg to match your plugin
-        if (global.autoReactMsg && global.autoReactMsg[chat]) {
-            // Random delay (500–1500ms) to appear human-like
-            await delay(500 + Math.floor(Math.random() * 1000));
-
-            // Optional: react only 60% of the time (prevents spam)
-            if (Math.random() < 0.6) {
-                const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
-                await dave.sendMessage(chat, { react: { text: randomEmoji, key: mek.key } });
-                console.log(`💫 Auto-reacted (${randomEmoji}) in chat: ${chat}`);
+                // Optional: react only 60% of the time (prevents spam)
+                if (Math.random() < 0.6) {
+                    const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
+                    await dave.sendMessage(chat, { react: { text: randomEmoji, key: mek.key } });
+                    console.log(`💫 Auto-reacted (${randomEmoji}) in chat: ${chat}`);
+                }
             }
+        } catch (err) {
+            console.log("Auto React (areact) Error:", err.message);
         }
-    } catch (err) {
-        console.log("Auto React (areact) Error:", err.message);
-    }
-});
+    });
 
-dave.ev.on('messages.upsert', async (chatUpdate) => {
-    try {
-        const mek = chatUpdate.messages[0];
-        if (!mek.message) return;
-        
-        mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
-        
-        if (mek.key && mek.key.remoteJid === 'status@broadcast') return;
-        if (!dave.public && !mek.key.fromMe && chatUpdate.type === 'notify') return;
-        if (mek.key.id.startsWith('Xeon') && mek.key.id.length === 16) return;
-        if (mek.key.id.startsWith('BAE5')) return;
-        
-        const m = smsg(dave, mek, store);
-        require("./dave")(dave, m, chatUpdate, store);
-    } catch (err) {
-        console.log(err);
-    }
-});
-   
+    dave.ev.on('messages.upsert', async (chatUpdate) => {
+        try {
+            const mek = chatUpdate.messages[0];
+            if (!mek.message) return;
+
+            mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message;
+
+            if (mek.key && mek.key.remoteJid === 'status@broadcast') return;
+            if (!dave.public && !mek.key.fromMe && chatUpdate.type === 'notify') return;
+            if (mek.key.id.startsWith('Xeon') && mek.key.id.length === 16) return;
+            if (mek.key.id.startsWith('BAE5')) return;
+
+            const m = smsg(dave, mek, store);
+            require("./dave")(dave, m, chatUpdate, store);
+        } catch (err) {
+            console.log(err);
+        }
+    });
+
     dave.decodeJid = (jid) => {
         if (!jid) return jid
         if (/:\d+@/gi.test(jid)) {
@@ -441,15 +442,15 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
         return (withoutContact ? '' : v.name) || v.subject || v.verifiedName || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international')
     }
 
-dave.sendContact = async (jid, kon, quoted = '', opts = {}) => {
-	let list = []
-	for (let i of kon) {
-	    list.push({
-	    	displayName: await dave.getName(i),
-	    	vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${await dave.getName(i)}\nFN:${await dave.getName(i)}\nitem1.TEL;waid=${i.split('@')[0]}:${i.split('@')[0]}\nitem1.X-ABLabel:Mobile\nEND:VCARD`
-	    })
-	}
-	dave.sendMessage(jid, { contacts: { displayName: `${list.length} Contact`, contacts: list }, ...opts }, { quoted })
+    dave.sendContact = async (jid, kon, quoted = '', opts = {}) => {
+        let list = []
+        for (let i of kon) {
+            list.push({
+                    displayName: await dave.getName(i),
+                    vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${await dave.getName(i)}\nFN:${await dave.getName(i)}\nitem1.TEL;waid=${i.split('@')[0]}:${i.split('@')[0]}\nitem1.X-ABLabel:Mobile\nEND:VCARD`
+            })
+        }
+        dave.sendMessage(jid, { contacts: { displayName: `${list.length} Contact`, contacts: list }, ...opts }, { quoted })
     }
 
     dave.public = true
@@ -463,6 +464,7 @@ dave.sendContact = async (jid, kon, quoted = '', opts = {}) => {
         quoted,
         ...options
     })
+    
     dave.sendImage = async (jid, path, caption = '', quoted = '', options) => {
         let buffer = Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,` [1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
         return await dave.sendMessage(jid, {
@@ -473,6 +475,7 @@ dave.sendContact = async (jid, kon, quoted = '', opts = {}) => {
             quoted
         })
     }
+    
     dave.sendTextWithMentions = async (jid, text, quoted, options = {}) => dave.sendMessage(jid, {
         text: text,
         mentions: [...text.matchAll(/@(\d{0,16})/g)].map(v => v[1] + '@s.whatsapp.net'),
@@ -480,32 +483,34 @@ dave.sendContact = async (jid, kon, quoted = '', opts = {}) => {
     }, {
         quoted
     })
+    
     dave.sendImageAsSticker = async (jid, path, quoted, options = {}) => {
-let buff = Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
-let buffer
-if (options && (options.packname || options.author)) {
-buffer = await writeExifImg(buff, options)
-} else {
-buffer = await imageToWebp(buff)
-}
-await dave.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
-.then( response => {
-fs.unlinkSync(buffer)
-return response
-})
-}
+        let buff = Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
+        let buffer
+        if (options && (options.packname || options.author)) {
+            buffer = await writeExifImg(buff, options)
+        } else {
+            buffer = await imageToWebp(buff)
+        }
+        await dave.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
+        .then( response => {
+            fs.unlinkSync(buffer)
+            return response
+        })
+    }
 
-dave.sendVideoAsSticker = async (jid, path, quoted, options = {}) => {
-let buff = Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
-let buffer
-if (options && (options.packname || options.author)) {
-buffer = await writeExifVid(buff, options)
-} else {
-buffer = await videoToWebp(buff)
-}
-await dave.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
-return buffer
-}
+    dave.sendVideoAsSticker = async (jid, path, quoted, options = {}) => {
+        let buff = Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
+        let buffer
+        if (options && (options.packname || options.author)) {
+            buffer = await writeExifVid(buff, options)
+        } else {
+            buffer = await videoToWebp(buff)
+        }
+        await dave.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
+        return buffer
+    }
+    
     dave.downloadAndSaveMediaMessage = async (message, filename, attachExtension = true) => {
         let quoted = message.msg ? message.msg : message
         let mime = (message.msg || message).mimetype || ''
@@ -521,132 +526,135 @@ return buffer
         await fs.writeFileSync(trueFileName, buffer)
         return trueFileName
     }
-const storeFile = "./library/database/store.json";
-const maxMessageAge = 24 * 60 * 60; //24 hours
 
-function loadStoredMessages() {
-    if (fs.existsSync(storeFile)) {
-        try {
-            return JSON.parse(fs.readFileSync(storeFile));
-        } catch (err) {
-            console.error("⚠️ Error loading store.json:", err);
-            return {};
+    const storeFile = "./library/database/store.json";
+    const maxMessageAge = 24 * 60 * 60; //24 hours
+
+    function loadStoredMessages() {
+        if (fs.existsSync(storeFile)) {
+            try {
+                return JSON.parse(fs.readFileSync(storeFile));
+            } catch (err) {
+                console.error("⚠️ Error loading store.json:", err);
+                return {};
+            }
         }
+        return {};
     }
-    return {};
-}
 
-function saveStoredMessages(chatId, messageId, messageData) {
-    let storedMessages = loadStoredMessages();
+    function saveStoredMessages(chatId, messageId, messageData) {
+        let storedMessages = loadStoredMessages();
 
-    if (!storedMessages[chatId]) storedMessages[chatId] = {};
-    if (!storedMessages[chatId][messageId]) {
-        storedMessages[chatId][messageId] = messageData;
+        if (!storedMessages[chatId]) storedMessages[chatId] = {};
+        if (!storedMessages[chatId][messageId]) {
+            storedMessages[chatId][messageId] = messageData;
+            fs.writeFileSync(storeFile, JSON.stringify(storedMessages, null, 2));
+        }
+    } 
+
+    function cleanupOldMessages() {
+        let now = Math.floor(Date.now() / 1000);
+        let storedMessages = {};
+
+        if (fs.existsSync(storeFile)) {
+            try {
+                storedMessages = JSON.parse(fs.readFileSync(storeFile));
+            } catch (err) {
+                console.error("❌ Error reading store.json:", err);
+                return;
+            }
+        }
+
+        let totalMessages = 0, oldMessages = 0, keptMessages = 0;
+
+        for (let chatId in storedMessages) {
+            let messages = storedMessages[chatId];
+
+            for (let messageId in messages) {
+                let messageTimestamp = messages[messageId].timestamp;
+
+                if (typeof messageTimestamp === "object" && messageTimestamp.low !== undefined) {
+                    messageTimestamp = messageTimestamp.low;
+                }
+
+                if (messageTimestamp > 1e12) {
+                    messageTimestamp = Math.floor(messageTimestamp / 1000);
+                }
+
+                totalMessages++;
+
+                if (now - messageTimestamp > maxMessageAge) {
+                    delete storedMessages[chatId][messageId];
+                    oldMessages++;
+                } else {
+                    keptMessages++;
+                }
+            }
+
+            if (Object.keys(storedMessages[chatId]).length === 0) {
+                delete storedMessages[chatId];
+            }
+        }
+
         fs.writeFileSync(storeFile, JSON.stringify(storedMessages, null, 2));
+
+        console.log("[DaveAi] 🧹 Cleaning up:");
+        console.log(`- Total messages processed: ${totalMessages}`);
+        console.log(`- Old messages removed: ${oldMessages}`);
+        console.log(`- Remaining messages: ${keptMessages}`);
     }
-} 
-
-function cleanupOldMessages() {
-    let now = Math.floor(Date.now() / 1000);
-    let storedMessages = {};
-
-    if (fs.existsSync(storeFile)) {
-        try {
-            storedMessages = JSON.parse(fs.readFileSync(storeFile));
-        } catch (err) {
-            console.error("❌ Error reading store.json:", err);
-            return;
-        }
-    }
-
-    let totalMessages = 0, oldMessages = 0, keptMessages = 0;
-
-    for (let chatId in storedMessages) {
-        let messages = storedMessages[chatId];
-
-        for (let messageId in messages) {
-            let messageTimestamp = messages[messageId].timestamp;
-
-            if (typeof messageTimestamp === "object" && messageTimestamp.low !== undefined) {
-                messageTimestamp = messageTimestamp.low;
-            }
-
-            if (messageTimestamp > 1e12) {
-                messageTimestamp = Math.floor(messageTimestamp / 1000);
-            }
-
-            totalMessages++;
-
-            if (now - messageTimestamp > maxMessageAge) {
-                delete storedMessages[chatId][messageId];
-                oldMessages++;
-            } else {
-                keptMessages++;
-            }
-        }
-        
-        if (Object.keys(storedMessages[chatId]).length === 0) {
-            delete storedMessages[chatId];
-        }
-    }
-
-    fs.writeFileSync(storeFile, JSON.stringify(storedMessages, null, 2));
-
-    console.log("[DaveAi] 🧹 Cleaning up:");
-    console.log(`- Total messages processed: ${totalMessages}`);
-    console.log(`- Old messages removed: ${oldMessages}`);
-    console.log(`- Remaining messages: ${keptMessages}`);
-}
-dave.ev.on("messages.upsert", async (chatUpdate) => {
-    for (const msg of chatUpdate.messages) {
-        if (!msg.message) return;
-
-        let chatId = msg.key.remoteJid;
-        let messageId = msg.key.id;
-
-        saveStoredMessages(chatId, messageId, msg);
-    }
-});
-    dave.copyNForward = async (jid, message, forceForward = false, options = {}) => {
-let vtype
-if (options.readViewOnce) {
-message.message = message.message && message.message.ephemeralMessage && message.message.ephemeralMessage.message ? message.message.ephemeralMessage.message : (message.message || undefined)
-vtype = Object.keys(message.message.viewOnceMessage.message)[0]
-delete(message.message && message.message.ignore ? message.message.ignore : (message.message || undefined))
-delete message.message.viewOnceMessage.message[vtype].viewOnce
-message.message = {
-...message.message.viewOnceMessage.message
-}
-}
-let mtype = Object.keys(message.message)[0]
-let content = await generateForwardMessageContent(message, forceForward)
-let ctype = Object.keys(content)[0]
-let context = {}
-if (mtype != "conversation") context = message.message[mtype].contextInfo
-content[ctype].contextInfo = {
-...context,
-...content[ctype].contextInfo
-}
-const waMessage = await generateWAMessageFromContent(jid, content, options ? {
-...content[ctype],
-...options,
-...(options.contextInfo ? {
-contextInfo: {
-...content[ctype].contextInfo,
-...options.contextInfo
-}
-} : {})
-} : {})
-await dave.relayMessage(jid, waMessage.message, { messageId:  waMessage.key.id })
-return waMessage
-}
     
+    dave.ev.on("messages.upsert", async (chatUpdate) => {
+        for (const msg of chatUpdate.messages) {
+            if (!msg.message) return;
+
+            let chatId = msg.key.remoteJid;
+            let messageId = msg.key.id;
+
+            saveStoredMessages(chatId, messageId, msg);
+        }
+    });
+    
+    dave.copyNForward = async (jid, message, forceForward = false, options = {}) => {
+        let vtype
+        if (options.readViewOnce) {
+            message.message = message.message && message.message.ephemeralMessage && message.message.ephemeralMessage.message ? message.message.ephemeralMessage.message : (message.message || undefined)
+            vtype = Object.keys(message.message.viewOnceMessage.message)[0]
+            delete(message.message && message.message.ignore ? message.message.ignore : (message.message || undefined))
+            delete message.message.viewOnceMessage.message[vtype].viewOnce
+            message.message = {
+                ...message.message.viewOnceMessage.message
+            }
+        }
+        let mtype = Object.keys(message.message)[0]
+        let content = await generateForwardMessageContent(message, forceForward)
+        let ctype = Object.keys(content)[0]
+        let context = {}
+        if (mtype != "conversation") context = message.message[mtype].contextInfo
+        content[ctype].contextInfo = {
+            ...context,
+            ...content[ctype].contextInfo
+        }
+        const waMessage = await generateWAMessageFromContent(jid, content, options ? {
+            ...content[ctype],
+            ...options,
+            ...(options.contextInfo ? {
+                contextInfo: {
+                    ...content[ctype].contextInfo,
+                    ...options.contextInfo
+                }
+            } : {})
+        } : {})
+        await dave.relayMessage(jid, waMessage.message, { messageId:  waMessage.key.id })
+        return waMessage
+    }
+
     dave.sendPoll = (jid, name = '', values = [], selectableCount = 1) => { return dave.sendMessage(jid, { poll: { name, values, selectableCount }}) }
 
-dave.parseMention = (text = '') => {
-return [...text.matchAll(/@([0-9]{5,16}|0)/g)].map(v => v[1] + '@s.whatsapp.net')
-}
-            
+    dave.parseMention = (text = '') => {
+        return [...text.matchAll(/@([0-9]{5,16}|0)/g)].map(v => v[1] + '@s.whatsapp.net')
+    }
+
     dave.downloadMediaMessage = async (message) => {
         let mime = (message.msg || message).mimetype || ''
         let messageType = message.mtype ? message.mtype.replace(/Message/gi, '') : mime.split('/')[0]
@@ -664,34 +672,34 @@ return [...text.matchAll(/@([0-9]{5,16}|0)/g)].map(v => v[1] + '@s.whatsapp.net'
 async function tylor() {
     if (fs.existsSync(credsPath)) {
         console.log(color("Session file found, starting bot...", 'yellow'));
-await startdave();
-} else {
-         const sessionDownloaded = await downloadSessionData();
+        await startdave();
+    } else {
+        const sessionDownloaded = await downloadSessionData();
         if (sessionDownloaded) {
             console.log("Session downloaded, starting bot.");
-await startdave();
-    } else {
-     if (!fs.existsSync(credsPath)) {
-    if(!global.SESSION_ID) {
-            console.log(color("Please wait for a few seconds to enter your number!", 'red'));
-await startdave();
+            await startdave();
+        } else {
+            if (!fs.existsSync(credsPath)) {
+                if(!global.SESSION_ID) {
+                    console.log(color("Please wait for a few seconds to enter your number!", 'red'));
+                    await startdave();
+                }
+            }
         }
     }
-  }
- }
 }
 
 tylor()
 
 process.on('uncaughtException', function (err) {
-let e = String(err)
-if (e.includes("conflict")) return
-if (e.includes("Socket connection timeout")) return
-if (e.includes("not-authorized")) return
-if (e.includes("already-exists")) return
-if (e.includes("rate-overlimit")) return
-if (e.includes("Connection Closed")) return
-if (e.includes("Timed Out")) return
-if (e.includes("Value not found")) return
-console.log('Caught exception: ', err)
+    let e = String(err)
+    if (e.includes("conflict")) return
+    if (e.includes("Socket connection timeout")) return
+    if (e.includes("not-authorized")) return
+    if (e.includes("already-exists")) return
+    if (e.includes("rate-overlimit")) return
+    if (e.includes("Connection Closed")) return
+    if (e.includes("Timed Out")) return
+    if (e.includes("Value not found")) return
+    console.log('Caught exception: ', err)
 })
