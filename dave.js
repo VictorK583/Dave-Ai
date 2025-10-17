@@ -3251,7 +3251,7 @@ case 'translate': {
     try {
         // Check if the message is quoted
         if (!m.quoted) {
-            return m.reply('Please quote a message to translate.");
+            return m.reply("Please quote a message to translate.");
         }
         // Extract the language code from the text
         const langCode = text.trim();
