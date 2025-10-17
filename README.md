@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://files.catbox.moe/eh7hlm.jpg" alt="VENOM-XMD" width="500"/>
+  <img src="https://files.catbox.moe/eh7hlm.jpg" alt="Dave-Ai" width="500"/>
 </p>
 
 <p align="center">
@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/giftdee"><img title="Author" src="https://img.shields.io/badge/Author-VENOM-XMD-red.svg?style=for-the-badge&logo=github"></a>
+  <a href="https://github.com/giftdee"><img title="Author" src="https://img.shields.io/badge/Author-Dave-Ai-red.svg?style=for-the-badge&logo=github"></a>
 </p>
 
 ---
@@ -15,22 +15,14 @@
 ## Deployment Set Up
 
 1. **Fork the Repository**  
-   [FORK VENOM-XMD](https://github.com/giftdee/VENOM-XMD/fork)
+   [FORK Dave-Ai](https://github.com/giftdedavesmd/Dave-Ai/fork)
 
 2. **Deployment Site**  
    <p align="center">
      <a href="https://herokucdn-88215e9ca1cd.herokuapp.com/">
-       <img src="https://img.shields.io/badge/Launch-VENOM--XMD-blue?style=for-the-badge&logo=heroku" alt="Deploy VENOM-XMD">
+       <img src="https://img.shields.io/badge/Launch-Dave--Ai-blue?style=for-the-badge&logo=heroku" alt="Deploy Dave-Ai">
      </a>
    </p>
-
----
-
-## Features
-
-- GitHub verification before deployment  
-- Multi-device WhatsApp bot  
-- QR code / Pair code session setup  
 
 ---
 
@@ -41,4 +33,4 @@
 
 ---
 
-<p align="center">© 2023 Gifted Dave - VENOM-XMD</p>
+<p align="center">© 2023 Gifted Dave - Dave-Ai</p>
