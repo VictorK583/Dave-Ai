@@ -14,8 +14,8 @@ const Menu = `
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
 ╰┈➤ *ʙᴜɢ ᴀɴᴅʀᴏɪᴅ*
-> ${global.xprefix}xandroid
-> ${global.xprefix}xandroid2
+> ${global.xprefix}daveandroid
+> ${global.xprefix}daveandroid2
 > ${global.xprefix}systemuicrash
 > ${global.xprefix}xsysui
 
