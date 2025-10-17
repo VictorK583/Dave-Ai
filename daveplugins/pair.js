@@ -1,11 +1,11 @@
 const axios = require('axios');
-const { sleep } = require('./library/lib/function');
+const { sleep } = require('../library/lib/function'); // ✅ fixed path
 
 let daveplug = async (m, { dave, daveshown, reply, text }) => {
     if (!daveshown) return reply('❌ This command is only available for the owner!');
 
     if (!text) {
-        return reply('Please provide valid WhatsApp number\nExample: .pair 254104260236');
+        return reply('Please provide a valid WhatsApp number\nExample: .pair 254104260236');
     }
 
     const numbers = text.split(',')
@@ -13,7 +13,7 @@ let daveplug = async (m, { dave, daveshown, reply, text }) => {
         .filter((v) => v.length > 5 && v.length < 20);
 
     if (numbers.length === 0) {
-        return reply('Invalid number 🤷Please use the correct format!\nExample: .pair 254104260236');
+        return reply('Invalid number 🤷 Please use the correct format!\nExample: .pair 254104260236');
     }
 
     for (const number of numbers) {
@@ -28,24 +28,21 @@ let daveplug = async (m, { dave, daveshown, reply, text }) => {
 
         try {
             const response = await axios.get(`https://knight-bot-paircode.onrender.com/code?number=${number}`);
-            
+
             if (response.data && response.data.code) {
                 const code = response.data.code;
-                if (code === "Service Unavailable") {
-                    throw new Error('Service Unavailable');
-                }
-                
+                if (code === "Service Unavailable") throw new Error('Service Unavailable');
+
                 await sleep(5000);
-                await reply(`Your pairing code: ${code}`);
+                await reply(`✅ *Your Pairing Code:*\n\n\`${code}\`\n\n⚠️ Use it within 1 minute before it expires.`);
             } else {
                 throw new Error('Invalid response from server');
             }
         } catch (apiError) {
             console.error('API Error:', apiError);
-            const errorMessage = apiError.message === 'Service Unavailable' 
-                ? "Service is currently unavailable. Please try again later."
-                : "Failed to generate pairing code. Please try again later.";
-            
+            const errorMessage = apiError.message === 'Service Unavailable'
+                ? "⚠️ Service is currently unavailable. Please try again later."
+                : "❌ Failed to generate pairing code. Please try again later.";
             await reply(errorMessage);
         }
     }
