@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://files.catbox.moe/eh7hlm.jpg" alt="Dave-Ai" width="500"/>
+  <img src="https://files.catbox.moe/na6y1b.jpg" alt="Dave-Ai" width="500"/>
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
 ## Deployment Set Up
 
 1. **Fork the Repository**  
-   [FORK Dave-Ai](https://github.com/gifteddevsmd/Dave-Ai/fork)
+   [Fork Dave-Ai](https://github.com/gifteddevsmd/Dave-Ai/fork)
 
 2. **Deployment Site**  
    <p align="center">
