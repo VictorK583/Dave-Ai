@@ -143,14 +143,14 @@ if (daveshown) return m.reply(bvl)
 const setting = db.data.settings[botNumber]
         if (typeof setting !== 'object') db.data.settings[botNumber] = {}
 	    if (setting) {
-//    	    if (!('anticall' in setting)) setting.anticall = false
+     	    if (!('anticall' in setting)) setting.anticall = false
     		if (!isNumber(setting.status)) setting.status = 0
     		if (!('autobio' in setting)) setting.autobio = false
             if (!('autoread' in setting)) setting.autoread = false
             if (!('online' in setting)) setting.online = true
             if (!('autoTyping' in setting)) setting.autoTyping = false
             if (!('autoRecord' in setting)) setting.autoRecord = false
-//        if (!('goodbye' in setting)) chats.goodbye = setting.auto_leaveMsg
+            if (!('autorecordtype' in setting)) setting.autorecordtype = false
 //        if (!('welcome' in setting)) chats.welcome = setting.auto_welcomeMsg
        if (!('onlygrub' in setting)) setting.onlygrub = false
         if (!('onlypc' in setting)) setting.onlygrub = false   
@@ -391,9 +391,9 @@ quoted: fkontak
         dave.sendPresenceUpdate('composing', from)
         }*/
         if (global.autorecordtype) {
-        let trashrecord = ['recording','composing']
-        let xeonrecordinfinal = trashrecord[Math.floor(Math.random() * trashrecord.length)]
-        dave.sendPresenceUpdate(xeonrecordinfinal, from)
+        let daverecord = ['recording','composing']
+        let xeonrecordinfinal = daverecord[Math.floor(Math.random() * daverecord.length)]
+        dave.sendPresenceUpdate(recordinfinal, from)
 
         }
 if (m.isGroup) {
@@ -824,7 +824,7 @@ case 'repo': {
 │ • Name    : ${botname}
 │ • Owner   : ${ownername}
 │ • Version  : ${botversion}
-│ • Repo : gitHub.com/giftdedavesmd/Dave-Ai/fork 
+│ • Repo : gitHub.com/gifteddevsmd/Dave-Ai/fork 
 │ • Runtime  : ${runtime(process.uptime())}\n╰─────────────
 `
   reply(botInfo)
@@ -846,7 +846,7 @@ break
                     `https://api.heroku.com/apps/${appname}/builds`,
                     {
                         source_blob: {
-                            url: "https://github.com/giftdedavesmd/Dave-Ai/tarball/main",
+                            url: "https://github.com/gifteddevsmd/Dave-Ai/tarball/main",
                         },
                     },
                     {
