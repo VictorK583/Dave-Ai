@@ -79,7 +79,7 @@ async function downloadSessionData() {
 
         await fs.promises.writeFile(credsPath, sessionData);
       console.log(color(`Session successfully saved, please wait!!`, 'green'));
-      await starttrashcore();
+      await startdave();
     }
   } catch (error) {
     console.error('Error downloading session data:', error);
