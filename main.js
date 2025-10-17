@@ -205,7 +205,7 @@ async function startdave() {
     await delay(1999);
 
     await dave.sendMessage(dave.user.id, {
-        image: { url: 'https://n.uguu.se/BacqcVGE.jpg' },
+        image: { url: 'https://files.catbox.moe/na6y1b.jpg' },
         caption: `
 ╔═════「 ${global.botname} 」═════╗
 ║
