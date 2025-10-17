@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { sleep } = require('./library/lib/functions');
+const { sleep } = require('./library/lib/function');
 
 let daveplug = async (m, { dave, daveshown, reply, text }) => {
     if (!daveshown) return reply('❌ This command is only available for the owner!');
