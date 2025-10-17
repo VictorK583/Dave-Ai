@@ -42,8 +42,8 @@ let daveplug = async (m, { dave, reply, text }) => {
     }
 };
 
-daveplug.help = ['play2'];
+daveplug.help = ['play'];
 daveplug.tags = ['download'];
-daveplug.command = ['play2'];
+daveplug.command = ['play'];
 
 module.exports = daveplug;
