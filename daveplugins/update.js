@@ -73,23 +73,21 @@ async function updateViaZip(dave, m) {
   setTimeout(() => process.exit(0), 1500);
 }
 
-let daveplug = async (m, { dave, daveshown, text, reply }) => {
+let daveplug = async (m, { dave, daveshown, command, reply }) => {
   if (!daveshown) return reply('⚠️ Only the owner can use this command.');
 
-  const cmd = (text || '').toLowerCase();
-
-  if (cmd.includes('update')) {
-    try {
+  try {
+    if (command === 'update') {
       await updateViaZip(dave, m);
-    } catch (err) {
-      console.error(err);
-      reply(`❌ Update failed: ${err.message}`);
+    } else if (command === 'restart' || command === 'start') {
+      await reply('♻️ Restarting 𝐃𝐀𝐕𝐄-𝐗𝐌𝐃...');
+      setTimeout(() => process.exit(0), 1000);
+    } else {
+      reply('Usage: .update or .restart');
     }
-  } else if (cmd.includes('restart') || cmd.includes('start')) {
-    await reply('♻️ Restarting Dave-AI...');
-    setTimeout(() => process.exit(0), 1000);
-  } else {
-    reply('Usage: .update or .restart');
+  } catch (err) {
+    console.error(err);
+    reply(`❌ Update failed: ${err.message}`);
   }
 };
 
