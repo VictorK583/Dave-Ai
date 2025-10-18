@@ -211,16 +211,13 @@ async function startdave() {
                 await dave.sendMessage(dave.user.id, {
                     image: { url: 'https://files.catbox.moe/na6y1b.jpg' },
                     caption: `
-╔═════「 ${global.botname} 」═════╗
-║
-║ 💠 ${global.botname} - 𝘿𝙖𝙫𝙚𝘼𝙄
-║ 💠 Version: 1.0.0
-║ 💠 Owner: ${global.owner}
-║ 💠 Status: Online
-║ 💠 Session: ${global.session}
-║ 💠 Base By: Dave
-║
-╚═════「 𝘿𝙖𝙫𝙚𝘼𝙄 」═════╝
+${global.botname} - 𝘿𝙖𝙫𝙚𝘼𝙄
+
+➤ Version: 1.0.0
+➤ Owner: ${global.owner}
+➤ Status: Online
+➤ Session: ${global.session}
+➤ Base By: Dave
 `
                 });
 
