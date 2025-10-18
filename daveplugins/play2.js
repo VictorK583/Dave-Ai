@@ -1,99 +1,52 @@
+const yts = require('yt-search');
 const axios = require('axios');
-const fs = require("fs");
-const path = require("path");
-const yts = require("yt-search");
 
 let daveplug = async (m, { dave, reply, text }) => {
-  const tempDir = path.join(__dirname, "temp");
-  if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
-
-  const fancyReply = (msg) => `🎶 *𝘿𝙖𝙫𝙚𝘼𝙄 𝐌𝐔𝐒𝐈𝐂 𝐏𝐋𝐀𝐘𝐄𝐑*\n\n${msg}\n\n> By 𝐃𝐀𝐕𝐄-𝐀𝐈`;
-
-  // 🧩 No text provided
-  if (!text) {
-    return dave.sendMessage(m.chat, {
-      text: fancyReply("Yo, drop a song name fam! 🎵 Example: *.play2 Not Like Us*")
-    }, { quoted: m });
-  }
-
-  // 🧩 Prevent people from typing essays
-  if (text.length > 100) {
-    return dave.sendMessage(m.chat, {
-      text: fancyReply("Bruh 😤 that's too long! I ain't reading a whole paragraph — keep it short, max 100 characters.")
-    }, { quoted: m });
-  }
-
-  try {
-    // 🎧 Search on YouTube
-    const searchResult = await yts(`${text} official`);
-    const video = searchResult.videos[0];
-
-    if (!video) {
-      return dave.sendMessage(m.chat, {
-        text: fancyReply("No tunes found, bro 😕 Try another song name!")
-      }, { quoted: m });
+    if (!text) {
+        return reply('Specify the song you want to download!');
     }
 
-    // 🎶 Download from API
-    const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytmp3?url=${encodeURIComponent(video.url)}`;
-    const { data } = await axios.get(apiUrl);
+    try {
+        // Search for the song
+        const { videos } = await yts(text);
+        if (!videos || videos.length === 0) {
+            return reply('No songs found!');
+        }
 
-    if (!data.status || !data.result?.downloadUrl)
-      throw new Error("API didn't return a valid download link");
+        // Send loading message
+        await reply('Please wait your download is in progress');
 
-    const filePath = path.join(tempDir, `audio_${Date.now()}.mp3`);
+        // Get the first video result
+        const video = videos[0];
+        const urlYt = video.url;
 
-    const audioResponse = await axios({
-      method: "get",
-      url: data.result.downloadUrl,
-      responseType: "stream",
-      timeout: 600000,
-    });
+        // Fetch audio data from API
+        const response = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url=${urlYt}`);
+        const data = response.data;
 
-    const writer = fs.createWriteStream(filePath);
-    audioResponse.data.pipe(writer);
-    await new Promise((resolve, reject) => {
-      writer.on("finish", resolve);
-      writer.on("error", reject);
-    });
+        if (!data || !data.status || !data.result || !data.result.downloadUrl) {
+            return reply('Failed to fetch audio from the API. Please try again later.');
+        }
 
-    // 🎵 Safe title handling
-    const songTitle = data.result?.title || video?.title || "Unknown Song";
-    const artistName = video?.author?.name || "Unknown Artist";
-    const safeFileName = String(songTitle || "audio").substring(0, 100).replace(/[^a-zA-Z0-9\s]/g, "");
+        const audioUrl = data.result.downloadUrl;
+        const title = data.result.title;
 
-    // 🎵 Inform user before sending
-    await dave.sendMessage(m.chat, {
-      text: fancyReply(`🎧 Hold up! Droppin' *${songTitle}* for ya 🔥`)
-    }, { quoted: m });
+        // Send as document instead of voice note
+        await dave.sendMessage(m.chat, {
+            document: { url: audioUrl },
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`,
+            caption: title
+        }, { quoted: m });
 
-    // 📩 Send audio
-    await dave.sendMessage(m.chat, {
-      audio: fs.createReadStream(filePath),
-      mimetype: "audio/mpeg",
-      fileName: `${safeFileName}.mp3`,
-      contextInfo: {
-        externalAdReply: {
-          title: songTitle,
-          body: `${artistName} | 𝐃𝐀𝐕𝐄-𝐀𝐈`,
-          thumbnailUrl: video.thumbnail,
-          sourceUrl: video.url,
-          mediaType: 1,
-          renderLargerThumbnail: true,
-        },
-      },
-    }, { quoted: m });
-
-    // 🧹 Clean temp
-    fs.unlinkSync(filePath);
-  } catch (err) {
-    console.error("Play2 Error:", err);
-    reply(fancyReply(`😕 Error: ${err.message}\nTry another song or check your connection.`));
-  }
+    } catch (error) {
+        console.error('Error in play command:', error);
+        reply('Download failed. Please try again later.');
+    }
 };
 
-daveplug.help = ['play2 <song name>'];
-daveplug.tags = ['downloader'];
-daveplug.command = ['play2'];
+daveplug.help = ['play2'];
+daveplug.tags = ['download'];
+daveplug.command = ['play2', 'ytmusic'];
 
 module.exports = daveplug;
