@@ -1733,7 +1733,6 @@ break;
 // === BING IMAGE GENERATOR ===
 
 
-
 case 'neko':
 case 'shinobu':
 case 'megumin':
@@ -1773,70 +1772,84 @@ case 'thighs':
 case 'lesbian':
 case 'lewdneko':
 case 'cum': {
-if (!daveshown && !isPremium) return reply(mess.prem);
-reply("Loading 🔁");
+    if (!daveshown && !isPremium) return reply(mess.prem);
+    reply("🔄 Loading...");
 
-try {
-  // Try Rule34 first
-  let data = await fetchJson(`https://rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${command}&json=1`);
-  if (data && data[0]?.file_url) {
-    return dave.sendMessage(
-      m.chat,
-      { image: { url: data[0].file_url }, caption: foother },
-      { quoted: m }
-    );
-  }
+    try {
+        // Try Rule34 first
+        let data = await fetchJson(`https://rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${command}&json=1`);
+        if (data && data[0]?.file_url) {
+            return await dave.sendMessage(
+                m.chat,
+                { image: { url: data[0].file_url }, caption: foother },
+                { quoted: m }
+            );
+        }
 
-  // Try NSFW endpoint next
-  let nsfw = await fetchJson(`https://api.waifu.pics/nsfw/${command}`);
-  if (nsfw.url) {
-    return dave.sendMessage(
-      m.chat,
-      { image: { url: nsfw.url }, caption: foother },
-      { quoted: m }
-    );
-  }
+        // Try NSFW endpoint next
+        let nsfw = await fetchJson(`https://api.waifu.pics/nsfw/${command}`);
+        if (nsfw?.url) {
+            return await dave.sendMessage(
+                m.chat,
+                { image: { url: nsfw.url }, caption: foother },
+                { quoted: m }
+            );
+        }
 
-  // Fallback to SFW endpoint
-  let sfw = await fetchJson(`https://api.waifu.pics/sfw/${command}`);
-  if (sfw.url) {
-    return dave.sendMessage(
-      m.chat,
-      { image: { url: sfw.url }, caption: foother },
-      { quoted: m }
-    );
-  }
+        // Fallback to SFW endpoint
+        let sfw = await fetchJson(`https://api.waifu.pics/sfw/${command}`);
+        if (sfw?.url) {
+            return await dave.sendMessage(
+                m.chat,
+                { image: { url: sfw.url }, caption: foother },
+                { quoted: m }
+            );
+        }
 
-  // If nothing found
-  reply("❌ Sorry, no result found for that tag.");
-} catch (err) {
-  console.error(err);
-  reply("⚠️ Failed to fetch image. Try again later.");
+        // If nothing found
+        reply("❌ Sorry, no result found for that tag.");
+    } catch (err) {
+        console.error(err);
+        reply("⚠️ Failed to fetch image. Try again later.");
+    }
 }
 break;
-  
-case 'imagebing': case 'bingimage': case 'imgbing': case 'bingimg': {
-  if (!args.length) return reply('❌ Enter your prompt!\nExample: .imgbing red sports car');
 
-  const query = encodeURIComponent(args.join(' '));
-  const url = `https://beta.anabot.my.id/api/ai/bingImgCreator?prompt=${query}&apikey=freeApikey`;
 
-  try {
-    await dave.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
-    const res = await fetch(url);
-    const data = await res.json();
+case 'imagebing': 
+case 'bingimage': 
+case 'imgbing': 
+case 'bingimg': {
+    if (!args.length) return reply('❌ Enter your prompt!\nExample: .imgbing red sports car');
 
-    if (data.status !== 200 || !data.data.result.length)
-      return reply('⚠️ No images found!');
+    const query = encodeURIComponent(args.join(' '));
+    const url = `https://beta.anabot.my.id/api/ai/bingImgCreator?prompt=${query}&apikey=freeApikey`;
 
-    for (const img of data.data.result) {
-      await dave.sendMessage(m.chat, { image: { url: img }, caption: '🎨 Generated Image' }, { quoted: m });
+    try {
+        // React to show processing
+        await dave.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
+
+        // Fetch images
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.status !== 200 || !data.data?.result?.length)
+            return reply('⚠️ No images found!');
+
+        // Send each image
+        for (const img of data.data.result) {
+            await dave.sendMessage(
+                m.chat,
+                { image: { url: img }, caption: `🎨 Generated Image` },
+                { quoted: m }
+            );
+        }
+
+        // React to show completion
+        await dave.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
+    } catch (err) {
+        reply('❌ Error fetching image: ' + (err.message || err.toString()));
     }
-
-    await dave.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-  } catch (err) {
-    reply('❌ Error fetching image: ' + err.message);
-  }
 }
 break;
 
