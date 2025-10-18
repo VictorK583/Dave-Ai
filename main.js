@@ -5,19 +5,17 @@ const NodeCache = require("node-cache")
 const readline = require("readline")
 const pino = require('pino')
 const { Boom } = require('@hapi/boom')
-const { Low, JSONFile } = require('./library/lib/lowdb')
 const yargs = require('yargs/yargs')
 const fs = require('fs')
 const chalk = require('chalk')
 const path = require('path')
 const axios = require('axios')
-const FileType = require('file-type')
 const _ = require('lodash')
 const moment = require('moment-timezone')
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./library/lib/exif')
 const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, sleep, reSize } = require('./library/lib/function')
-const { default: makeWASocket, getAggregateVotesInPollMessage, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto } = require("@whiskeysockets/baileys")
+const { default: daveConnect, getAggregateVotesInPollMessage, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto } = require("@whiskeysockets/baileys")
 const createToxxicStore = require('./library/database/basestore');
 
 // Store initialization
@@ -25,31 +23,10 @@ const store = createToxxicStore('./store', {
   logger: pino().child({ level: 'silent', stream: 'store' }) 
 });
 
+
+
+
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
-global.db = new Low(new JSONFile(`library/database/database.json`))
-
-global.DATABASE = global.db
-global.loadDatabase = async function loadDatabase() {
-  if (global.db.READ) return new Promise((resolve) => setInterval(function () { (!global.db.READ ? (clearInterval(this), resolve(global.db.data == null ? global.loadDatabase() : global.db.data)) : null) }, 1 * 1000))
-  if (global.db.data !== null) return
-  global.db.READ = true
-  await global.db.read()
-  global.db.READ = false
-  global.db.data = {
-    users: {},
-    database: {},
-    chats: {},
-    game: {},
-    settings: {},
-    ...(global.db.data || {})
-  }
-  global.db.chain = _.chain(global.db.data)
-}
-loadDatabase()
-
-if (global.db) setInterval(async () => {
-   if (global.db.data) await global.db.write()
-}, 30 * 1000)
 
 global.autoviewstatus = true;     
 global.autoreactstatus = false;    
@@ -60,10 +37,8 @@ const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-const question = (text) => new Promise((resolve) => rl.question(text, resolve))
 
-const sessionDir = path.join(__dirname, 'session');
-const credsPath = path.join(sessionDir, 'creds.json');
+const question = (text) => new Promise((resolve) => rl.question(text, resolve))
 
 // Add missing utility function
 function jidNormalizedUser(jid) {
@@ -72,24 +47,42 @@ function jidNormalizedUser(jid) {
     return jid.replace(/:\d+@/, '@').replace(/@s\.whatsapp\.net$/, '@s.whatsapp.net')
 }
 
+const sessionDir = path.join(__dirname, 'session');
+
+const credsPath = path.join(sessionDir, 'creds.json');
+
 async function downloadSessionData() {
+
   try {
+
     await fs.promises.mkdir(sessionDir, { recursive: true });
 
     if (!fs.existsSync(credsPath)) {
+
       if (!global.SESSION_ID) {
+
         return console.log(color(`Session id not found at SESSION_ID!\nCreds.json not found at session folder!\n\nWait to enter your number`, 'red'));
+
       }
 
       const base64Data = global.SESSION_ID.split("dave~")[1];
+
       const sessionData = Buffer.from(base64Data, 'base64');
-      await fs.promises.writeFile(credsPath, sessionData);
+
+        await fs.promises.writeFile(credsPath, sessionData);
+
       console.log(color(`Session successfully saved, please wait!!`, 'green'));
+
       await startdave();
+
     }
+
   } catch (error) {
+
     console.error('Error downloading session data:', error);
+
   }
+
 }
 
 async function startdave() {
@@ -124,33 +117,37 @@ async function startdave() {
     }
 
     // login use pairing code
+    // Handle pairing code
     if (pairingCode && !dave.authState.creds.registered) {
         if (useMobile) throw new Error('Cannot use pairing code with mobile api')
 
         let phoneNumber
-        if (!!phoneNumber) {
-            phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
-            if (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v))) {
-                console.log(chalk.bgBlack(chalk.redBright("Start with country code of your WhatsApp Number, Example : +254xxx")))
-                process.exit(0)
-            }
+        if (!!global.phoneNumber) {
+            phoneNumber = global.phoneNumber
         } else {
-            phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number \nFor example: +254xxx : `)))
-            phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+            phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number 😍\nFormat: 2547XXXXX (without + or spaces) : `)))
+        }
 
-            // Ask again when entering the wrong number
-            if (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v))) {
-                console.log(chalk.bgBlack(chalk.redBright("Start with country code of your WhatsApp Number, Example : +254xxx")))
-                phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number \nFor example: +254xxx : `)))
-                phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
-                rl.close()
-            }
+        // Clean the phone number - remove any non-digit characters
+        phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+
+        // Validate the phone number using awesome-phonenumber
+        const pn = require('awesome-phonenumber');
+        if (!pn('+' + phoneNumber).isValid()) {
+            console.log(chalk.red('Invalid phone number. Please enter your full international number (e.g., 255792021944 for Tanzania, 254798570132 for Kenya, etc.) without + or spaces.'));
+            process.exit(1);
         }
 
         setTimeout(async () => {
-            let code = await dave.requestPairingCode(phoneNumber)
-            code = code?.match(/.{1,4}/g)?.join("-") || code
-            console.log(chalk.black(chalk.bgGreen(`Your Pairing Code : `)), chalk.black(chalk.white(code)))
+            try {
+                let code = await dave.requestPairingCode(phoneNumber)
+                code = code?.match(/.{1,4}/g)?.join("-") || code
+                console.log(chalk.black(chalk.bgGreen(`Your Pairing Code : `)), chalk.black(chalk.white(code)))
+                console.log(chalk.yellow(`\nPlease enter this code in your WhatsApp app:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap "Link a Device"\n4. Enter the code shown above`))
+            } catch (error) {
+                console.error('Error requesting pairing code:', error)
+                console.log(chalk.red('Failed to get pairing code. Please check your phone number and try again.'))
+            }
         }, 3000)
     }
 
@@ -669,28 +666,7 @@ async function startdave() {
     return dave
 }
 
-async function tylor() {
-    if (fs.existsSync(credsPath)) {
-        console.log(color("Session file found, starting bot...", 'yellow'));
-        await startdave();
-    } else {
-        const sessionDownloaded = await downloadSessionData();
-        if (sessionDownloaded) {
-            console.log("Session downloaded, starting bot.");
-            await startdave();
-        } else {
-            if (!fs.existsSync(credsPath)) {
-                if(!global.SESSION_ID) {
-                    console.log(color("Please wait for a few seconds to enter your number!", 'red'));
-                    await startdave();
-                }
-            }
-        }
-    }
-}
-
-tylor()
-
+startdave();
 process.on('uncaughtException', function (err) {
     let e = String(err)
     if (e.includes("conflict")) return
