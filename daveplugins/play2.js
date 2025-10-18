@@ -7,7 +7,7 @@ let daveplug = async (m, { dave, reply, text }) => {
   const tempDir = path.join(__dirname, "temp");
   if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
 
-  const fancyReply = (msg) => `🎶 *𝐃𝐀𝐕𝐄-𝐗𝐌𝐃 𝐌𝐔𝐒𝐈𝐂 𝐏𝐋𝐀𝐘𝐄𝐑*\n\n${msg}\n\n> By 𝐃𝐀𝐕𝐄-𝐀𝐈`;
+  const fancyReply = (msg) => `🎶 *𝘿𝙖𝙫𝙚𝘼𝙄 𝐌𝐔𝐒𝐈𝐂 𝐏𝐋𝐀𝐘𝐄𝐑*\n\n${msg}\n\n> By 𝐃𝐀𝐕𝐄-𝐀𝐈`;
 
   // 🧩 No text provided
   if (!text) {
@@ -19,7 +19,7 @@ let daveplug = async (m, { dave, reply, text }) => {
   // 🧩 Prevent people from typing essays
   if (text.length > 100) {
     return dave.sendMessage(m.chat, {
-      text: fancyReply("Bruh 😤 that’s too long! I ain’t reading a whole paragraph — keep it short, max 100 characters.")
+      text: fancyReply("Bruh 😤 that's too long! I ain't reading a whole paragraph — keep it short, max 100 characters.")
     }, { quoted: m });
   }
 
@@ -39,7 +39,7 @@ let daveplug = async (m, { dave, reply, text }) => {
     const { data } = await axios.get(apiUrl);
 
     if (!data.status || !data.result?.downloadUrl)
-      throw new Error("API didn’t return a valid download link");
+      throw new Error("API didn't return a valid download link");
 
     const filePath = path.join(tempDir, `audio_${Date.now()}.mp3`);
 
@@ -57,20 +57,25 @@ let daveplug = async (m, { dave, reply, text }) => {
       writer.on("error", reject);
     });
 
+    // 🎵 Safe title handling
+    const songTitle = data.result?.title || video?.title || "Unknown Song";
+    const artistName = video?.author?.name || "Unknown Artist";
+    const safeFileName = String(songTitle || "audio").substring(0, 100).replace(/[^a-zA-Z0-9\s]/g, "");
+
     // 🎵 Inform user before sending
     await dave.sendMessage(m.chat, {
-      text: fancyReply(`🎧 Hold up! Droppin’ *${data.result.title || video.title}* for ya 🔥`)
+      text: fancyReply(`🎧 Hold up! Droppin' *${songTitle}* for ya 🔥`)
     }, { quoted: m });
 
     // 📩 Send audio
     await dave.sendMessage(m.chat, {
       audio: fs.createReadStream(filePath),
       mimetype: "audio/mpeg",
-      fileName: `${(data.result.title || video.title).substring(0, 100)}.mp3`,
+      fileName: `${safeFileName}.mp3`,
       contextInfo: {
         externalAdReply: {
-          title: data.result.title || video.title,
-          body: `${video.author.name || "Unknown Artist"} | 𝐃𝐀𝐕𝐄-𝐀𝐈`,
+          title: songTitle,
+          body: `${artistName} | 𝐃𝐀𝐕𝐄-𝐀𝐈`,
           thumbnailUrl: video.thumbnail,
           sourceUrl: video.url,
           mediaType: 1,
@@ -82,6 +87,7 @@ let daveplug = async (m, { dave, reply, text }) => {
     // 🧹 Clean temp
     fs.unlinkSync(filePath);
   } catch (err) {
+    console.error("Play2 Error:", err);
     reply(fancyReply(`😕 Error: ${err.message}\nTry another song or check your connection.`));
   }
 };
