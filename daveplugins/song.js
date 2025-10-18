@@ -1,59 +1,105 @@
 const axios = require('axios');
-const yts = require('yt-search');
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
+const yts = require("yt-search");
 
+let daveplug = async (m, { command, prefix, reply, text, dave }) => {
+  const tempDir = path.join(__dirname, "temp");
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir);
+  }
 
-let daveplug = async (m, { dave, reply, text }) => {
-    if (!text) return reply('Usage: *.song <song name or YouTube link>*');
+  const formatStylishReply = (message) => {
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> By trashcore devs`;
+  };
 
-    try {
-        let video;
+  if (!text) {
+    return dave.sendMessage(m.chat, {
+      text: formatStylishReply("Yo, drop a song name, fam! 🎵 Ex: .play Not Like Us")
+    }, { quoted: m });
+  }
 
-        // 🎯 If link provided, skip search
-        if (text.includes('youtube.com') || text.includes('youtu.be')) {
-            video = { url: text };
-        } else {
-            const search = await yts(text);
-            if (!search || !search.videos.length) return reply('❌ No results found.');
-            video = search.videos[0];
-        }
+  if (text.length > 100) {
+    return dave.sendMessage(m.chat, {
+      text: formatStylishReply("Keep it short, homie! Song name max 100 chars. 📝")
+    }, { quoted: m });
+  }
 
-        // 📸 Send thumbnail + info
-        await dave.sendMessage(m.chat, {
-            image: { url: video.thumbnail },
-            caption: `🎧 *Title:* ${video.title}\n⏱ *Duration:* ${video.timestamp}\n📡 *Source:* YouTube`
-        }, { quoted: m });
+  try {
+    const searchQuery = `${text} official`;
+    const searchResult = await yts(searchQuery);
+    const video = searchResult.videos[0];
 
-        // 🎶 Fetch download URL from Izumi API
-        const apiUrl = `https://izumiiiiiiii.dpdns.org/downloader/youtube?url=${encodeURIComponent(video.url)}&format=mp3`;
-
-        const res = await axios.get(apiUrl, {
-            timeout: 30000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-            }
-        });
-
-        const result = res?.data?.result;
-        if (!result || !result.download) throw new Error('No download link from Izumi API.');
-
-        // 🎵 Send audio to chat
-        await dave.sendMessage(m.chat, {
-            audio: { url: result.download },
-            mimetype: 'audio/mpeg',
-            fileName: `${result.title || video.title}.mp3`,
-            ptt: false
-        }, { quoted: m });
-
-    } catch (err) {
-        console.error('❌ Song command error:', err);
-        reply('Failed to download song. Try again later.');
+    if (!video) {
+      return dave.sendMessage(m.chat, {
+        text: formatStylishReply("No tunes found, bruh! 😕 Try another search!")
+      }, { quoted: m });
     }
+
+    const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytmp3?url=${encodeURIComponent(video.url)}`;                                                                            
+    const response = await axios.get(apiUrl);
+    const apiData = response.data;
+
+    if (!apiData.status || !apiData.result || !apiData.result.downloadUrl) {
+      throw new Error("API failed to process the video");
+    }
+
+    const timestamp = Date.now();
+    const fileName = `audio_${timestamp}.mp3`;
+    const filePath = path.join(tempDir, fileName);
+
+    const audioResponse = await axios({
+      method: "get",
+      url: apiData.result.downloadUrl,
+      responseType: "stream",
+      timeout: 600000,
+    });
+
+    const writer = fs.createWriteStream(filePath);
+    audioResponse.data.pipe(writer);
+    await new Promise((resolve, reject) => {
+      writer.on("finish", resolve);
+      writer.on("error", reject);
+    });
+
+    if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
+      throw new Error("Download failed or file is empty");
+    }
+
+    await dave.sendMessage(m.chat, {
+      text: formatStylishReply(`Droppin' *${apiData.result.title || video.title}* for ya, fam! Crank it up! 🔥🎧`)
+    }, { quoted: m });
+
+    await dave.sendMessage(m.chat, {
+      audio: { url: filePath },
+      mimetype: "audio/mpeg",
+      fileName: `${(apiData.result.title || video.title).substring(0, 100)}.mp3`,
+      contextInfo: {
+        externalAdReply: {
+          title: apiData.result.title || video.title,
+          body: `${video.author.name || "Unknown Artist"} | Powered by 𝘿𝙖𝙫𝙚𝘼𝙄`,
+          thumbnailUrl: apiData.result.thumbnail || video.thumbnail || "https://via.placeholder.com/120x90",                       
+          sourceUrl: video.url,
+          mediaType: 1,
+          renderLargerThumbnail: true,
+        },
+      },
+    }, { quoted: m });
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  } catch (error) {
+    await dave.sendMessage(m.chat, {
+      text: formatStylishReply(`Yo, we hit a snag: ${error.message}. Pick another track! 😎`)
+    }, { quoted: m });
+  }
 };
+
+
 
 daveplug.help = ['song'];
 daveplug.tags = ['downloader'];
-daveplug.command = ['song', 'music'];
+daveplug.command = ['song'];
 
 module.exports = daveplug;
