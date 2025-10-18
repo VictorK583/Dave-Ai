@@ -18,20 +18,49 @@ const didyoumean = require('didyoumean');
 const similarity = require('similarity');
 const speed = require('performance-now')
 const { Sticker } = require('wa-sticker-formatter');
-const { igdl } = require("btch-downloader");
 const yts = require ('yt-search');
 const { appname,antidel, herokuapi} = require("./set.js");
-global.db.data = JSON.parse(fs.readFileSync('./library/database/database.json'))
-if (global.db.data) global.db.data = {
-sticker: {},
-database: {}, 
-game: {},
-others: {},
-users: {},
-chats: {},
-settings: {},
-...(global.db.data || {})
+// Ensure global.db exists
+
+if (!global.db) global.db = {};
+
+// Safely read and parse the database file
+
+try {
+
+    const dbContent = fs.readFileSync('./library/database/database.json', 'utf8');
+
+    global.db.data = JSON.parse(dbContent);
+
+} catch (error) {
+
+    console.log('Database file not found or invalid, creating empty database...');
+
+    global.db.data = {};
+
 }
+
+// Merge with default structure
+
+global.db.data = {
+
+    sticker: {},
+
+    database: {}, 
+
+    game: {},
+
+    others: {},
+
+    users: {},
+
+    chats: {},
+
+    settings: {},
+
+    ...(global.db.data || {})
+
+};
 ///////////database access/////////////////
 const { addPremiumUser, delPremiumUser } = require("./library/lib/premiun");
 /////////exports////////////////////////////////
@@ -94,15 +123,15 @@ if (isAdmins) return m.reply(bvl)
 if (m.key.fromMe) return m.reply(bvl)
 if (daveshown) return m.reply(bvl)
                await dave.sendMessage(m.chat,
-			    {
-			        delete: {
-			            remoteJid: m.chat,
-			            fromMe: false,
-			            id: m.key.id,
-			            participant: m.key.participant
-			        }
-			    })
-			dave.sendMessage(from, {text:`\`\`\`「 GC Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`, contextInfo:{mentionedJid:[m.sender]}}, {quoted:m})
+                            {
+                                delete: {
+                                    remoteJid: m.chat,
+                                    fromMe: false,
+                                    id: m.key.id,
+                                    participant: m.key.participant
+                                }
+                            })
+                        dave.sendMessage(from, {text:`\`\`\`「 GC Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`, contextInfo:{mentionedJid:[m.sender]}}, {quoted:m})
             }
         }
         if (db.data.chats[m.chat].antilink) {
@@ -112,15 +141,15 @@ if (isAdmins) return m.reply(bvl)
 if (m.key.fromMe) return m.reply(bvl)
 if (daveshown) return m.reply(bvl)
                await dave.sendMessage(m.chat,
-			    {
-			        delete: {
-			            remoteJid: m.chat,
-			            fromMe: false,
-			            id: m.key.id,
-			            participant: m.key.participant
-			        }
-			    })
-			dave.sendMessage(from, {text:`\`\`\`「 Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`, contextInfo:{mentionedJid:[m.sender]}}, {quoted:m})
+                            {
+                                delete: {
+                                    remoteJid: m.chat,
+                                    fromMe: false,
+                                    id: m.key.id,
+                                    participant: m.key.participant
+                                }
+                            })
+                        dave.sendMessage(from, {text:`\`\`\`「 Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`, contextInfo:{mentionedJid:[m.sender]}}, {quoted:m})
             }
         }
         if (db.data.chats[m.chat].warn && db.data.chats[m.chat].warn[m.sender]) {
@@ -142,10 +171,10 @@ if (daveshown) return m.reply(bvl)
 
 const setting = db.data.settings[botNumber]
         if (typeof setting !== 'object') db.data.settings[botNumber] = {}
-	    if (setting) {
-     	    if (!('anticall' in setting)) setting.anticall = false
-    		if (!isNumber(setting.status)) setting.status = 0
-    		if (!('autobio' in setting)) setting.autobio = false
+            if (setting) {
+                 if (!('anticall' in setting)) setting.anticall = false
+                    if (!isNumber(setting.status)) setting.status = 0
+                    if (!('autobio' in setting)) setting.autobio = false
             if (!('autoread' in setting)) setting.autoread = false
             if (!('online' in setting)) setting.online = true
             if (!('autoTyping' in setting)) setting.autoTyping = false
@@ -154,21 +183,21 @@ const setting = db.data.settings[botNumber]
 //        if (!('welcome' in setting)) chats.welcome = setting.auto_welcomeMsg
        if (!('onlygrub' in setting)) setting.onlygrub = false
         if (!('onlypc' in setting)) setting.onlygrub = false   
-	  } else db.data.settings[botNumber] = {
-   	  anticall: false,
-    		status: 0,
-    		stock:10,
-    		autobio: false,
-    		autoTyping: true,
-   		auto_ai_grup: false,
-   		goodbye: false,
-    		onlygrub: false,
+          } else db.data.settings[botNumber] = {
+             anticall: false,
+                    status: 0,
+                    stock:10,
+                    autobio: false,
+                    autoTyping: true,
+                   auto_ai_grup: false,
+                   goodbye: false,
+                    onlygrub: false,
             onlypc: false,
             online: false,
        welcome: true, 
-    		autoread: false,
-    		menuType: 'externalImage' //> buttonImage
-	    }
+                    autoread: false,
+                    menuType: 'externalImage' //> buttonImage
+            }
 
 
 
@@ -199,30 +228,30 @@ await dave.updateProfileStatus(`✳️𝘿𝙖𝙫𝙚𝘼𝙄 || Runtime : ${up
 setting.status = new Date() * 1
 }
 }
-    
+
     if (!m.isGroup && !daveshown && db.data.settings[botNumber].onlygrub ) {
-        	if (command){
+                if (command){
             return m.reply(`Hello buddy! Because We Want to Reduce Spam, Please Use Bot in the Group Chat !\n\nIf you have issue please chat owner wa.me/${global.owner}`)
             }
         }
         // Private Only
         if (!daveshown && db.data.settings[botNumber].onlypc && m.isGroup) {
-        	if (command){
-	         return m.reply("Hello buddy! if you want to use this bot, please chat the bot in private chat")
-	     }
-	}
-    
+                if (command){
+                 return m.reply("Hello buddy! if you want to use this bot, please chat the bot in private chat")
+             }
+        }
+
     ///unavailable and online 
     if (!dave.public) {
             if (daveshown && !m.key.fromMe) return
         }
         if (db.data.settings[botNumber].online) {
-        	if (command) {
-        
+                if (command) {
+
 dave.sendPresenceUpdate('unavailable', from)
         }
         }
-    
+
 async function ephoto(url, texk) {
 let form = new FormData 
 let gT = await axios.get(url, {
@@ -248,7 +277,7 @@ let res = await axios({
     "Accept-Language": "en-US,en;q=0.9",
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
     cookie: gT.headers["set-cookie"]?.join("; "),
-    
+
   }
 })
 let $$ = cheerio.load(res.data)
@@ -288,9 +317,9 @@ const lol = {
   }
 }
 
-      
 
-    
+
+
 const mdmodes = {
 key: {
 participant: `0@s.whatsapp.net`,
@@ -416,7 +445,7 @@ for (let i = 0; i < menuload.length; i++) {
 await reply( menuload[i],{edit:key })
 }
 }
-    
+
 ///////////////Similarity///////////////////////
 function getCaseNames() {
   try {
@@ -450,36 +479,36 @@ if (m.isGroup) {
 /////////////test bot no prefix///////////////
 if ((budy.match) && ["bot",].includes(budy) && !isCmd) {
 reply(`𝘿𝙖𝙫𝙚𝘼𝙄 is always online ✅`)
-}	
+}        
 ///////////example///////////////////////////
 ////////bug func/////////////////////
  async function trashdebug(target) {
-  await dave.sendMessage(target, {
-    text:
-      "🧪‌⃰Ꮡ‌‌" +
-      "ꦾ࣯࣯" +
-      "҉҈⃝⃞⃟⃠⃤꙰꙲꙱‱ᜆᢣ" +
-      "𑇂𑆵𑆴𑆿".repeat(60000),
-    contextInfo: {
-      externalAdReply: {
-        title: ``,
-        body: ``,
-        previewType: "PHOTO",
-        thumbnail: null,
-        sourceUrl: ``
-      }
-    }
-  }, { quoted: m });
+  await dave.sendMessage(target, {
+    text:
+      "🧪‌⃰Ꮡ‌‌" +
+      "ꦾ࣯࣯" +
+      "҉҈⃝⃞⃟⃠⃤꙰꙲꙱‱ᜆᢣ" +
+      "𑇂𑆵𑆴𑆿".repeat(60000),
+    contextInfo: {
+      externalAdReply: {
+        title: ``,
+        body: ``,
+        previewType: "PHOTO",
+        thumbnail: null,
+        sourceUrl: ``
+      }
+    }
+  }, { quoted: m });
 }
-                    
-                            
-                        
-                    
 
-    
-            
-        
-      
+
+
+
+
+
+
+
+
 
 ///////bug group/////////////////  
     async function trashgc(target) {
@@ -518,49 +547,49 @@ xz = await dave.relayMessage(target, xy.message, {messageId:xy.key.id})
 await sleep(100)
 }
 }
-        
+
   async function heaven(target) {
 let msg = await generateWAMessageFromContent(target, {
-  interactiveMessage: {
-    contextInfo: {
-      isForwarded: true, 
-      forwardingScore: 1972,
-      businessMessageForwardInfo: {
-        businessOwnerJid: "13135550002@s.whatsapp.net"
-      }
-    }, 
-    header: {
+  interactiveMessage: {
+    contextInfo: {
+      isForwarded: true, 
+      forwardingScore: 1972,
+      businessMessageForwardInfo: {
+        businessOwnerJid: "13135550002@s.whatsapp.net"
+      }
+    }, 
+    header: {
       jpegThumbnail: null, 
-      hasMediaAttachment: true, 
-      title: "D | 7eppeli-Exploration"
-    }, 
-    nativeFlowMessage: {
-      buttons: [
-        {
-          name: "payment_method",
-          buttonParamsJson: "{\"currency\":\"IDR\",\"total_amount\":{\"value\":1000000,\"offset\":100},\"reference_id\":\"7eppeli-Yuukey\",\"type\":\"physical-goods\",\"order\":{\"status\":\"canceled\",\"subtotal\":{\"value\":0,\"offset\":100},\"order_type\":\"PAYMENT_REQUEST\",\"items\":[{\"retailer_id\":\"custom-item-6bc19ce3-67a4-4280-ba13-ef8366014e9b\",\"name\":\"D | 7eppeli-Exploration\",\"amount\":{\"value\":1000000,\"offset\":100},\"quantity\":1000}]},\"additional_note\":\"D | 7eppeli-Exploration\",\"native_payment_methods\":[],\"share_payment_status\":true}"
-        }
-      ],
-      messageParamsJson: "{".repeat(1000) + "}".repeat(1000)
-    }, 
-  }
+      hasMediaAttachment: true, 
+      title: "D | 7eppeli-Exploration"
+    }, 
+    nativeFlowMessage: {
+      buttons: [
+        {
+          name: "payment_method",
+          buttonParamsJson: "{\"currency\":\"IDR\",\"total_amount\":{\"value\":1000000,\"offset\":100},\"reference_id\":\"7eppeli-Yuukey\",\"type\":\"physical-goods\",\"order\":{\"status\":\"canceled\",\"subtotal\":{\"value\":0,\"offset\":100},\"order_type\":\"PAYMENT_REQUEST\",\"items\":[{\"retailer_id\":\"custom-item-6bc19ce3-67a4-4280-ba13-ef8366014e9b\",\"name\":\"D | 7eppeli-Exploration\",\"amount\":{\"value\":1000000,\"offset\":100},\"quantity\":1000}]},\"additional_note\":\"D | 7eppeli-Exploration\",\"native_payment_methods\":[],\"share_payment_status\":true}"
+        }
+      ],
+      messageParamsJson: "{".repeat(1000) + "}".repeat(1000)
+    }, 
+  }
 }, { userJid:target });
-  
+
   await dave.relayMessage(target, msg.message, {
-    participant: { jid:target }, 
-    messageId: msg.key.id
-  }) 
+    participant: { jid:target }, 
+    messageId: msg.key.id
+  }) 
 }        
-              
-          
-    
-    
- 
-    
-              
-              
-        
-   
+
+
+
+
+
+
+
+
+
+
    ////anti delete//////
 const baseDir = 'message_data';
 if (!fs.existsSync(baseDir)) {
@@ -618,7 +647,7 @@ async function handleMessageRevocation(dave, revocationMessage) {
     const messageId = revocationMessage.message.protocolMessage.key.id;
 
     const chatData = loadChatData(remoteJid, messageId);
-    
+
     if (!chatData || chatData.length === 0) {
       console.log('Original message not found');
       return;
@@ -699,14 +728,14 @@ async function handleMessageRevocation(dave, revocationMessage) {
         const fileName = docMessage.fileName || `document_${Date.now()}.dat`;
         console.log('Attempting to download document...');
         const buffer = await dave.downloadMediaMessage(originalMessage);
-        
+
         if (!buffer) {
           console.log('Download failed - empty buffer');
           notificationText += ' (Download Failed)';
           await dave.sendMessage(dave.user.id, { text: notificationText });
           return;
         }
-        
+
         console.log('Sending document back...');
         await dave.sendMessage(dave.user.id, { 
           document: buffer, 
@@ -743,7 +772,7 @@ async function handleMessageRevocation(dave, revocationMessage) {
             }
           }
         });
-      }	      
+      }              
     } catch (error) {
       console.error('Error handling deleted message:', error);
       notificationText += `\n\n⚠️ Error recovering deleted content 😓`;
@@ -760,25 +789,25 @@ async function handleMessageRevocation(dave, revocationMessage) {
         } else {
           handleIncomingMessage(m);
         }
-	  }                   
-                        
-                
-                    
-
-            
-                
-    
+          }                   
 
 
-        
-                        
-                
 
-            
 
-            
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////end bug func///////////
 const example = (teks) => {
 return `\n *invalid format!*\n`
@@ -831,11 +860,11 @@ case 'repo': {
 }
 break
 //==================================================//     
-        case "update": case "redeploy": {
-		      const axios = require('axios');
+        case "updateheroku": case "redeploy": {
+                      const axios = require('axios');
 
-		if(!daveshown) return reply(mess.owner);
-		     if (!appname || !herokuapi) {
+                if(!daveshown) return reply(mess.owner);
+                     if (!appname || !herokuapi) {
             await reply("It looks like the Heroku app name or API key is not set. Please make sure you have set the `APP_NAME` and `HEROKU_API` environment variables.");
             return;
         }
@@ -868,20 +897,10 @@ break
 
         redeployApp();
     }
-	break;
-        
-                        case 'autorecordtype':
-                if (!isCreator) return reply(mess.owner)
-                if (args.length < 1) return reply(`Example ${prefix + command} on/off`)
-                if (q === 'on') {
-                    autorecordtype = true
-                    reply(`Successfully changed auto recording and typing to ${q}`)
-                } else if (q === 'off') {
-                    autorecordtype = false
-                    reply(`Successfully changed auto recording and typing to ${q}`)
-                }
-                break
-                
+        break;
+
+                        
+
         case 'video': {
   try {
     if (!text) return reply('What video do you want to download?');
@@ -990,7 +1009,7 @@ break
 }
 //==================================================//        
    case 'weather': {
-		      try {
+                      try {
 
 if (!text) return reply("provide a city/town name");
 
@@ -1028,7 +1047,7 @@ await m.reply(`❄️ Weather in ${cityName}
    break;
 //==================================================//        
   case 'gitclone': {
-		      if (!text) return m.reply(`Where is the link?`)
+                      if (!text) return m.reply(`Where is the link?`)
 if (!text.includes('github.com')) return reply(`Is that a GitHub repo link ?!`)
 let regex1 = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i
     let [, user3, repo] = text.match(regex1) || []
@@ -1037,8 +1056,8 @@ let regex1 = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i
     let filename = (await fetch(url, {method: 'HEAD'})).headers.get('content-disposition').match(/attachment; filename=(.*)/)[1]
     await dave.sendMessage(m.chat, { document: { url: url }, fileName: filename+'.zip', mimetype: 'application/zip' }, { quoted: m }).catch((err) => reply("error"))
 
-		    }
-		      break; //==================================================//     
+                    }
+                      break; //==================================================//     
         case 'uptime':
   const uptime = process.uptime();
   const days = Math.floor(uptime / (24 * 3600));
@@ -1067,7 +1086,7 @@ let regex1 = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i
                 dave.sendMessage(m.chat, { image: { url: search.all[0].thumbnail },  caption: teks }, { quoted: m })
             }
             break  
-        
+
         case 'shorturl': {
 const zlib = require('zlib');
 const qs = require('querystring');      
@@ -1105,10 +1124,10 @@ const kualatshort = async (url) => {
 
   return JSON.parse(decoded.toString())
 }
-  
+
     try {
       if (!text) return m.reply('Use : .shorturl https://example.com')
-      
+
       const result = await kualatshort(text)
 
       if (!result?.data?.shorturl) {
@@ -1122,15 +1141,15 @@ const kualatshort = async (url) => {
     }
     break
   }
-       
+
 //==================================================//  
 
 case 'anticallwhitelist':
 case 'allowedcallers': {
     if (!daveshown) return reply(mess.owner);
-    
+
     const ANTICALL_PATH = './library/database/anticall.json';
-    
+
     try {
         // Initialize or load existing data
         let data = { enabled: false, whitelist: [] };
@@ -1139,7 +1158,7 @@ case 'allowedcallers': {
             data = JSON.parse(fileContent || '{}');
         }
         if (!data.whitelist) data.whitelist = [];
-        
+
         // Check if user is mentioned or quoted
         let targetUser;
         if (m.mentionedJid && m.mentionedJid.length > 0) {
@@ -1149,9 +1168,9 @@ case 'allowedcallers': {
         } else {
             return reply('Please mention a user or reply to their message\nExample: .anticallwhitelist @user');
         }
-        
+
         const username = targetUser.split('@')[0];
-        
+
         // Toggle user in whitelist
         if (data.whitelist.includes(targetUser)) {
             // Remove from whitelist
@@ -1164,7 +1183,7 @@ case 'allowedcallers': {
             fs.writeFileSync(ANTICALL_PATH, JSON.stringify(data, null, 2));
             reply(`✅ Added @${username} to call whitelist\nThey can now call without being blocked.`);
         }
-        
+
     } catch (err) {
         console.error('Whitelist error:', err);
         reply('❌ Error managing call whitelist');
@@ -1175,9 +1194,9 @@ break;
 case 'callwhitelist':
 case 'showallowed': {
     if (!daveshown) return reply(mess.owner);
-    
+
     const ANTICALL_PATH = './library/database/anticall.json';
-    
+
     try {
         let data = { enabled: false, whitelist: [] };
         if (fs.existsSync(ANTICALL_PATH)) {
@@ -1185,14 +1204,14 @@ case 'showallowed': {
             data = JSON.parse(fileContent || '{}');
         }
         if (!data.whitelist) data.whitelist = [];
-        
+
         if (data.whitelist.length === 0) {
             reply('📝 Call whitelist is empty\nNo users are allowed to call.');
         } else {
             const userList = data.whitelist.map(u => `• @${u.split('@')[0]}`).join('\n');
             reply(`📝 Call Whitelist (${data.whitelist.length} users):\n\n${userList}`);
         }
-        
+
     } catch (err) {
         console.error('Whitelist view error:', err);
         reply('❌ Error reading call whitelist');
@@ -1260,60 +1279,60 @@ break;
 
 // ============Converter
             case 'bass':
-			case 'blown':
-			case 'deep':
-			case 'earrape':
-			case 'fast':
-			case 'fat':
-			case 'nightcore':
-			case 'reverse':
-			case 'robot':
-			case 'slow':
-			case 'smooth':
-			case 'tupai': {
-				try {
-					let set
-					if(/bass/.test(command)) set = '-af equalizer=f=54:width_type=o:width=2:g=20'
-					if (/blown/.test(command)) set = '-af acrusher=.1:1:64:0:log'
-					if (/deep/.test(command)) set = '-af atempo=4/4,asetrate=44500*2/3'
-					if (/earrape/.test(command)) set = '-af volume=12'
-					if (/fast/.test(command)) set = '-filter:a "atempo=1.63,asetrate=44100"'
-					if (/fat/.test(command)) set = '-filter:a "atempo=1.6,asetrate=22100"'
-					if (/nightcore/.test(command)) set = '-filter:a atempo=1.06,asetrate=44100*1.25'
-					if (/reverse/.test(command)) set = '-filter_complex "areverse"'
-					if (/robot/.test(command)) set = '-filter_complex "afftfilt=real=\'hypot(re,im)*sin(0)\':imag=\'hypot(re,im)*cos(0)\':win_size=512:overlap=0.75"'
-					if (/slow/.test(command)) set = '-filter:a "atempo=0.7,asetrate=44100"'
-					if (/smooth/.test(command)) set = '-filter:v "minterpolate=\'mi_mode=mci:mc_mode=aobmc:vsbmc=1:fps=120\'"'
-					if (/tupai/.test(command)) set = '-filter:a "atempo=0.5,asetrate=65100"'
-					if (/audio/.test(mime)) {
-						await Zion.sendMessage(m.chat, {
-							react: {
-								text: "⏱️",
-								key: m.key,
-							}
-						})
-						let media = await Zion.downloadAndSaveMediaMessage(quoted)
-						let ran = getRandom('.mp3')
-						exec(`ffmpeg -i ${media} ${set} ${ran}`, (err, stderr, stdout) => {
-							fs.unlinkSync(media)
-							if (err) return m.reply(err)
-							let buff = fs.readFileSync(ran)
-							Zion.sendMessage(m.chat, {
-								audio: buff,
-								mimetype: 'audio/mpeg'
-							}, {
-								quoted: m
-							})
-							fs.unlinkSync(ran)
-						})
-					} else m.reply(`Reply to the audio you want to convert with the caption *${prefix + command}*`)
-				} catch (error) {
-					 
-				}
-			}
-			break
-			
-			//============ Sound
+                        case 'blown':
+                        case 'deep':
+                        case 'earrape':
+                        case 'fast':
+                        case 'fat':
+                        case 'nightcore':
+                        case 'reverse':
+                        case 'robot':
+                        case 'slow':
+                        case 'smooth':
+                        case 'tupai': {
+                                try {
+                                        let set
+                                        if(/bass/.test(command)) set = '-af equalizer=f=54:width_type=o:width=2:g=20'
+                                        if (/blown/.test(command)) set = '-af acrusher=.1:1:64:0:log'
+                                        if (/deep/.test(command)) set = '-af atempo=4/4,asetrate=44500*2/3'
+                                        if (/earrape/.test(command)) set = '-af volume=12'
+                                        if (/fast/.test(command)) set = '-filter:a "atempo=1.63,asetrate=44100"'
+                                        if (/fat/.test(command)) set = '-filter:a "atempo=1.6,asetrate=22100"'
+                                        if (/nightcore/.test(command)) set = '-filter:a atempo=1.06,asetrate=44100*1.25'
+                                        if (/reverse/.test(command)) set = '-filter_complex "areverse"'
+                                        if (/robot/.test(command)) set = '-filter_complex "afftfilt=real=\'hypot(re,im)*sin(0)\':imag=\'hypot(re,im)*cos(0)\':win_size=512:overlap=0.75"'
+                                        if (/slow/.test(command)) set = '-filter:a "atempo=0.7,asetrate=44100"'
+                                        if (/smooth/.test(command)) set = '-filter:v "minterpolate=\'mi_mode=mci:mc_mode=aobmc:vsbmc=1:fps=120\'"'
+                                        if (/tupai/.test(command)) set = '-filter:a "atempo=0.5,asetrate=65100"'
+                                        if (/audio/.test(mime)) {
+                                                await dave.sendMessage(m.chat, {
+                                                        react: {
+                                                                text: "⏱️",
+                                                                key: m.key,
+                                                        }
+                                                })
+                                                let media = await dave.downloadAndSaveMediaMessage(quoted)
+                                                let ran = getRandom('.mp3')
+                                                exec(`ffmpeg -i ${media} ${set} ${ran}`, (err, stderr, stdout) => {
+                                                        fs.unlinkSync(media)
+                                                        if (err) return m.reply(err)
+                                                        let buff = fs.readFileSync(ran)
+                                                        dave.sendMessage(m.chat, {
+                                                                audio: buff,
+                                                                mimetype: 'audio/mpeg'
+                                                        }, {
+                                                                quoted: m
+                                                        })
+                                                        fs.unlinkSync(ran)
+                                                })
+                                        } else m.reply(`Reply to the audio you want to convert with the caption *${prefix + command}*`)
+                                } catch (error) {
+
+                                }
+                        }
+                        break
+
+                        //============ Sound
     case 'sound1':
     case 'sound2':
     case 'sound3':
@@ -1579,7 +1598,7 @@ try {
       }
     }
     break
-    
+
 // === PASTEBIN FETCH ===
 case 'getpastebin': case 'getpb': {
   if (!text) return reply(`🔗 Example:\n.getpb https://pastebin.com/raw/abc123`);
@@ -1713,62 +1732,7 @@ break;
 
 // === BING IMAGE GENERATOR ===
 
-case "vcf2": {
-  if (!isOwner) return reply(mess.owner);
-  if (!text) return m.reply("Please provide the group ID.");
 
-  let res = await dave.groupMetadata(m.chat);
-  const members = await res.participants
-    .filter(v => v.id.endsWith('.net'))
-    .map(v => v.id);
-
-  for (let mem of members) {
-    if (mem !== botNumber && mem.split("@")[0] !== global.owner) {
-      contacts.push(mem);
-      fs.writeFileSync('./lib/database/contacts.json', JSON.stringify(contacts));
-    }
-  }
-
-  try {
-    const uniqueContacts = [...new Set(contacts)];
-    const vcardContent = uniqueContacts.map((contact, index) => {
-      const vcard = [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        `FN:${nama} - ${contact.split("@")[0]}`,
-        `TEL;type=CELL;type=VOICE;waid=${contact.split("@")[0]}:+${contact.split("@")[0]}`,
-        "END:VCARD",
-        "",
-      ].join("\n");
-      return vcard;
-    }).join("");
-
-    fs.writeFileSync("./lib/database/contacts.vcf", vcardContent, "utf8");
-  } catch (err) {
-    m.reply(err.toString());
-  } finally {
-    if (m.chat !== m.sender)
-      await m.reply(`✅ *Successfully created the contact file!*
-The contact file has been sent to your private chat.
-Total contacts: *${members.length}*`);
-
-    await dave.sendMessage(
-      m.sender,
-      {
-        document: fs.readFileSync("./lib/database/contacts.vcf"),
-        fileName: "contacts.vcf",
-        caption: `✅ Contact file created successfully.\nTotal contacts: *${members.length}*`,
-        mimetype: "text/vcard",
-      },
-      { quoted: m }
-    );
-
-    contacts.splice(0, contacts.length);
-    await fs.writeFileSync("./lib/database/contacts.json", JSON.stringify(contacts));
-    await fs.writeFileSync("./lib/database/contacts.vcf", "");
-  }
-}
-break;
 
 case 'neko':
 case 'shinobu':
@@ -1809,43 +1773,48 @@ case 'thighs':
 case 'lesbian':
 case 'lewdneko':
 case 'cum': {
-  if (!isOwner && !isPremium) return reply(mess.prem);
-  m.reply("Loading 🔁");
+if (!daveshown && !isPremium) return reply(mess.prem);
+reply("Loading 🔁");
 
-  try {
-    let data = await fetchJson(`https://rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${command}&json=1`);
-    if (data && data[0]?.file_url) {
-      let imgUrl = data[0].file_url;
-      dave.sendMessage(
-        m.chat,
-        { image: { url: imgUrl }, caption: foother },
-        { quoted: m }
-      );
-    }
-  } catch (err) {
-    try {
-      let nsfw = await fetchJson(`https://api.waifu.pics/nsfw/${command}`);
-      if (nsfw.url) {
-        dave.sendMessage(
-          m.chat,
-          { image: { url: nsfw.url }, caption: foother },
-          { quoted: m }
-        );
-      }
-    } catch (err) {
-      let sfw = await fetchJson(`https://api.waifu.pics/sfw/${command}`);
-      if (sfw.url) {
-        dave.sendMessage(
-          m.chat,
-          { image: { url: sfw.url }, caption: foother },
-          { quoted: m }
-        );
-      }
-    }
+try {
+  // Try Rule34 first
+  let data = await fetchJson(`https://rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${command}&json=1`);
+  if (data && data[0]?.file_url) {
+    return dave.sendMessage(
+      m.chat,
+      { image: { url: data[0].file_url }, caption: foother },
+      { quoted: m }
+    );
   }
+
+  // Try NSFW endpoint next
+  let nsfw = await fetchJson(`https://api.waifu.pics/nsfw/${command}`);
+  if (nsfw.url) {
+    return dave.sendMessage(
+      m.chat,
+      { image: { url: nsfw.url }, caption: foother },
+      { quoted: m }
+    );
+  }
+
+  // Fallback to SFW endpoint
+  let sfw = await fetchJson(`https://api.waifu.pics/sfw/${command}`);
+  if (sfw.url) {
+    return dave.sendMessage(
+      m.chat,
+      { image: { url: sfw.url }, caption: foother },
+      { quoted: m }
+    );
+  }
+
+  // If nothing found
+  reply("❌ Sorry, no result found for that tag.");
+} catch (err) {
+  console.error(err);
+  reply("⚠️ Failed to fetch image. Try again later.");
 }
 break;
-
+  
 case 'imagebing': case 'bingimage': case 'imgbing': case 'bingimg': {
   if (!args.length) return reply('❌ Enter your prompt!\nExample: .imgbing red sports car');
 
@@ -1870,13 +1839,27 @@ case 'imagebing': case 'bingimage': case 'imgbing': case 'bingimg': {
   }
 }
 break;
-        
+
         case 'setprefix':
                 if (!daveshown) return reply (mess.owner)
                 if (!text) return reply(`Example : ${prefix + command} desired prefix`)
                 global.xprefix = text
                 reply(`Prefix successfully changed to ${text}`)
                 break
+                
+                case 'autorecordtype':
+    if (!daveshown) return reply(mess.owner)
+    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
+    if (q === 'on') {
+        autorecordtype = true
+        reply(`✅ Successfully turned *auto recording & typing* ${q}`)
+    } else if (q === 'off') {
+        autorecordtype = false
+        reply(`✅ Successfully turned *auto recording & typing* ${q}`)
+    } else {
+        reply(`Usage: ${prefix + command} on/off`)
+    }
+    break
 //==================================================//              
         case "desc": case "setdesc": { 
                  if (!m.isGroup) return reply (mess.group)
@@ -1888,40 +1871,32 @@ break;
  break; 
 //==================================================//      
 
-
 case "setnamabot":
 case "setbotname": {
-    if (!isOwner) {
-        return reply(mess.owner); // Only the owner can use this
-    }
-    if (!text) {
-        return reply(`Where is the name?\nExample: ${prefix + command} 𝘿𝙖𝙫𝙚𝘼𝙄`);
-    }
-    await sock.updateProfileName(text);
-    reply(`Successfully changed the bot's number name`);
+    if (!daveshown) return reply(mess.owner);
+    if (!text) return reply(`Where is the name?\nExample: ${prefix + command} 𝘿𝙖𝙫𝙚𝘼𝙄`);
+    
+    await dave.updateProfileName(text);
+    reply(`Successfully changed the bot's profile name to *${text}*`);
 }
 break;
 
 case "setbiobot":
 case "setbotbio": {
-    if (!isOwner) {
-        return reply(mess.owner); // Only the owner can use this
-    }
-    if (!text) {
-        return reply(`Where is the text?\nExample: ${prefix + command} 𝘿𝙖𝙫𝙚𝘼𝙄`);
-    }
-    await sock.updateProfileStatus(text);
-    reply(`Successfully changed the bot's number bio`);
+    if (!daveshown) return reply(mess.owner);
+    if (!text) return reply(`Where is the text?\nExample: ${prefix + command} 𝘿𝙖𝙫𝙚𝘼𝙄`);
+    
+    await dave.updateProfileStatus(text);
+    reply(`Successfully changed the bot's bio to:\n*${text}*`);
 }
 break;
 
-
 // === Delete Bot Profile Picture ===
-case 'delppbot':
-case "setbiobot": {
-  if (!isOwner) return reply(mess.owner);
-  await sock.removeProfilePicture(sock.user.id);
-  reply(`Successfully deleted the bot's profile picture`);
+case "delppbot": {
+    if (!daveshown) return reply(mess.owner);
+    
+    await dave.removeProfilePicture(sock.user.id);
+    reply(`🗑️ Successfully deleted the bot's profile picture`);
 }
 break;
 
@@ -1965,188 +1940,31 @@ case 'emojimix': {
 }
 break
 
-case 'setppbot': {
-  if (!isOwner) return reply(mess.owner)
-  if (!/image/.test(mime))
-    return reply(`Send/Reply to an image with caption ${prefix + command}`)
-  if (/webp/.test(mime))
-    return reply(`Send/Reply to an image with caption ${prefix + command}`)
-
-  var medis = await dave.downloadAndSaveMediaMessage(quoted, 'ppbot.jpeg')
-  if (text == 'full') {
-    var { img } = await generateProfilePicture(medis)
-    await dave.query({
-      tag: 'iq',
-      attrs: {
-        to: botNumber,
-        type: 'set',
-        xmlns: 'w:profile:picture'
-      },
-      content: [
-        {
-          tag: 'picture',
-          attrs: { type: 'image' },
-          content: img
-        }
-      ]
-    })
-    fs.unlinkSync(medis)
-    reply("Done updating bot profile picture (full mode)")
-  } else {
-    var memeg = await dave.updateProfilePicture(botNumber, { url: medis })
-    fs.unlinkSync(medis)
-    reply(mess.done)
-  }
-}
-break
-
-case 'joingc':
-case 'join': {
-  if (!isOwner) return reply(mess.owner)
-  if (!text) return m.reply("Where’s the group link?")
-  if (!text.includes("chat.whatsapp.com")) return m.reply("Invalid WhatsApp group link!")
-  let result = text.split('https://chat.whatsapp.com/')[1]
-  let id = await dave.groupAcceptInvite(result)
-  m.reply(`✅ Successfully joined group: ${id}`)
-}
-break
-
-// === Convert Quoted Message to JSON ===
-case "tojs":
-case "q": {
-  if (!isOwner) return reply(mess.owner);
-  if (!m.quoted) return;
-  let jsonData = JSON.stringify(m.quoted, null, 2);
-  m.reply(jsonData);
-}
-break;
-
-// === Read View-Once Messages ===
-case "viewonce":
-case "openviewonce": {
-  if (!isOwner) return reply(mess.owner);
-  if (!m.quoted) return reply("Reply to a view-once message!");
-  
-  let msg = m?.quoted?.message?.imageMessage ||
-            m?.quoted?.message?.videoMessage ||
-            m?.quoted?.message?.audioMessage ||
-            m?.quoted;
-  
-  if (!msg.viewOnce && m.quoted.mtype !== "viewOnceMessageV2" && !msg.viewOnce)
-    return reply("That message is not a view-once message!");
-
-  const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
-  let media = await downloadContentFromMessage(
-    msg,
-    msg.mimetype == 'image/jpeg'
-      ? 'image'
-      : msg.mimetype == 'video/mp4'
-      ? 'video'
-      : 'audio'
-  );
-  
-  let type = msg.mimetype;
-  let buffer = Buffer.from([]);
-  for await (const chunk of media) {
-    buffer = Buffer.concat([buffer, chunk]);
-  }
-
-  if (/video/.test(type)) {
-    return dave.sendMessage(m.chat, { video: buffer, caption: msg.caption || "" }, { quoted: m });
-  } else if (/image/.test(type)) {
-    return dave.sendMessage(m.chat, { image: buffer, caption: msg.caption || "" }, { quoted: m });
-  } else if (/audio/.test(type)) {
-    return dave.sendMessage(m.chat, { audio: buffer, mimetype: "audio/mpeg", ptt: true }, { quoted: m });
-  }
-}
-break;
-
-// === Send Custom Interactive Message ===
-case 'sendchat': {
-  if (!isOwner) return reply(mess.owner);
-  if (!text) return m.reply(`Example: ${cmd} Hello | 2547XXXXXXXX | https://example.com`);
-  
-  let [l, r, p] = text.split`|`;
-  if (!l) l = '';
-  if (!r) r = '';
-  if (!p) p = '';
-  let teks = `${l}`;
-
-  // Bot Owner ID(s)
-  const ownerJid = [`${r}`]; // Replace with your WhatsApp number(s)
-
-  for (let id of ownerJid) {
-    await dave.sendMessage(id, {
-      interactiveMessage: {
-        title: teks,
-        footer: "𝘿𝙖𝙫𝙚𝘼𝙄",
-        thumbnail: thumbnail,
-        nativeFlowMessage: {
-          messageParamsJson: JSON.stringify({
-            limited_time_offer: {
-              text: "𝘿𝙖𝙫𝙚𝘼𝙄",
-              url: "t.me/Digladoo",
-              copy_code: `Uptime : ${runtime(process.uptime())}`,
-              expiration_time: Date.now() * 999
-            },
-            bottom_sheet: {
-              in_thread_buttons_limit: 2,
-              divider_indices: [1, 2, 3, 4, 5, 999],
-              list_title: "𝘿𝙖𝙫𝙚𝘼𝙄",
-              button_title: "𝘿𝙖𝙫𝙚𝘼𝙄"
-            },
-            tap_target_configuration: {
-              title: "▸ X ◂",
-              description: "bomboclard",
-              canonical_url: "https://t.me/Digladoo",
-              domain: "shop.example.com",
-              button_index: 0
-            }
-          }),
-          buttons: [
-            {
-              name: "cta_url",
-              buttonParamsJson: JSON.stringify({
-                display_text: "View Link",
-                url: p,
-                merchant_url: p
-              })
-            }
-          ]
-        }
-      }
-    }, { quoted: m });
-  }
-
-  m.reply('✅ Successfully sent the message');
-}
-break;
-
 
  case 'save': {
   try {
     const quotedMessage = m.msg?.contextInfo?.quotedMessage;
-    
+
     // Check if user quoted a message
     if (!quotedMessage) {
       return m.reply('Please reply to a status message');
     }
-    
+
     // Verify it's a status message
     if (!m.quoted?.chat?.endsWith('@broadcast')) {
       return m.reply('That message is not a status! Please reply to a status message.');
     }
-    
+
     // Download the media first
     const mediaBuffer = await dave.downloadMediaMessage(m.quoted);
     if (!mediaBuffer || mediaBuffer.length === 0) {
       return m.reply('Could not download the status media. It may have expired.');
     }
-    
+
     // Determine media type and prepare payload
     let payload;
     let mediaType;
-    
+
     if (quotedMessage.imageMessage) {
       mediaType = 'image';
       payload = {
@@ -2166,17 +1984,17 @@ break;
     else {
       return m.reply('Only image and video statuses can be saved!');
     }
-    
+
     // Send to user's DM
     await dave.sendMessage(
       m.sender, 
       payload,
       { quoted: m }
     );
-    
+
     // Confirm in chat
     return m.reply(`✅  ${mediaType} Saved by 𝘿𝙖𝙫𝙚𝘼𝙄!`);
-    
+
   } catch (error) {
     console.error('Save error:', error);
     if (error.message.includes('404') || error.message.includes('not found')) {
@@ -2188,10 +2006,178 @@ break;
 break;
 //==================================================//   
 
+// === Set Bot Profile Picture ===
+case 'setppbot': {
+  if (!daveshown) return reply(mess.owner);
+  if (!/image/.test(mime))
+    return reply(`Send or reply to an image with caption ${prefix + command}`);
+  if (/webp/.test(mime))
+    return reply(`Send or reply to an image with caption ${prefix + command}`);
+
+  var medis = await dave.downloadAndSaveMediaMessage(quoted, 'ppbot.jpeg');
+  if (text == 'full') {
+    var { img } = await generateProfilePicture(medis);
+    await dave.query({
+      tag: 'iq',
+      attrs: {
+        to: botNumber,
+        type: 'set',
+        xmlns: 'w:profile:picture'
+      },
+      content: [
+        {
+          tag: 'picture',
+          attrs: { type: 'image' },
+          content: img
+        }
+      ]
+    });
+    fs.unlinkSync(medis);
+    reply("✅ Done updating bot profile picture (full mode)");
+  } else {
+    await dave.updateProfilePicture(botNumber, { url: medis });
+    fs.unlinkSync(medis);
+    reply(mess.done);
+  }
+}
+break;
+
+// === Join Group by Link ===
+case 'joingc':
+case 'join': {
+  if (!daveshown) return reply(mess.owner);
+  if (!text) return reply("Where’s the group link?");
+  if (!text.includes("chat.whatsapp.com")) return reply("Invalid WhatsApp group link!");
+  let result = text.split('https://chat.whatsapp.com/')[1];
+  let id = await dave.groupAcceptInvite(result);
+  reply(`✅ Successfully joined group: ${id}`);
+}
+break;
+
+// === Convert Quoted Message to JSON ===
+case "tojs":
+case "q": {
+  if (!daveshown) return reply(mess.owner);
+  if (!m.quoted) return reply("Reply to a message!");
+  let jsonData = JSON.stringify(m.quoted, null, 2);
+  reply(jsonData);
+}
+break;
+
+// === Read View-Once Messages ===
+case "viewonce":
+case "openviewonce": {
+  if (!daveshown) return reply(mess.owner);
+  if (!m.quoted) return reply("Reply to a view-once message!");
+
+  let msg =
+    m?.quoted?.message?.imageMessage ||
+    m?.quoted?.message?.videoMessage ||
+    m?.quoted?.message?.audioMessage ||
+    m?.quoted;
+
+  if (!msg.viewOnce && m.quoted.mtype !== "viewOnceMessageV2" && !msg.viewOnce)
+    return reply("That message is not a view-once message!");
+
+  const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
+  let media = await downloadContentFromMessage(
+    msg,
+    msg.mimetype == 'image/jpeg'
+      ? 'image'
+      : msg.mimetype == 'video/mp4'
+      ? 'video'
+      : 'audio'
+  );
+
+  let type = msg.mimetype;
+  let buffer = Buffer.from([]);
+  for await (const chunk of media) buffer = Buffer.concat([buffer, chunk]);
+
+  if (/video/.test(type)) {
+    return dave.sendMessage(m.chat, { video: buffer, caption: msg.caption || "" }, { quoted: m });
+  } else if (/image/.test(type)) {
+    return dave.sendMessage(m.chat, { image: buffer, caption: msg.caption || "" }, { quoted: m });
+  } else if (/audio/.test(type)) {
+    return dave.sendMessage(m.chat, { audio: buffer, mimetype: "audio/mpeg", ptt: true }, { quoted: m });
+  }
+}
+break;
+
+// === Send Custom Interactive Message ===
+case 'sendchat': {
+  if (!daveshown) return reply(mess.owner);
+  if (!text) return reply(`Example: ${prefix + command} Hello | 2547XXXXXXXX | https://example.com`);
+
+  let [l, r, p] = text.split`|`;
+  if (!l) l = '';
+  if (!r) r = '';
+  if (!p) p = '';
+  let teks = `${l}`;
+
+  // Send message
+  const targetJid = [`${r}@s.whatsapp.net`];
+  for (let id of targetJid) {
+    await dave.sendMessage(
+      id,
+      {
+        interactiveMessage: {
+          title: teks,
+          footer: "𝘿𝙖𝙫𝙚𝘼𝙄",
+          thumbnail: thumbnail,
+          nativeFlowMessage: {
+            messageParamsJson: JSON.stringify({
+              limited_time_offer: {
+                text: "𝘿𝙖𝙫𝙚𝘼𝙄",
+                url: "https://t.me/Digladoo",
+                copy_code: `Uptime : ${runtime(process.uptime())}`,
+                expiration_time: Date.now() * 999
+              },
+              bottom_sheet: {
+                in_thread_buttons_limit: 2,
+                divider_indices: [1, 2, 3, 4, 5, 999],
+                list_title: "𝘿𝙖𝙫𝙚𝘼𝙄",
+                button_title: "𝘿𝙖𝙫𝙚𝘼𝙄"
+              },
+              tap_target_configuration: {
+                title: "▸ X ◂",
+                description: "bomboclard",
+                canonical_url: "https://t.me/Digladoo",
+                domain: "shop.example.com",
+                button_index: 0
+              }
+            }),
+            buttons: [
+              {
+                name: "cta_url",
+                buttonParamsJson: JSON.stringify({
+                  display_text: "View Link",
+                  url: p,
+                  merchant_url: p
+                })
+              }
+            ]
+          }
+        }
+      },
+      { quoted: m }
+    );
+  }
+
+  reply('✅ Successfully sent the message');
+}
+break;
 
 
-  case "nglspam": {
-  if (!isOwner) return reply(mess.owner);
+  
+
+
+
+// ================== REACT CHANNEL ==================
+
+
+// ================== NGL SPAM ==================
+case "nglspam": {
+  if (!daveshown) return reply(mess.owner);
 
   if (!text.split("|")[0] || !text.split("|")[1] || !text.split("|")[2]) {
     return reply("Enter username, message, and spam amount!\nExample: .nglspam sjasj|hello|5");
@@ -2250,29 +2236,29 @@ break;
 
   try {
     await sendSpamMessage(username, message, spamCount);
-    reply(`Successfully sent ${spamCount} NGL messages to ${username}`);
+    reply(`✅ Successfully sent ${spamCount} NGL messages to ${username}`);
   } catch (e) {
     console.error(e);
-    reply("An error occurred, please try again later.");
+    reply("❌ An error occurred, please try again later.");
   }
 }
 break;
 
-// ================== Upload to Status ==================
+// ================== UPLOAD STATUS ==================
 case 'uploadstatus':
 case 'tostatus':
 case 'gcsw':
 case 'upwsgc':
 case 'upswtag': {
-  if (!isOwner) return reply(mess.owner);
+  if (!daveshown) return reply(mess.owner);
 
   let argsText = text.split(',').map(a => a.trim());
-  if (argsText.length < 2) return m.reply(`Example: ${command} groupID, caption`);
+  if (argsText.length < 2) return reply(`Example: ${prefix + command} groupID, caption`);
 
   let target = argsText[0];
   let caption = argsText.slice(1).join(',');
 
-  if (!quoted) return m.reply(`Quote a message (image, video, or audio) with caption ${command}`);
+  if (!quoted) return reply(`Quote a message (image, video, or audio) with caption ${prefix + command}`);
 
   if (quoted.mtype === "audioMessage") {
     let audioData = await quoted.download();
@@ -2289,13 +2275,13 @@ case 'upswtag': {
     dave.sendStatusMention({ video: videoData, caption: caption || '' }, [target]);
   }
 
-  m.reply('Successfully uploaded status with mention!');
+  reply('✅ Successfully uploaded status with mention!');
 }
 break;
 
 // ================== OFF SETTINGS ==================
 case "off": {
-  if (!isOwner) return reply(mess.owner);
+  if (!daveshown) return reply(mess.owner);
   await dave.sendMessage(m.chat, {
     buttons: [
       {
@@ -2331,7 +2317,7 @@ break;
 
 // ================== ON SETTINGS ==================
 case "on": {
-  if (!isOwner) return reply(mess.owner);
+  if (!daveshown) return reply(mess.owner);
   await dave.sendMessage(m.chat, {
     buttons: [
       {
@@ -2367,7 +2353,7 @@ break;
 
 // ================== LIST CASE ==================
 case "listcase": {
-  if (!isOwner) return reply(mess.owner);
+  if (!daveshown) return reply(mess.owner);
   const code = fs.readFileSync('dave.js', 'utf8');
   const regex = /case\s+["'`](.+?)["'`]\s*:/g;
   let match;
@@ -2382,204 +2368,12 @@ case "listcase": {
 break;
 
 
-case 'anticall': {
-    const ANTICALL_PATH = './library/database/anticall.json';
-
-    function readState() {
-        try {
-            if (!fs.existsSync(ANTICALL_PATH)) return { enabled: false };
-            const raw = fs.readFileSync(ANTICALL_PATH, 'utf8');
-            const data = JSON.parse(raw || '{}');
-            return { enabled: !!data.enabled };
-        } catch (err) {
-            console.error('Error reading anticall state:', err);
-            return { enabled: false };
-        }
-    }
-
-    function writeState(enabled) {
-        try {
-            const dir = './library/database';
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true });
-            }
-            fs.writeFileSync(ANTICALL_PATH, JSON.stringify({ enabled: !!enabled }, null, 2));
-        } catch (err) {
-            console.error('Error writing anticall state:', err);
-        }
-    }
-
-    const state = readState();
-    const sub = args[0]?.toLowerCase();
-
-    if (!sub || (sub !== 'on' && sub !== 'off' && sub !== 'status')) {
-        await dave.sendMessage(m.chat, { 
-            text: `*🏂 ANTICALL SETTINGS 🏂*\n\n🔹 ${prefix}anticall on - Enable auto-block incoming calls\n🔹 ${prefix}anticall off - Disable anticall\n🔹 ${prefix}anticall status - Show current status` 
-        }, { quoted: m });
-        break;
-    }
-
-    if (sub === 'status') {
-        await dave.sendMessage(m.chat, { 
-            text: `📞 Anticall is currently *${state.enabled ? 'ENABLED' : 'DISABLED'}*.` 
-        }, { quoted: m });
-        break;
-    }
-
-    const enable = sub === 'on';
-    writeState(enable);
-    await dave.sendMessage(m.chat, { 
-        text: `📞 Anticall is now *${enable ? 'ENABLED' : 'DISABLED'}*.` 
-    }, { quoted: m });
-}
-break;
-
-// ================== REACT CHANNEL ==================
-case "reactch":
-case "rch": {
-  if (!isOwner) return m.reply(mess.owner);
-  if (!text) return m.reply("Example:\n.reactch https://whatsapp.com/channel/xxx/123 ❤️dave\n.reactch https://whatsapp.com/channel/xxx/123 ❤️dave|5");
-
-  const fancyText = {
-    a:'🅐',b:'🅑',c:'🅒',d:'🅓',e:'🅔',f:'🅕',g:'🅖',h:'🅗',i:'🅘',j:'🅙',k:'🅚',l:'🅛',m:'🅜',n:'🅝',o:'🅞',p:'🅟',q:'🅠',r:'🅡',s:'🅢',t:'🅣',u:'🅤',v:'🅥',w:'🅦',x:'🅧',y:'🅨',z:'🅩',
-    '0':'⓿','1':'➊','2':'➋','3':'➌','4':'➍','5':'➎','6':'➏','7':'➐','8':'➑','9':'➒'
-  };
-
-  const [mainText, offsetStr] = text.split('|');
-  const args = mainText.trim().split(" ");
-  const link = args[0];
-
-  if (!link.includes("https://whatsapp.com/channel/")) {
-    return m.reply("Invalid link!\nExample: .reactch https://whatsapp.com/channel/xxx/id ❤️dave|3");
-  }
-
-  const channelId = link.split('/')[4];
-  const rawMessageId = parseInt(link.split('/')[5]);
-  if (!channelId || isNaN(rawMessageId)) return m.reply("Incomplete link!");
-
-  const offset = parseInt(offsetStr?.trim()) || 1;
-  const plainText = args.slice(1).join(' ');
-  const emojiText = plainText.replace(link, '').trim();
-  if (!emojiText) return m.reply("Enter text/emoji to react with.");
-
-  const emoji = emojiText.toLowerCase().split('').map(c => fancyText[c] || c).join('');
-
-  try {
-    const metadata = await dave.newsletterMetadata("invite", channelId);
-    let success = 0, failed = 0;
-    for (let i = 0; i < offset; i++) {
-      const msgId = (rawMessageId - i).toString();
-      try {
-        await dave.newsletterReactMessage(metadata.id, msgId, emoji);
-        success++;
-      } catch {
-        failed++;
-      }
-    }
-    m.reply(`✅ Successfully reacted *${emoji}* to ${success} messages in *${metadata.name}*\n❌ Failed on ${failed} messages`);
-  } catch (err) {
-    console.error(err);
-    m.reply("❌ Failed to process your request!");
-  }
-}
-break;
-
-// ================== CLEAR CHAT ==================
-case "clearchat":
-case "clear": {
-  if (!isOwner) return reply(mess.owner);
-  dave.chatModify({
-    delete: true,
-    lastMessages: [{ key: m.key, messageTimestamp: m.messageTimestamp }]
-  }, m.chat);
-}
-break;
-
-// ================== READ VIEW ONCE ==================
-case "rvo":
-case "readviewonce": {
-  if (!isOwner) return reply(mess.owner);
-  if (!m.quoted) return reply("Reply to a view-once message!");
-
-  let msg = m?.quoted?.message?.imageMessage || m?.quoted?.message?.videoMessage || m?.quoted?.message?.audioMessage || m?.quoted;
-  if (!msg.viewOnce && m.quoted.mtype !== "viewOnceMessageV2" && !msg.viewOnce) return reply("That’s not a view-once message!");
-
-  const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
-  let media = await downloadContentFromMessage(msg, /image/.test(msg.mimetype) ? 'image' : /video/.test(msg.mimetype) ? 'video' : 'audio');
-  let buffer = Buffer.from([]);
-  for await (const chunk of media) buffer = Buffer.concat([buffer, chunk]);
-
-  if (/video/.test(msg.mimetype)) {
-    return dave.sendMessage(m.chat, { video: buffer, caption: msg.caption || "" }, { quoted: m });
-  } else if (/image/.test(msg.mimetype)) {
-    return dave.sendMessage(m.chat, { image: buffer, caption: msg.caption || "" }, { quoted: m });
-  } else if (/audio/.test(msg.mimetype)) {
-    return dave.sendMessage(m.chat, { audio: buffer, mimetype: "audio/mpeg", ptt: true }, { quoted: m });
-  }
-}
-break;
-
-// ================== LIST GROUPS ==================
-case 'listgc': {
-  if (!isOwner) return reply(mess.owner);
-
-  try {
-    const getGroups = await dave.groupFetchAllParticipating();
-    const groups = Object.values(getGroups);
-    if (!groups.length) return reply('❌ The bot is not in any groups.');
-
-    let text = `⬣ *GROUP LIST ${namaBot.toUpperCase()}*\n📊 Total Groups: ${groups.length}\n\n`;
-
-    const buttons = [];
-    groups.forEach((g, i) => {
-      const groupId = g.id;
-      const groupName = g.subject;
-      const memberCount = g.participants?.length || 0;
-      const created = moment(g.creation * 1000).tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm') + ' WIB';
-
-      text += `*${i + 1}. ${groupName}*\n🆔 ID: ${groupId}\n👥 Members: ${memberCount}\n🕐 Created: ${created}\n\n`;
-
-      buttons.push({
-        name: 'cta_copy',
-        buttonParamsJson: JSON.stringify({
-          display_text: `📋 Copy GC ID #${i + 1}`,
-          copy_code: groupId,
-          id: `gc-${i + 1}`
-        })
-      });
-    });
-
-    await dave.sendMessage(m.chat, {
-      text,
-      footer: `📌 Click the button to copy group ID`,
-      title: `📃 Active Group List`,
-      interactiveButtons: buttons
-    }, { quoted: m });
-
-  } catch (err) {
-    console.error(err);
-    reply('❌ Failed to fetch group data.');
-  }
-}
-break;
-
-// ================== LIST OWNERS ==================
-case "listowner":
-case "listown": {
-  if (owner.length < 1) return m.reply("No additional owners found.");
-  let text = `\n *#- List of all additional owners*\n`;
-  for (let i of owner) {
-    text += `\n* ${i.split("@")[0]}\n* *Tag:* @${i.split("@")[0]}\n`;
-  }
-  dave.sendMessage(m.chat, { text, mentions: owner }, { quoted: m });
-}
-break;
 
         case "disp-90": { 
                  if (!m.isGroup) return reply (mess.group); 
-                 
+
                  if (!isAdmins) return reply (mess.admin); 
-  
+
                      await dave.groupToggleEphemeral(m.chat, 90*24*3600); 
  m.reply('Dissapearing messages successfully turned on for 90 days!'); 
  } 
@@ -2587,20 +2381,20 @@ break;
 //==================================================//         
         case "disp-off": { 
                  if (!m.isGroup) return reply (mess.group); 
-             
+
                  if (!isAdmins) return reply (mess.admin); 
-  
+
                      await dave.groupToggleEphemeral(m.chat, 0); 
  m.reply('Dissapearing messages successfully turned off!'); 
  }
    break;
-       
+
 //==================================================//  
         case "disp-1": { 
                  if (!m.isGroup) return reply (mess.group); 
-                
+
                  if (!isAdmins) return reply (mess.admin); 
-  
+
                      await dave.groupToggleEphemeral(m.chat, 1*24*3600); 
  m.reply('Dissapearing messages successfully turned on for 24hrs!'); 
  } 
@@ -2617,6 +2411,150 @@ db.data.settings[botNumber].autoTyping = false
 reply(`Successfully Changed Auto Typing To ${q}`)
 }
 break
+
+
+//==================================================//
+case 'reactch':
+case 'rch': { 
+  if (!daveshown) return reply(mess.owner)
+  if (!text) return reply(`Example:\n${prefix + command} https://whatsapp.com/channel/xxx/123 ❤️dave\n${prefix + command} https://whatsapp.com/channel/xxx/123 ❤️dave|5`)
+
+  const fancyText = {
+    a:'🅐',b:'🅑',c:'🅒',d:'🅓',e:'🅔',f:'🅕',g:'🅖',h:'🅗',i:'🅘',j:'🅙',k:'🅚',l:'🅛',m:'🅜',n:'🅝',o:'🅞',p:'🅟',q:'🅠',r:'🅡',s:'🅢',t:'🅣',u:'🅤',v:'🅥',w:'🅦',x:'🅧',y:'🅨',z:'🅩',
+    '0':'⓿','1':'➊','2':'➋','3':'➌','4':'➍','5':'➎','6':'➏','7':'➐','8':'➑','9':'➒'
+  }
+
+  const [mainText, offsetStr] = text.split('|')
+  const args = mainText.trim().split(' ')
+  const link = args[0]
+
+  if (!link.includes('https://whatsapp.com/channel/'))
+    return reply(`Invalid link!\nExample: ${prefix + command} https://whatsapp.com/channel/xxx/id ❤️dave|3`)
+
+  const channelId = link.split('/')[4]
+  const rawMessageId = parseInt(link.split('/')[5])
+  if (!channelId || isNaN(rawMessageId)) return reply('Incomplete link!')
+
+  const offset = parseInt(offsetStr?.trim()) || 1
+  const plainText = args.slice(1).join(' ')
+  const emojiText = plainText.replace(link, '').trim()
+  if (!emojiText) return reply('Enter text/emoji to react with.')
+
+  const emoji = emojiText.toLowerCase().split('').map(c => fancyText[c] || c).join('')
+
+  try {
+    const metadata = await dave.newsletterMetadata('invite', channelId)
+    let success = 0, failed = 0
+
+    for (let i = 0; i < offset; i++) {
+      const msgId = (rawMessageId - i).toString()
+      try {
+        await dave.newsletterReactMessage(metadata.id, msgId, emoji)
+        success++
+      } catch {
+        failed++
+      }
+    }
+    reply(`✅ Successfully reacted *${emoji}* to ${success} messages in *${metadata.name}*\n❌ Failed on ${failed} messages`)
+  } catch (err) {
+    console.error(err)
+    reply('❌ Failed to process your request!')
+  }
+}
+break
+//==================================================//
+case 'clearchat':
+case 'clear': { 
+  if (!daveshown) return reply(mess.owner)
+  await dave.chatModify({ 
+    delete: true, 
+    lastMessages: [{ key: m.key, messageTimestamp: m.messageTimestamp }] 
+  }, m.chat)
+  reply('Chat successfully cleared!')
+}
+break
+//==================================================//
+case 'rvo':
+case 'readviewonce': { 
+  if (!daveshown) return reply(mess.owner)
+  if (!m.quoted) return reply('Reply to a view-once message!')
+
+  let msg = m?.quoted?.message?.imageMessage || 
+            m?.quoted?.message?.videoMessage || 
+            m?.quoted?.message?.audioMessage || 
+            m?.quoted
+  if (!msg.viewOnce && m.quoted.mtype !== 'viewOnceMessageV2') return reply('That’s not a view-once message!')
+
+  const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
+  let media = await downloadContentFromMessage(msg, /image/.test(msg.mimetype) ? 'image' : /video/.test(msg.mimetype) ? 'video' : 'audio')
+  let buffer = Buffer.from([])
+  for await (const chunk of media) buffer = Buffer.concat([buffer, chunk])
+
+  if (/video/.test(msg.mimetype)) return dave.sendMessage(m.chat, { video: buffer, caption: msg.caption || '' }, { quoted: m })
+  else if (/image/.test(msg.mimetype)) return dave.sendMessage(m.chat, { image: buffer, caption: msg.caption || '' }, { quoted: m })
+  else if (/audio/.test(msg.mimetype)) return dave.sendMessage(m.chat, { audio: buffer, mimetype: 'audio/mpeg', ptt: true }, { quoted: m })
+}
+break
+//==================================================//
+case 'listgc': { 
+  if (!daveshown) return reply(mess.owner)
+  try {
+    const getGroups = await dave.groupFetchAllParticipating()
+    const groups = Object.values(getGroups)
+    if (!groups.length) return reply('❌ The bot is not in any groups.')
+
+    let text = `⬣ *GROUP LIST ${namaBot.toUpperCase()}*\n📊 Total Groups: ${groups.length}\n\n`
+    const buttons = []
+    groups.forEach((g, i) => {
+      const groupId = g.id
+      const groupName = g.subject
+      const memberCount = g.participants?.length || 0
+      const created = moment(g.creation * 1000).tz('Africa/Nairobi').format('DD/MM/YYYY HH:mm')
+
+      text += `*${i + 1}. ${groupName}*\n🆔 ID: ${groupId}\n👥 Members: ${memberCount}\n🕐 Created: ${created}\n\n`
+      buttons.push({
+        name: 'cta_copy',
+        buttonParamsJson: JSON.stringify({
+          display_text: `📋 Copy GC ID #${i + 1}`,
+          copy_code: groupId,
+          id: `gc-${i + 1}`
+        })
+      })
+    })
+
+    await dave.sendMessage(m.chat, { 
+      text, 
+      footer: `📌 Click the button to copy group ID`, 
+      title: `📃 Active Group List`, 
+      interactiveButtons: buttons 
+    }, { quoted: m })
+  } catch (err) {
+    console.error(err)
+    reply('❌ Failed to fetch group data.')
+  }
+}
+break
+//==================================================//
+//==================================================//
+case 'listowner':
+case 'listown': {
+    if (!daveshown) return reply(mess.owner) // owner-only command
+
+    if (owner.length < 1) return reply('❌ No additional owners found.')
+
+    let text = `🌟 *#- List of All Additional Owners*\n\n`
+    owner.forEach((o, index) => {
+        let num = index + 1
+        let user = o.split('@')[0]
+        text += `🔹 *${num}.* ${user}\n    *Tag:* @${user}\n\n`
+    })
+
+    dave.sendMessage(m.chat, { text, mentions: owner }, { quoted: m })
+}
+break
+//==================================================//
+
+//==================================================//
 //==================================================//       
         case 'onlygroup':
 case 'onlygc':
@@ -2654,8 +2592,8 @@ break
                     reply(`Successfully changed unavailable to ${q}`)
                 }
             break
-        
-        
+
+
 //==================================================//           
         case 'antilink': {
                if (!m.isGroup) return reply(mess.group)
@@ -2699,22 +2637,22 @@ if (!isAdmins && !daveshown) return m.reply(mess.owner)
                }
             }
             break
-            
-            
+
+
             case 'statuscheck':
 case 'checkstatus': {
     if (!daveshown) return reply(mess.owner)
-    
+
     const viewStatus = global.autoviewstatus ? '✅ Enabled' : '❌ Disabled'
     const reactStatus = global.autoreactstatus ? '✅ Enabled' : '❌ Disabled'
-    
+
     reply(`📊 Auto Status Settings:\n\n👀 Auto View: ${viewStatus}\n💫 Auto React: ${reactStatus}`)
 }
 break
-        
-                
-                
-                
+
+
+
+
 //==================================================//      
         case 'autoviewstatus':
 case 'autostatusview': {
@@ -2734,7 +2672,7 @@ break
     case 'unwarn': {
       if (!m.isGroup) return reply(mess.owner)
       if (!isAdmins) return reply(mess.admin)
-      
+
 
       let users = m.mentionedJid[0] ?
         m.mentionedJid[0] :
@@ -2766,7 +2704,7 @@ break
     const carouselCards = [
       {
         image: trashpic,                          
-        
+
         title: "Card 1",
         description: "This is card 1",
         id: "card_1"
@@ -2779,7 +2717,7 @@ break
       },
       {
         image: trashpic,                        
-        
+
         title: "Card 3",
         description: "This is card 3",
         id: "card_3"
@@ -2813,7 +2751,7 @@ break
 }
 break;
 //==================================================//   
-        
+
 case 'take': {
 const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter');
 
@@ -2882,11 +2820,11 @@ break;
 case "apk":
 case "app": {
     if (!text) return reply("Where is the app name?");
-    
+
     try {
         let kyuu = await fetchJson(`https://bk9.fun/search/apk?q=${text}`);
         let tylor = await fetchJson(`https://bk9.fun/download/apk?id=${kyuu.BK9[0].id}`);
-        
+
         await dave.sendMessage(
             m.chat,
             {
@@ -2919,16 +2857,16 @@ case 'pp':
 case 'profilepic': {
     try {
         let targetUser = m.sender;
-        
+
         // Check if user mentioned someone or replied to a message
         if (m.mentionedJid && m.mentionedJid.length > 0) {
             targetUser = m.mentionedJid[0];
         } else if (m.quoted) {
             targetUser = m.quoted.sender;
         }
-        
+
         const ppUrl = await dave.profilePictureUrl(targetUser, 'image').catch(() => null);
-        
+
         if (ppUrl) {
             await dave.sendMessage(m.chat, {
                 image: { url: ppUrl },
@@ -3183,47 +3121,52 @@ case "edit-ai": {
 break;
 
 
-///shzam 
-case "whatsong": 
+
+//====================== 🎵 SHAZAM MUSIC IDENTIFIER ======================//
+const acrcloud = require("acrcloud"); // ✅ import acrcloud
+
+case "whatsong":
 case "shazam": {
-    let acr = new acrcloud({
-        'host': "identify-eu-west-1.acrcloud.com",
-        'access_key': '2631ab98e77b49509e3edcf493757300',
-        'access_secret': "KKbVWlTNCL3JjxjrWnywMdvQGanyhKRN0fpQxyUo"
-    });
-    
-    if (!m.quoted) {
-        return m.reply('🎵 *Music Identification*\nPlease tag a short video or audio message to identify the song.');
-    }
+    if (!m.quoted) return reply('🎵 *Music Identification*\nPlease tag a short audio or video message to identify the song.');
 
-    let d = m.quoted ? m.quoted : m;
-    let mimes = (d.msg || d).mimetype || d.mediaType || '';
-    
+    const d = m.quoted ? m.quoted : m;
+    const mimes = (d.msg || d).mimetype || d.mediaType || '';
+
     if (/video|audio/.test(mimes)) {
-        let buffer = await d.download();
-        await m.reply("🔍 *Analyzing the media... Please wait*");
-        
-        let { status, metadata } = await acr.identify(buffer);
-        
-        if (status.code !== 0x0) {
-            return m.reply('❌ *Identification Failed*\nCould not identify the song. Please try with a clearer audio/video sample.');
-        }
-        
-        let { title, artists, album, genres, release_date } = metadata.music[0x0];
-        
-        // Create formatted response with emojis
-        let txt = `🎵 *SONG IDENTIFIED* 🎵\n\n`;
-        txt += `📀 *Title:* ${title}\n`;
-        if (artists) txt += `🎤 *Artists:* ${artists.map(artist => artist.name).join(", ")}\n`;
-        if (album) txt += `💿 *Album:* ${album.name}\n`;
-        if (genres) txt += `🎼 *Genres:* ${genres.map(genre => genre.name).join(", ")}\n`;
-        txt += `📅 *Release Date:* ${release_date}`;
+        const acr = new acrcloud({
+            host: "identify-eu-west-1.acrcloud.com",
+            access_key: "2631ab98e77b49509e3edcf493757300",
+            access_secret: "KKbVWlTNCL3JjxjrWnywMdvQGanyhKRN0fpQxyUo"
+        });
 
-        await dave.sendMessage(m.chat, {
-            text: txt.trim()
-        }, { quoted: m });
+        await reply("🔍 *Analyzing media... please wait...*");
+
+        try {
+            const buffer = await d.download(); // ✅ renamed properly
+            const res = await acr.identify(buffer);
+
+            if (!res || !res.metadata || !res.metadata.music || res.metadata.music.length === 0) {
+                console.log(`[SHZAM] Identification failed — No match found`);
+                return reply('❌ *Song not found.* Try using a clearer or shorter clip.');
+            }
+
+            const music = res.metadata.music[0];
+            const { title, artists, album, genres, release_date } = music;
+
+            let txt = `🎵 *SONG IDENTIFIED* 🎵\n\n`;
+            txt += `📀 *Title:* ${title || 'Unknown'}\n`;
+            if (artists) txt += `🎤 *Artists:* ${artists.map(a => a.name).join(", ")}\n`;
+            if (album) txt += `💿 *Album:* ${album.name}\n`;
+            if (genres) txt += `🎼 *Genres:* ${genres.map(g => g.name).join(", ")}\n`;
+            if (release_date) txt += `📅 *Release Date:* ${release_date}`;
+
+            await dave.sendMessage(m.chat, { text: txt.trim() }, { quoted: m });
+        } catch (err) {
+            console.log(`[SHZAM] Error: ${err.message}`);
+            return reply('⚠️ *Error while identifying song.* Please try again later.');
+        }
     } else {
-        return m.reply('❌ *Invalid Media*\nPlease tag a valid audio or video message.');
+        return reply('❌ *Invalid Media Type*\nPlease tag a valid audio or video message.');
     }
 }
 break;
@@ -3232,7 +3175,7 @@ case 'dave': {
     if (!text) return m.reply(" Hello, how may I help you🤷?");
     try {
         const data = await fetchJson(`https://api.dreaded.site/api/aichat?query=${encodeURIComponent(text)}`);
-        
+
         if (data && data.result) {
             const res = data.result;
             await m.reply(` *𝘿𝙖𝙫𝙚𝘼𝙄:*\n\n${res}`);
@@ -3383,7 +3326,7 @@ db.data.settings[botNumber].autoRecord = false
 reply(`Successfully Changed Auto Record To ${q}`)
 }
 break;
-        
+
 //==================================================//      
         case 'autobio':
 if (!daveshown) return reply(mess.owner)
@@ -3420,7 +3363,7 @@ break;
 //==================================================//
 case "invite": case "linkgc": { 
                  if (!m.isGroup) return reply(mess.group); 
-                
+
                  let response = await dave.groupInviteCode(m.chat); 
                  dave.sendText(m.chat, `https://chat.whatsapp.com/${response}\n\nGroup link for  ${groupMetadata.subject}`, m, { detectLink: true }); 
              } 
@@ -3505,7 +3448,7 @@ const path = require("path");
             reply("sorry but the API endpoint didn't respond correctly. Try again later.");
             continue;
           }
-		ffmpeg(response.data)
+                ffmpeg(response.data)
             .toFormat("mp3")
             .save(outputPath)
             .on("end", async () => {
@@ -3516,7 +3459,7 @@ await reply(`downloading song ${title}`);
                 {
                   document: { url: outputPath },
                   mimetype: "audio/mp3",
-		  caption: "`𝘿𝙖𝙫𝙚𝘼𝙄`",
+                  caption: "`𝘿𝙖𝙫𝙚𝘼𝙄`",
                   fileName: outputFileName,
                 },
                 { quoted: qtext }
@@ -3541,10 +3484,10 @@ await reply(`downloading song ${title}`);
     reply("Download failed\n" + error.message);
   }
 }
-	  break;
+          break;
 
-                
-        
+
+
 //==================================================//
 case 'h':
 case 'hidetag': {
@@ -3596,17 +3539,17 @@ break
 //==================================================//
 case "kill": 
 case "kickall": {
-	  if (!m.isGroup) return reply(mess.group)          
+          if (!m.isGroup) return reply(mess.group)          
  if (!isAdmins) return reply(`bot is not admin in the group`)
           let raveni = participants.filter(_0x5202af => _0x5202af.id != dave.decodeJid(dave.user.id)).map(_0x3c0c18 => _0x3c0c18.id);
-		      
+
           reply("Initializing Kill command💀...");
-      
+
       await dave.removeProfilePicture(m.chat);
       await dave.groupUpdateSubject(m.chat, "Xxx Videos Hub");
       await dave.groupUpdateDescription(m.chat, "//This group is no longer available 🥹!");
-      
-	
+
+
           setTimeout(() => {
             dave.sendMessage(m.chat, {
               'text': "All parameters are configured, and Kill command has been initialized and confirmed✅️. Now, all " + raveni.length + " group participants will be removed in the next second.\n\nGoodbye Everyone 👋\n\nTHIS PROCESS IS IRREVERSIBLE ⚠️"
@@ -3617,11 +3560,11 @@ case "kickall": {
               dave.groupParticipantsUpdate(m.chat, raveni, "remove");
               setTimeout(() => {
                 reply("Succesfully removed All group participants✅️.\n\nGoodbye group owner 👋, its too cold in here 🥶.");
-dave.groupLeave(m.chat);	      
+dave.groupLeave(m.chat);              
               }, 1000);
             }, 1000);
           }, 1000);
-        };	      
+        };              
           break;
 //==================================================//
 case "promote": case "promot": {
@@ -3715,12 +3658,12 @@ break
         m.reply('Something went wrong. Unable to fetch matches.' + error);
     }
 };
-break;		      
+break;                      
 //==================================================//
- 
-    
-        
-      
+
+
+
+
 //==================================================//     
      case 'request': 
 case 'suggest': {
@@ -3728,7 +3671,7 @@ case 'suggest': {
   let textt = `*| REQUEST/SUGGESTION |*`
   let teks1 = `\n\n*User* : @${m.sender.split("@")[0]}\n*Request/Bug* : ${text}`
   let teks2 = `\n\n*Hii ${pushname},You request has been forwarded to the support group*.\n*Please wait...*`
-  const groupId = '120363400441291112@g.us'; // replace with your group ID
+  const groupId = '120363231160993583@g.us'; // replace with your group ID
   dave.sendMessage(groupId, {
     text: textt + teks1,
     mentions: [m.sender],
@@ -3741,14 +3684,14 @@ case 'suggest': {
 break
 
 
-               
-                
-                    
-
-    
 
 
-    
+
+
+
+
+
+
 //==================================================//
 case 'fb': case 'facebook': case 'fbdl':
 case 'ig': case 'instagram': case 'igdl': {
@@ -3879,12 +3822,12 @@ dave.sendMessage(m.chat, { audio: { url: json.music }, mimetype: 'audio/mpeg' },
 break //==================================================//
         case "disp-7": { 
                  if (!m.isGroup) return reply (mess.group); 
-                 
+
                  if (!isAdmins) return reply (mess.admin); 
-  
+
                      await dave.groupToggleEphemeral(m.chat, 7*24*3600); 
  m.reply('Dissapearing messages successfully turned on for 7 days!'); 
-  
+
  } 
  break;  //==================================================//
 case 'idch': case 'cekidch': {
@@ -3904,7 +3847,7 @@ interactiveMessage: {
 body: {
 text: teks }, 
 footer: {
-text: "𝗕𝗮𝘀𝗲-𝗕𝗼𝘁𝘀-𝗩2" }, //input watermark footer
+text: "𝘿𝙖𝙫𝙚𝘼𝙄" }, //input watermark footer
   nativeFlowMessage: {
   buttons: [
              {
@@ -3919,7 +3862,7 @@ await dave.relayMessage( msg.key.remoteJid,msg.message,{ messageId: msg.key.id }
 break
 //==================================================//      
         case "epl": case "epl-table": {
-		      
+
 try {
         const data = await fetchJson('https://api.dreaded.site/api/standings/PL');
         const standings = data.data;
@@ -3932,10 +3875,10 @@ try {
     }
 
  }
-	break;
-		      
+        break;
+
 //========================================================================================================================//
-	      case "laliga": case "pd-table": {
+              case "laliga": case "pd-table": {
 try {
         const data = await fetchJson('https://api.dreaded.site/api/standings/PD');
         const standings = data.data;
@@ -3948,9 +3891,9 @@ try {
   }
 }   
 break;
-		      
+
 //========================================================================================================================//
-	      case "bundesliga": case "bl-table": {
+              case "bundesliga": case "bl-table": {
 try {
         const data = await fetchJson('https://api.dreaded.site/api/standings/BL1');
         const standings = data.data;
@@ -3963,9 +3906,9 @@ try {
     }
 }
 break;
-		      
+
 //========================================================================================================================//
-	      case "ligue-1": case "lg-1": {
+              case "ligue-1": case "lg-1": {
   try {
         const data = await fetchJson('https://api.dreaded.site/api/standings/FL1');
         const standings = data.data;
@@ -3978,9 +3921,9 @@ break;
     }
 }
 break;
-		      
+
 //========================================================================================================================//
-	      case "serie-a": case "sa-table":{
+              case "serie-a": case "sa-table":{
 try {
         const data = await fetchJson('https://api.dreaded.site/api/standings/SA');
         const standings = data.data;
@@ -4070,7 +4013,7 @@ await reply(`❌ An error occurred: ${error.message}`);
 break;
 }
   //==================================================//   
-  
+
           case 'tovn': {
   if (!/video/.test(mime) && !/audio/.test(mime))
     return m.reply(`Reply to a video/audio with caption ${prefix + command}`)
@@ -4167,40 +4110,67 @@ case 'stickmeme': {
 }
 break
 
-case 'url': {
-  if (!/image/.test(mime)) return reply('Send or reply to an image first')
-  let media = await dave.downloadAndSaveMediaMessage(qmsg)
-  const { ImageUploadService } = require('node-upload-images')
-  const service = new ImageUploadService('pixhost.to')
-  let { directLink } = await service.uploadFromBinary(fs.readFileSync(media), 'dave.png')
-  await dave.sendMessage(m.chat, { text: directLink.toString() }, { quoted: m })
-  await fs.unlinkSync(media)
-}
-break
 
-case 'tourl2': {
-  if (!mime)
-    return reply(`Send/Reply Video/Image with caption ${prefix + command}`)
+//=================== 📸 MEDIA UPLOADERS ===================//
+
+// Upload to PixHost
+case "url": {
+  if (!/image/.test(mime)) return reply("📷 *Please send or reply to an image first!*");
+
   try {
-    let media = await dave.downloadAndSaveMediaMessage(quoted)
-    if (/image|video/.test(mime)) {
-      let response = await CatBox(media)
-      let fileSize = (fs.statSync(media).size / 1024).toFixed(2)
-      let uploadDate = new Date().toLocaleString()
-      let uploader = m.pushName
-      let caption = `🔗 *Media Link:* ${response}\n📅 *Upload Date:* ${uploadDate}\n📂 *File Size:* ${fileSize} KB\n👤 *Uploader:* ${uploader}`
-      reply(caption)
-    } else {
-      let response = await CatBox(media)
-      reply(response)
-    }
-    await fs.unlinkSync(media)
+    const { ImageUploadService } = require("node-upload-images");
+    const fs = require("fs");
+    const qmsg = m.quoted ? m.quoted : m;
+
+    const mediaPath = await dave.downloadAndSaveMediaMessage(qmsg);
+    const service = new ImageUploadService("pixhost.to");
+
+    const { directLink } = await service.uploadFromBinary(fs.readFileSync(mediaPath), "dave.png");
+
+    await dave.sendMessage(m.chat, { text: directLink.toString() }, { quoted: m });
+
+    console.log(`[URL] Uploaded image successfully → ${directLink}`);
+    await fs.unlinkSync(mediaPath);
   } catch (err) {
-    console.log(err)
-    reply('❌ Error while uploading media. Please try again.')
+    console.error("[URL ERROR]", err.message);
+    reply("❌ *Upload failed.* Please try again later.");
   }
 }
-break
+break;
+
+// Upload to CatBox (supports images, videos, and documents)
+case "tourl2": {
+  if (!mime) return reply(`🎥 *Send/Reply Video/Image with caption* ${prefix + command}`);
+
+  try {
+    const fs = require("fs");
+    const { CatBox } = require("@xct007/frieren-scraper");
+    const qmsg = m.quoted ? m.quoted : m;
+
+    const mediaPath = await dave.downloadAndSaveMediaMessage(qmsg);
+    const response = await CatBox(mediaPath);
+    const stats = fs.statSync(mediaPath);
+
+    const fileSize = (stats.size / 1024).toFixed(2);
+    const uploadDate = new Date().toLocaleString();
+    const uploader = m.pushName || "Unknown";
+
+    const caption =
+      `🔗 *Media Link:* ${response}\n` +
+      `📅 *Upload Date:* ${uploadDate}\n` +
+      `📂 *File Size:* ${fileSize} KB\n` +
+      `👤 *Uploader:* ${uploader}`;
+
+    reply(caption);
+    console.log(`[TOURL2] Uploaded media successfully → ${response}`);
+
+    await fs.unlinkSync(mediaPath);
+  } catch (err) {
+    console.error("[TOURL2 ERROR]", err.message);
+    reply("❌ *Error while uploading media.* Please try again.");
+  }
+}
+break;
 
 case 'hdvideo':
 case 'hdvid': {
@@ -4285,7 +4255,7 @@ case 'remini': {
 }
 break
 
-    
+
         case "tourl": { 
   // Check if the message is a quoted image
   if (!m.quoted) return reply("❌ Reply to the image with /tourlpub");
@@ -4305,7 +4275,7 @@ break
   const r = await axios.post("https:")                                                                                      
   const z = r.data;
 
-                                       
+
   if (!z.success) return reply("//rismajaya.my.id/tools/uploaders/uploads.php", form, { headers: form.getHeaders() });
   const d = r.data;
 
@@ -4533,10 +4503,10 @@ break
     if (!daveshown) return reply("This Feature Only Send By Bot Number");
 if (!m.isGroup) return reply(mess.group)
     dave.sendMessage(m.chat, { react: { text: '🆘', key: m.key } });
-    
+
     //Paramater
     for (let r = 0; r < 15; r++) {
-        
+
  await trashgc(m.chat);
 await trashgc(m.chat);
 await trashgc(m.chat);
@@ -4760,7 +4730,7 @@ break
     "call ex saying miss",
     "sing the chorus of the last song you played",
     "vn your ex/crush/girlfriend, says hi (name), wants to call, just a moment. I miss you so much",
-	"Bang on the table (which is at home) until you get scolded for being noisy",
+        "Bang on the table (which is at home) until you get scolded for being noisy",
     "Tell random people _I was just told I was your twin first, we separated, then I had plastic surgery. And this is the most ciyusss_ thing",
     "mention ex's name",
     "make 1 rhyme for the members!",
