@@ -10,7 +10,7 @@ let daveplug = async (m, { command, prefix, reply, text, dave }) => {
   }
 
   const formatStylishReply = (message) => {
-    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> By trashcore devs`;
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> By 𝘿𝙖𝙫𝙚𝘼𝙄 devs`;
   };
 
   if (!text) {
