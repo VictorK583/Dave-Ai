@@ -202,31 +202,41 @@ const setting = db.data.settings[botNumber]
 
 
 if (!m.key.fromMe && db.data.settings[botNumber].autoread){
-const readkey = {
-remoteJid: m.chat,
-id: m.key.id, 
-participant: m.isGroup ? m.key.participant : undefined 
+    const readkey = {
+        remoteJid: m.chat,
+        id: m.key.id, 
+        participant: m.isGroup ? m.key.participant : undefined 
+    }
+    await dave.readMessages([readkey]);
 }
-await dave.readMessages([readkey]);
-}
+
 dave.sendPresenceUpdate('available', m.chat)
+
 if (db.data.settings[botNumber].autoTyping) {
-if (m.message) {
-dave.sendPresenceUpdate('composing', m.chat)
+    if (m.message) {
+        dave.sendPresenceUpdate('composing', m.chat)
+    }
 }
-}
+
 if (db.data.settings[botNumber].autoRecord) {
-if (m.message) {
-dave.sendPresenceUpdate('recording', m.chat)
+    if (m.message) {
+        dave.sendPresenceUpdate('recording', m.chat)
+    }
 }
+
+if (db.data.settings[botNumber].autorecordtype) {
+    let presenceModes = ['recording', 'composing']
+    let selectedPresence = presenceModes[Math.floor(Math.random() * presenceModes.length)]
+    dave.sendPresenceUpdate(selectedPresence, m.chat)
 }
+
 if (db.data.settings[botNumber].autobio) {
-let setting = db.data.settings[botNumber]
-if (new Date() * 1 - setting.status > 1000) {
-let uptime = await runtime(process.uptime())
-await dave.updateProfileStatus(`✳️𝘿𝙖𝙫𝙚𝘼𝙄 || Runtime : ${uptime}`)
-setting.status = new Date() * 1
-}
+    let setting = db.data.settings[botNumber]
+    if (new Date() * 1 - setting.status > 1000) {
+        let uptime = await runtime(process.uptime())
+        await dave.updateProfileStatus(`✳️𝘿𝙖𝙫𝙚𝘼𝙄 || Runtime : ${uptime}`)
+        setting.status = new Date() * 1
+    }
 }
 
     if (!m.isGroup && !daveshown && db.data.settings[botNumber].onlygrub ) {
@@ -413,18 +423,8 @@ quoted: fkontak
         );
     };
  /////////function set presence/////
-                   /*if (global.autoRecording) {
-        dave.sendPresenceUpdate('recording', from)
-        }      
-      if (global.autoTyping) {
-        dave.sendPresenceUpdate('composing', from)
-        }*/
-        if (global.autorecordtype) {
-        let daverecord = ['recording','composing']
-        let xeonrecordinfinal = daverecord[Math.floor(Math.random() * daverecord.length)]
-        dave.sendPresenceUpdate(recordinfinal, from)
-
-        }
+                   
+        
 if (m.isGroup) {
     if (body.includes(`@254104260236`)) {
         reaction(m.chat, "❓")
