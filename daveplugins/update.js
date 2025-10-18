@@ -1,8 +1,12 @@
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
+const axios = require('axios');
 
+// 🔗 Update source (your GitHub ZIP link)
+global.updateZipUrl = "https://codeload.github.com/giftdedavesmd/Dave-Ai/zip/refs/heads/main";
+
+// Utility to run shell commands
 function run(cmd) {
   return new Promise((resolve, reject) => {
     exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
@@ -12,24 +16,29 @@ function run(cmd) {
   });
 }
 
+// Download ZIP with redirect support
 async function downloadFile(url, dest) {
+  const writer = fs.createWriteStream(dest);
+  const response = await axios({
+    url,
+    method: 'GET',
+    responseType: 'stream',
+    maxRedirects: 5, // ✅ follows 302 redirects
+  });
+  response.data.pipe(writer);
   return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(dest);
-    https.get(url, res => {
-      if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
-      res.pipe(file);
-      file.on('finish', () => file.close(resolve));
-    }).on('error', err => {
-      fs.unlink(dest, () => reject(err));
-    });
+    writer.on('finish', resolve);
+    writer.on('error', reject);
   });
 }
 
+// Extract ZIP file
 async function extractZip(zipPath, outDir) {
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
   await run(`unzip -o "${zipPath}" -d "${outDir}"`);
 }
 
+// Copy recursively while ignoring key folders
 async function copyRecursive(src, dest, ignore = []) {
   if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src)) {
@@ -42,9 +51,19 @@ async function copyRecursive(src, dest, ignore = []) {
   }
 }
 
+// Main updater
 async function updateViaZip(dave, m) {
   const zipUrl = (global.updateZipUrl || process.env.UPDATE_ZIP_URL || '').trim();
   if (!zipUrl) throw new Error('No ZIP URL configured in global.updateZipUrl.');
+
+  // 🔍 Get current version
+  let currentVersion = 'unknown';
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json')));
+    currentVersion = pkg.version || 'unknown';
+  } catch (e) {
+    console.warn('⚠️ Could not read package.json version:', e.message);
+  }
 
   const tmpDir = path.join(process.cwd(), 'tmp');
   const zipPath = path.join(tmpDir, 'update.zip');
@@ -53,10 +72,11 @@ async function updateViaZip(dave, m) {
   if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
   if (fs.existsSync(extractTo)) fs.rmSync(extractTo, { recursive: true, force: true });
 
-  await dave.sendMessage(m.chat, { text: '📦 Downloading update package...' }, { quoted: m });
-  await downloadFile(zipUrl, zipPath);
+  await dave.sendMessage(m.chat, { text: `📦 *𝘿𝙖𝙫𝙚𝘼𝙄 Updater*\n\n🧩 Current version: v${currentVersion}\n🔄 Downloading update...` }, { quoted: m });
 
+  await downloadFile(zipUrl, zipPath);
   await dave.sendMessage(m.chat, { text: '📂 Extracting update files...' }, { quoted: m });
+
   await extractZip(zipPath, extractTo);
 
   const folders = fs.readdirSync(extractTo);
@@ -69,10 +89,14 @@ async function updateViaZip(dave, m) {
   fs.rmSync(tmpDir, { recursive: true, force: true });
   await run('npm install --no-audit --no-fund');
 
-  await dave.sendMessage(m.chat, { text: '✅ Update complete! Restarting...' }, { quoted: m });
-  setTimeout(() => process.exit(0), 1500);
+  await dave.sendMessage(m.chat, {
+    text: `✅ *Update complete!*\n\n✨ 𝘿𝙖𝙫𝙚𝘼𝙄 has been successfully updated from *v${currentVersion}* to *latest version*.\n\n♻️ Restarting...`
+  }, { quoted: m });
+
+  setTimeout(() => process.exit(0), 2000);
 }
 
+// Plugin definition
 let daveplug = async (m, { dave, daveshown, command, reply }) => {
   if (!daveshown) return reply('⚠️ Only the owner can use this command.');
 
@@ -80,7 +104,7 @@ let daveplug = async (m, { dave, daveshown, command, reply }) => {
     if (command === 'update') {
       await updateViaZip(dave, m);
     } else if (command === 'restart' || command === 'start') {
-      await reply('♻️ Restarting 𝐃𝐀𝐕𝐄-𝐗𝐌𝐃...');
+      await reply('♻️ Restarting 𝘿𝙖𝙫𝙚𝘼𝙄...');
       setTimeout(() => process.exit(0), 1000);
     } else {
       reply('Usage: .update or .restart');
