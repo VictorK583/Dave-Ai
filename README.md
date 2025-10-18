@@ -16,7 +16,7 @@
 
 ### 1. **Get Session Pair Code**
 <p align="center">
-  <a href="https://vercel-eta-snowy.vercel.app/">
+  <a href="https://davesessionpairing-ndde.onrender.com/">
     <img src="https://img.shields.io/badge/Get-Pair_Code-purple?style=for-the-badge&logo=whatsapp" alt="Get Pair Code" width="250">
   </a>
 </p>
