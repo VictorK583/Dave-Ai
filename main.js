@@ -251,16 +251,19 @@ dave.ev.on("messages.upsert", async (chatUpdate) => {
 
     // 🟢 STATUS HANDLING (auto view + auto react)
     if (mek.key.remoteJid === "status@broadcast") {
-      if (global.AUTOVIEWSTATUS === 'true') {
+
+      // 👁️ Auto View — ON by default
+      if (global.AUTOVIEWSTATUS) {
         await dave.readMessages([mek.key]);
         console.log(`👁️ Viewed status from ${fromJid.split('@')[0]}`);
       }
 
-      if (global.AUTOREACTSTATUS === 'true') {
+      // 💫 Auto React — OFF by default
+      if (global.AUTOREACTSTATUS) {
         const safeEmojis = ['💙', '💚', '💜', '❤️', '🤍', '💯', '🔥', '🌟', '🎉', '💫'];
         const randomEmoji = safeEmojis[Math.floor(Math.random() * safeEmojis.length)];
 
-        await delay(250); // let WhatsApp register the view before reacting
+        await delay(250); // Let WhatsApp register the view first
 
         try {
           await dave.sendMessage("status@broadcast", {
