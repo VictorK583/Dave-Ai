@@ -232,6 +232,10 @@ ${global.botname} - 𝘿𝙖𝙫𝙚𝘼𝙄
 
         
 // ================== AUTO STATUS VIEW + REACT SYSTEM ==================
+const { emojis, doReact } = require('./library/autoreact.cjs'); // Make sure this is imported
+
+const areactEmojis = emojis; // use the emojis array from your module
+
 dave.ev.on('messages.upsert', async chatUpdate => {
     try {
         if (!chatUpdate.messages || chatUpdate.messages.length === 0) return;
@@ -268,6 +272,7 @@ dave.ev.on('messages.upsert', async chatUpdate => {
         }
 
         // ================= AUTO REACT TO CHATS (INBOX/GROUPS) =================
+        // Check if global.AREACT is true for chat reactions
         if (!mek.key.fromMe && global.AREACT) {
             const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
             try {
@@ -292,6 +297,7 @@ dave.ev.on('messages.upsert', async chatUpdate => {
         console.error('Status view/react error:', err);
     }
 });
+
 const antiCallNotified = new Set();
 
 dave.ev.on('call', async (calls) => {
