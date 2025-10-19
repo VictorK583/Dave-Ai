@@ -29,8 +29,6 @@ const store = createToxxicStore('./store', {
 
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
 
-global.autoviewstatus = true;     
-global.autoreactstatus = false;    
 
 //------------------------------------------------------
 let phoneNumber = "254104260236"
