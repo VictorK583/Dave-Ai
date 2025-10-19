@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
-let handler = async (m, { dave, daveshown, reply }) => {
+let daveplug = async (m, { dave, daveshown, reply }) => {
   if (!daveshown) return reply('You are not authorized to use this command!');
 
   try {
@@ -33,7 +33,7 @@ let handler = async (m, { dave, daveshown, reply }) => {
       const caption = mediaMessage.caption || '';
       await dave.sendMessage(m.chat, { 
         image: buffer, 
-        caption: `*Retrieved by 𝘿𝙖𝙫𝙚𝘼𝙄*\n\n*ViewOnce:* Image\n${caption ? `Caption: ${caption}` : ''}` 
+        caption: `Retrieved by DaveAI\n\nViewOnce: Image${caption ? `\nCaption: ${caption}` : ''}` 
       }, { quoted: m });
       return;
     }
@@ -52,21 +52,19 @@ let handler = async (m, { dave, daveshown, reply }) => {
       const caption = mediaMessage.caption || '';
       await dave.sendMessage(m.chat, { 
         video: fs.readFileSync(tempFile), 
-        caption: `*Retrieved by 𝘿𝙖𝙫𝙚𝘼𝙄*\n\n*ViewOnce:* Video\n${caption ? `Caption: ${caption}` : ''}` 
+        caption: `Retrieved by DaveAI\n\nViewOnce: Video${caption ? `\nCaption: ${caption}` : ''}` 
       }, { quoted: m });
 
       fs.unlinkSync(tempFile);
       return;
     }
   } catch (e) {
-    reply('Failed to process view once message: ' + e?.message || e.toString());
+    reply('Failed to process view once message: ' + (e?.message || e.toString()));
   }
 };
 
-handler.help = ['viewonce'];
-handler.tags = ['tools'];
-handler.command = ['vv'];
+daveplug.help = ['viewonce'];
+daveplug.tags = ['tools'];
+daveplug.command = ['vv2'];
 
-module.exports = handler;
-   
-  
+module.exports = daveplug;
