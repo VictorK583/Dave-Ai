@@ -3781,7 +3781,7 @@ case 'ig': case 'instagram': case 'igdl': {
  key: m.key,
  }
  });
- await dave.sendMessage(m.chat, { video: { url: res.media }, caption: "✅ *Downloaded by Silencer media Team!*" }, { quoted: m });
+ await dave.sendMessage(m.chat, { video: { url: res.media }, caption: "✅ *𝘿𝙖𝙫𝙚𝘼𝙄 is on fire 🔥!*" }, { quoted: m });
  } else if (res.type === "image") {
  await dave.sendMessage(m.chat, {
  react: {
@@ -3789,7 +3789,7 @@ case 'ig': case 'instagram': case 'igdl': {
  key: m.key,
  }
  });
- await dave.sendMessage(m.chat, { image: { url: res.media }, caption: "✅ *Downloaded photo by silencer media team!*" }, { quoted: m });
+ await dave.sendMessage(m.chat, { image: { url: res.media }, caption: "✅ 𝘿𝙖𝙫𝙚𝘼𝙄 is on fire 🔥!*" }, { quoted: m });
  }
  } catch (error) {
  console.error(error);
@@ -3832,7 +3832,9 @@ dave.sendMessage(m.chat, { audio: { url: json.music }, mimetype: 'audio/mpeg' },
 }, 3000)
 }
 }
-break //==================================================//
+break 
+
+//==================================================//
         case "disp-7": { 
                  if (!m.isGroup) return reply (mess.group); 
 
