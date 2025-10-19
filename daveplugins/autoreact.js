@@ -1,43 +1,41 @@
 const fs = require('fs');
 const path = require('path');
 
+const settingsPath = path.join(process.cwd(), 'settings.js');
+
 let daveplug = async (m, { dave, daveshown, args, reply }) => {
+    if (!daveshown) return reply('This command is only for the owner.');
+
+    const mode = args[0]?.toLowerCase();
+    if (!mode || !['on', 'off'].includes(mode)) {
+        return reply('Usage: .autoreact <on|off>');
+    }
+
+    global.AREACT = mode === 'on';
+
     try {
-        if (!daveshown) return reply('This command is only available for the owner!');
+        let settings = {};
 
-        const mode = args[0]?.toLowerCase();
-        if (!mode) return reply('Usage: .autoreact <on|off>');
-        if (!['on', 'off'].includes(mode)) return reply('Invalid mode. Use: on or off');
-
-        global.AREACT = mode === 'on';
-
-        try {
-            const settingsPath = path.join(process.cwd(), 'settings.js');
-            let settings = {};
-
-            // Load existing settings if file exists
-            if (fs.existsSync(settingsPath)) {
-                settings = require(settingsPath);
-            }
-
-            // Update only the AREACT key
-            settings.AREACT = global.AREACT;
-
-            // Save back to settings.js
-            fs.writeFileSync(
-                settingsPath,
-                `module.exports = ${JSON.stringify(settings, null, 2)};`,
-                'utf8'
-            );
-        } catch (error) {
-            console.error('Error saving settings:', error.message);
-            return reply('Failed to save settings!');
+        // Load existing settings if file exists
+        if (fs.existsSync(settingsPath)) {
+            settings = require(settingsPath);
         }
 
+        // Update only AREACT key
+        settings.AREACT = global.AREACT;
+
+        // Save back to settings.js
+        fs.writeFileSync(
+            settingsPath,
+            `module.exports = ${JSON.stringify(settings, null, 2)};`,
+            'utf8'
+        );
+
         reply(`✅ Auto-react has been turned ${mode.toUpperCase()}`);
-    } catch (error) {
-        console.error('Autoreact error:', error.message);
-        reply('An error occurred while processing the command');
+        console.log(`🔧 AREACT is now ${global.AREACT}`);
+    } catch (err) {
+        console.error('Failed to save autoreact settings:', err.message);
+        reply('Failed to save settings!');
     }
 };
 
