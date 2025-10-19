@@ -9,14 +9,14 @@ let daveplug = async (m, { dave, text, reply, args }) => {
   try {
     await react('🎵');
 
-    if (!text) return reply('❌ *Please provide a song name!*\n\nExample: `.song Faded Alan Walker`');
+    if (!text) return reply('*Please provide a song name!*\n\nExample: `.song Faded Alan Walker`');
 
     const asDocument = args.includes('-d');
     const searchQuery = text.replace('-d', '').trim();
 
     const search = await yts(searchQuery);
     if (!search?.videos?.length) {
-      await react('❌');
+      await react('🔥');
       return reply('🔍 *No songs found!* Try another search term.');
     }
 
@@ -33,8 +33,8 @@ let daveplug = async (m, { dave, text, reply, args }) => {
     const duration = video.timestamp || 'Unknown';
 
     if (!audioUrl) {
-      await react('❌');
-      return reply('❌ *Failed to get audio link!*');
+      await react('🔥');
+      return reply('*Failed to get audio link!*');
     }
 
     const caption = `🎵 *${title}*\n⏱️ ${duration}\n🔗 ${urlYt}`;
@@ -60,8 +60,8 @@ let daveplug = async (m, { dave, text, reply, args }) => {
 
   } catch (error) {
     console.error('SONG ERROR:', error);
-    await react('❌');
-    reply('❌ *Download failed!* Try again later.');
+    await react('🔥');
+    reply('*Download failed!* Try again later.');
   }
 };
 
