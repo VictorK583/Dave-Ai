@@ -56,6 +56,6 @@ let daveplug = async (m, { dave, text, reply, args }) => {
 
 daveplug.help = ['song'];
 daveplug.tags = ['downloader'];
-daveplug.command = ['song', 'play', 'music'];
+daveplug.command = ['song', 'audio', 'music'];
 
 module.exports = daveplug;
