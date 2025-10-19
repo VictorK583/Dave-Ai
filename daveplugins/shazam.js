@@ -35,7 +35,7 @@ let daveplug = async (m, { dave, reply, mime }) => {
     }
 };
 
-daveplug.help = ['shazam (reply to audio/video)'];
+daveplug.help = ['shazam'];
 daveplug.tags = ['tools'];
 daveplug.command = ['shazam', 'whatsong', 'whoisartist', 'songname'];
 
