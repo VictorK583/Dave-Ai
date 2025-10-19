@@ -1,26 +1,41 @@
-const daveplug = async (m, { dave, daveshown, reply, text }) => {
-    if (!daveshown) return reply('Only the owner can use this command.');
+const fs = require('fs');
 
-    const args = text.trim().split(' ')[0];
-    if (!args || !["on", "off"].includes(args)) {
-        return reply('USE: *areact on* OR *areact off*');
-    }
+let daveplug = async (m, { dave, daveshown, args, reply }) => {
+    try {
+        if (!daveshown) {
+            return reply('This command is only available for the owner!');
+        }
 
-    // Use the same variable name as your auto-react handler
-    if (!global.areact) global.areact = {};
+        const mode = args[0]?.toLowerCase();
 
-    // Toggle per chat
-    if (args === "on") {
-        global.areact[m.chat] = true;
-        return reply('Auto React enabled in this chat.');
-    } else {
-        global.areact[m.chat] = false;
-        return reply('Auto React disabled in this chat.');
+        if (!mode) {
+            return reply('Usage: .autoreact <on|off>');
+        }
+
+        if (!['on', 'off'].includes(mode)) {
+            return reply('Invalid mode. Use: on or off');
+        }
+
+        global.AREACT = mode === 'on';
+
+        try {
+            // If you want to save to settings.js
+            const settings = { AREACT: global.AREACT };
+            fs.writeFileSync('./settings.js', `module.exports = ${JSON.stringify(settings, null, 2)};`);
+        } catch (error) {
+            console.error('Error saving settings:', error.message);
+            return reply('Failed to save settings!');
+        }
+
+        reply(`Auto-react has been turned ${mode}`);
+    } catch (error) {
+        console.error('Autoreact error:', error.message);
+        reply('An error occurred while processing the command');
     }
 };
 
-daveplug.command = ['areact'];
-daveplug.tags = ['fun', 'automation'];
-daveplug.help = ['areact on/off'];
+daveplug.help = ['autoreact <on|off>'];
+daveplug.tags = ['owner'];
+daveplug.command = ['autoreact'];
 
 module.exports = daveplug;
