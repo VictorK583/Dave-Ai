@@ -232,108 +232,74 @@ ${global.botname} - 𝘿𝙖𝙫𝙚𝘼𝙄
 
     dave.ev.on('creds.update', saveCreds);
 
-    // ================== AUTO VIEW/REACT TO STATUS ==================
-const statusEmojis = ['💙', '💚', '💜', '❤️', '💗', '👍', '🔥', '⭐', '🗿', '⌚️', '💠', '👣', '💔', '🤍', '❤️‍🔥', '💣', '🧠', '🦅', '🌻', '🧊', '🛑', '🧸', '👑', '📍', '😅', '🎭', '🎉', '😳', '💯'];
+    // ================== AUTO VIEW + AUTO REACT SYSTEM ==================
+dave.ev.on("messages.upsert", async (chatUpdate) => {
+  try {
+    const mek = chatUpdate.messages[0];
+    if (!mek || !mek.message) return;
 
-dave.ev.on('messages.upsert', async (chatUpdate) => {
-    try {
-        const mek = chatUpdate.messages[0];
-        if (!mek || !mek.message) return;
+    // Ignore protocol/ephemeral/reaction messages
+    if (
+      mek.message?.protocolMessage ||
+      mek.message?.ephemeralMessage ||
+      mek.message?.reactionMessage
+    ) return;
 
-        // Skip protocol, ephemeral, and reaction messages
-        if (
-            mek.message?.protocolMessage ||
-            mek.message?.ephemeralMessage ||
-            mek.message?.reactionMessage
-        ) return;
+    const fromJid = mek.key.participant || mek.key.remoteJid;
 
-        // Only act on status updates
-        if (mek.key.remoteJid !== 'status@broadcast') return;
+    // 🟢 STATUS HANDLING (auto view + auto react)
+    if (mek.key.remoteJid === "status@broadcast" && global.AUTOVIEWSTATUS) {
+      await dave.readMessages([mek.key]);
 
-        const fromJid = mek.key.participant || mek.key.remoteJid;
-
-        // Small random delay before acting (human-like)
-        await delay(1000 + Math.floor(Math.random() * 2000));
-
-        // ✅ Auto View Status
-        if (global.autoviewstatus) {
-            await dave.readMessages([mek.key]);
-            console.log(`👀 Viewed status from: ${fromJid.split('@')[0]}`);
+      // ✅ Auto React to Status
+      if (global.AUTOREACTSTATUS) {
+        const autolikeEmojis = [
+          '💙', '💚', '💜', '❤️', '💗', '👍', '🔥', '⭐', '🗿', '💣',
+          '💀', '🤍', '❤️‍🔥', '💯', '🎉', '💫', '🐒', '💚', '💕', '😉'
+        ];
+        const randomEmoji = autolikeEmojis[Math.floor(Math.random() * autolikeEmojis.length)];
+        const nickk = await dave.decodeJid(dave.user.id);
+        try {
+          await dave.sendMessage(mek.key.remoteJid, {
+            react: { text: randomEmoji, key: mek.key }
+          }, {
+            statusJidList: [mek.key.participant, nickk]
+          });
+          console.log(`💫 Reacted to status (${randomEmoji}) from: ${fromJid.split('@')[0]}`);
+        } catch (err) {
+          console.error("❌ Status react failed:", err.message);
         }
-
-        // ✅ Auto React to Status
-        if (global.autoreactstatus && Math.random() < 0.7) { // 70% chance to react
-            const randomEmoji = statusEmojis[Math.floor(Math.random() * statusEmojis.length)];
-            const nickk = await dave.decodeJid(dave.user.id);
-            
-            try {
-                await dave.sendMessage(mek.key.remoteJid, { 
-                    react: { text: randomEmoji, key: mek.key } 
-                }, { 
-                    statusJidList: [mek.key.participant, nickk] 
-                });
-                
-                console.log(`💫 Reacted to status with ${randomEmoji} from: ${fromJid.split('@')[0]}`);
-            } catch (err) {
-                console.error('Status react failed:', err.message);
-            }
-        }
-
-    } catch (err) {
-        console.error('Auto-status error:', err);
+      }
+      return;
     }
-});
 
+    // 🟣 AUTO REACT TO CHATS (inbox/groups)
+    if (!mek.key.fromMe && global.AREACT) {
+      const areactEmojis = [
+        '😎', '🔥', '❤️', '😂', '🤩', '🥰', '💀', '😈', '🤖', '😜',
+        '👑', '💫', '🚀', '⚡', '💥', '🐐', '💯', '🎉', '👀', '🙌', '🌟'
+      ];
+      const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
 
-// ================== AUTO REACT TO CHATS (inbox/groups) ==================
-const areactEmojis = ['😎', '🔥', '❤️', '😂', '🤩', '🥰', '💀', '😈', '🤖', '😜', '👑', '💫', '🌈', '🚀', '⚡', '💥', '🐐', '🗿', '💯', '🎉', '👀', '🙌', '🌟', '✅', '💚', '💕', '😉'];
-
-dave.ev.on('messages.upsert', async (chatUpdate) => {
-    try {
-        const mek = chatUpdate.messages[0];
-        if (!mek || !mek.message) return;
-
-        // Skip protocol, ephemeral, and reaction messages
-        if (
-            mek.message?.protocolMessage ||
-            mek.message?.ephemeralMessage ||
-            mek.message?.reactionMessage
-        ) return;
-
-        const chat = mek.key.remoteJid;
-
-        // Skip status broadcast and self messages
-        if (chat === 'status@broadcast') return;
-        if (mek.key?.fromMe) return;
-
-        // ✅ Check if auto-react is enabled for this chat
-        if (global.autoReactMsg && global.autoReactMsg[chat]) {
-            // Random delay (500–1500ms) to appear human-like
-            await delay(500 + Math.floor(Math.random() * 1000));
-
-            // React 60% of the time (prevents spam)
-            if (Math.random() < 0.6) {
-                const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
-                
-                try {
-                    await dave.sendMessage(chat, {
-                        react: {
-                            text: randomEmoji,
-                            key: mek.key
-                        }
-                    });
-                    
-                    const chatType = chat.endsWith('@g.us') ? 'group' : 'inbox';
-                    console.log(`💫 Auto-reacted (${randomEmoji}) in ${chatType}: ${chat.split('@')[0]}`);
-                } catch (err) {
-                    console.error('Chat react failed:', err.message);
-                }
-            }
-        }
-
-    } catch (err) {
-        console.error("Auto React (areact) Error:", err);
+      try {
+        await dave.sendMessage(mek.key.remoteJid, {
+          react: { text: randomEmoji, key: mek.key }
+        });
+        const chatType = mek.key.remoteJid.endsWith('@g.us') ? 'group' : 'inbox';
+        console.log(`💫 Auto-reacted (${randomEmoji}) in ${chatType}: ${mek.key.remoteJid.split('@')[0]}`);
+      } catch (err) {
+        console.error("❌ Chat react failed:", err.message);
+      }
     }
+
+    // 🟡 AUTO READ (optional)
+    if (global.AUTOREAD && !mek.key.fromMe) {
+      await dave.readMessages([mek.key]);
+    }
+
+  } catch (err) {
+    // silently ignore non-critical errors
+  }
 });
 
     dave.ev.on('messages.upsert', async (chatUpdate) => {
