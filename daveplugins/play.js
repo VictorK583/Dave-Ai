@@ -5,7 +5,7 @@ let daveplug = async (m, { dave, reply, text }) => {
     try {        
         if (!text) {
             return dave.sendMessage(m.chat, { 
-                text: "What song do you want to download?"
+                text: "specify the song you want to download!"
             }, { quoted: m });
         }
 
@@ -19,7 +19,7 @@ let daveplug = async (m, { dave, reply, text }) => {
 
         // Send loading message
         await dave.sendMessage(m.chat, {
-            text: "_Please wait your download is in progress_"}, { quoted: m 
+            text: "*Your download is in progress hold tight comrade*"}, { quoted: m 
         });
 
         // Get the first video result
@@ -48,7 +48,7 @@ let daveplug = async (m, { dave, reply, text }) => {
 
         //successful react ✔️
         await dave.sendMessage(m.chat, { 
-            react: { text: '✔️', key: m.key } 
+            react: { text: '🔥', key: m.key } 
         });
 
     } catch (error) {
