@@ -2,26 +2,27 @@ const processedEdits = new Map();
 const EDIT_COOLDOWN = 5000; // 5 seconds cooldown per sender
 
 let daveplug = async (m, { daveshown, dave, args, reply }) => {
-    if (!daveshown) return reply('❌ This command is owner only.');
+    if (!daveshown) return reply('This command is owner only.');
 
     const mode = args[0]?.toLowerCase();
     if (!mode || !['on', 'off', 'private'].includes(mode)) {
         return reply(
             'Usage: .antiedit <on|off|private>\n\n' +
             'on - Enable in chats\n' +
-            'private - Send alerts to bot owner\noff - Disable'
+            'private - Send alerts to bot owner\n' +
+            'off - Disable'
         );
     }
 
     global.antiedit = mode;
 
-    if (mode === 'on') return reply('✅ Antiedit enabled in all chats');
-    if (mode === 'private') return reply('✅ Antiedit enabled - alerts will be sent privately to bot owner');
-    return reply('✅ Antiedit disabled');
+    if (mode === 'on') return reply('Antiedit enabled in all chats');
+    if (mode === 'private') return reply('Antiedit enabled - alerts will be sent privately to bot owner');
+    return reply('Antiedit disabled');
 };
 
 // Initialize event listener
-daveplug.init = (dave, store) => {
+daveplug.init = (dave) => {
     dave.ev.on('messages.update', async (updates) => {
         try {
             if (!global.antiedit || global.antiedit === 'off') return;
@@ -41,7 +42,11 @@ daveplug.init = (dave, store) => {
                                || updateData.message?.editedMessage;
                 if (!editedMsg) continue;
 
-                const originalMsg = await store.loadMessage(chat, key.id) || {};
+                // Skip if sender recently triggered
+                if (processedEdits.has(senderKey)) {
+                    const last = processedEdits.get(senderKey);
+                    if (now - last.timestamp < EDIT_COOLDOWN) continue;
+                }
 
                 const getContent = (msg) => {
                     if (!msg) return '[Deleted]';
@@ -58,22 +63,12 @@ daveplug.init = (dave, store) => {
                     }
                 };
 
-                const originalContent = getContent(originalMsg.message);
                 const editedContent = getContent(editedMsg);
 
-                if (originalContent === editedContent) continue;
-
-                // Skip if sender recently triggered
-                if (processedEdits.has(senderKey)) {
-                    const last = processedEdits.get(senderKey);
-                    if (now - last.timestamp < EDIT_COOLDOWN && last.edited === editedContent) continue;
-                }
-
                 const notificationMessage =
-                    `💡 ANTIEDIT ALERT\n\n` +
+                    `ANTIEDIT ALERT\n\n` +
                     `Sender: @${sender.split('@')[0]}\n` +
-                    `Original: ${originalContent}\n` +
-                    `Edited: ${editedContent}\n` +
+                    `Edited Message: ${editedContent}\n` +
                     `Chat: ${chat.endsWith('@g.us') ? 'Group' : 'Private'}`;
 
                 const sendTo = global.antiedit === 'private' ? dave.user.id : chat;
@@ -81,7 +76,7 @@ daveplug.init = (dave, store) => {
                 await dave.sendMessage(sendTo, { text: notificationMessage, mentions: [sender] }).catch(() => {});
 
                 // Save last edit for this sender
-                processedEdits.set(senderKey, { timestamp: now, edited: editedContent });
+                processedEdits.set(senderKey, { timestamp: now });
             }
 
             // Cleanup old entries
@@ -90,7 +85,7 @@ daveplug.init = (dave, store) => {
             }
 
         } catch (err) {
-            console.error('[ANTIEDIT ERROR]', err);
+            console.error('ANTIEDIT ERROR', err);
         }
     });
 };
@@ -98,5 +93,3 @@ daveplug.init = (dave, store) => {
 daveplug.help = ['antiedit'];
 daveplug.tags = ['owner', 'security'];
 daveplug.command = ['antiedit'];
-
-module.exports = daveplug;
