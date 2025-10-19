@@ -233,12 +233,14 @@ ${global.botname} - 𝘿𝙖𝙫𝙚𝘼𝙄
     dave.ev.on('creds.update', saveCreds);
 
     // ================== AUTO VIEW + AUTO REACT SYSTEM ==================
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
 dave.ev.on("messages.upsert", async (chatUpdate) => {
   try {
     const mek = chatUpdate.messages[0];
     if (!mek || !mek.message) return;
 
-    // Ignore protocol/ephemeral/reaction messages
+    // Ignore protocol, ephemeral, or reaction messages
     if (
       mek.message?.protocolMessage ||
       mek.message?.ephemeralMessage ||
@@ -248,30 +250,36 @@ dave.ev.on("messages.upsert", async (chatUpdate) => {
     const fromJid = mek.key.participant || mek.key.remoteJid;
 
     // 🟢 STATUS HANDLING (auto view + auto react)
-    if (mek.key.remoteJid === "status@broadcast" && global.AUTOVIEWSTATUS) {
-      await dave.readMessages([mek.key]);
+    if (mek.key.remoteJid === "status@broadcast") {
+      if (global.AUTOVIEWSTATUS === 'true') {
+        await dave.readMessages([mek.key]);
+        console.log(`👁️ Viewed status from ${fromJid.split('@')[0]}`);
+      }
 
-      // ✅ Auto React to Status
-      if (global.AUTOREACTSTATUS) {
-        const autolikeEmojis = [
-          '💙', '💚', '💜', '❤️', '💗', '👍', '🔥', '⭐', '🗿', '💣',
-          '💀', '🤍', '❤️‍🔥', '💯', '🎉', '💫', '🐒', '💚', '💕', '😉'
-        ];
-        const randomEmoji = autolikeEmojis[Math.floor(Math.random() * autolikeEmojis.length)];
-        const nickk = await dave.decodeJid(dave.user.id);
+      if (global.AUTOREACTSTATUS === 'true') {
+        const safeEmojis = ['💙', '💚', '💜', '❤️', '🤍', '💯', '🔥', '🌟', '🎉', '💫'];
+        const randomEmoji = safeEmojis[Math.floor(Math.random() * safeEmojis.length)];
+
+        await delay(250); // let WhatsApp register the view before reacting
+
         try {
-          await dave.sendMessage(mek.key.remoteJid, {
+          await dave.sendMessage("status@broadcast", {
             react: { text: randomEmoji, key: mek.key }
-          }, {
-            statusJidList: [mek.key.participant, nickk]
           });
-          console.log(`💫 Reacted to status (${randomEmoji}) from: ${fromJid.split('@')[0]}`);
+
+          console.log(`✅ Reacted to ${fromJid.split('@')[0]}'s status with ${randomEmoji}`);
         } catch (err) {
           console.error("❌ Status react failed:", err.message);
         }
       }
+
       return;
     }
+
+  } catch (err) {
+    console.error("AutoView/React Error:", err);
+  }
+});
 
     // 🟣 AUTO REACT TO CHATS (inbox/groups)
     if (!mek.key.fromMe && global.AREACT) {
