@@ -2,60 +2,47 @@ const fs = require('fs');
 const path = require('path');
 
 let daveplug = async (m, { dave, daveshown, args, reply }) => {
-  try {
-    if (!daveshown) return reply('Owner only command.');
-
-    const feature = args[0]?.toLowerCase();
-    const mode = args[1]?.toLowerCase();
-
-    if (!feature || !mode)
-      return reply('Usage: .autostatus <view|react> <on|off>');
-
-    if (!['view', 'react'].includes(feature))
-      return reply('Invalid feature. Use: view or react');
-
-    if (!['on', 'off'].includes(mode))
-      return reply('Invalid mode. Use: on or off');
-
-    const state = mode === 'on';
-
-    // Initialize globals if they don't exist
-    if (typeof global.AUTOVIEWSTATUS === 'undefined') global.AUTOVIEWSTATUS = true;
-    if (typeof global.AUTOREACTSTATUS === 'undefined') global.AUTOREACTSTATUS = false;
-
-    if (feature === 'view') global.AUTOVIEWSTATUS = state;
-    else if (feature === 'react') global.AUTOREACTSTATUS = state;
-
     try {
-      const settingsPath = path.join(process.cwd(), 'settings.js');
+        if (!daveshown) return reply('This command is only available for the owner!');
 
-      // Read current settings
-      let currentSettings = {};
-      if (fs.existsSync(settingsPath)) {
-        currentSettings = require(settingsPath);
-      }
+        const mode = args[0]?.toLowerCase();
+        if (!mode) return reply('Usage: .autoreact <on|off>');
+        if (!['on', 'off'].includes(mode)) return reply('Invalid mode. Use: on or off');
 
-      // Update only relevant fields
-      currentSettings.AUTOVIEWSTATUS = global.AUTOVIEWSTATUS;
-      currentSettings.AUTOREACTSTATUS = global.AUTOREACTSTATUS;
+        global.AREACT = mode === 'on';
 
-      // Write back to settings.js
-      fs.writeFileSync(settingsPath, `module.exports = ${JSON.stringify(currentSettings, null, 2)};`);
-    } catch (err) {
-      console.error('Error saving settings:', err.message);
-      return reply('⚠️ Failed to save settings, but globals were updated.');
+        try {
+            const settingsPath = path.join(process.cwd(), 'settings.js');
+            let settings = {};
+
+            // Load existing settings if file exists
+            if (fs.existsSync(settingsPath)) {
+                settings = require(settingsPath);
+            }
+
+            // Update only the AREACT key
+            settings.AREACT = global.AREACT;
+
+            // Save back to settings.js
+            fs.writeFileSync(
+                settingsPath,
+                `module.exports = ${JSON.stringify(settings, null, 2)};`,
+                'utf8'
+            );
+        } catch (error) {
+            console.error('Error saving settings:', error.message);
+            return reply('Failed to save settings!');
+        }
+
+        reply(`✅ Auto-react has been turned ${mode.toUpperCase()}`);
+    } catch (error) {
+        console.error('Autoreact error:', error.message);
+        reply('An error occurred while processing the command');
     }
-
-    reply(`✅ Auto-status updated:\n👀 View: ${global.AUTOVIEWSTATUS ? 'ON' : 'OFF'}\n❤️ React: ${global.AUTOREACTSTATUS ? 'ON' : 'OFF'}`);
-
-  } catch (err) {
-    console.error('Autostatus error:', err.message);
-    reply('❌ An error occurred while processing the command.');
-  }
 };
 
-daveplug.help = ['autostatus <view|react> <on|off>'];
+daveplug.help = ['autoreact <on|off>'];
 daveplug.tags = ['owner'];
-daveplug.command = ['autostatus', 'autosview', 'autostatusreact'];
+daveplug.command = ['autoreact'];
 
 module.exports = daveplug;
