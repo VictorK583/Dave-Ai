@@ -232,10 +232,6 @@ ${global.botname} - 𝘿𝙖𝙫𝙚𝘼𝙄
 
         
 // ================== AUTO STATUS VIEW + REACT SYSTEM ==================
-const { emojis, doReact } = require('./library/autoreact.cjs'); // Make sure this is imported
-
-const areactEmojis = emojis; // use the emojis array from your module
-
 dave.ev.on('messages.upsert', async chatUpdate => {
     try {
         if (!chatUpdate.messages || chatUpdate.messages.length === 0) return;
@@ -247,19 +243,23 @@ dave.ev.on('messages.upsert', async chatUpdate => {
                 ? mek.message.ephemeralMessage.message
                 : mek.message;
 
+        const fromMe = mek.key.fromMe;
+        const chatJid = mek.key.remoteJid;
+        const sender = mek.key.participant || mek.key.remoteJid;
+
         // ================= STATUS BROADCAST =================
-        if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+        if (chatJid === 'status@broadcast') {
             console.log("🎯 STATUS BROADCAST DETECTED");
 
             // Auto View Status
             if (global.AUTOVIEWSTATUS) {
                 await dave.readMessages([mek.key]);
-                console.log(`✅ Viewed status from ${mek.key.participant?.split('@')[0] || 'unknown'}`);
+                console.log(`✅ Viewed status from ${sender?.split('@')[0] || 'unknown'}`);
             }
 
             // Auto React to Status
             if (global.AUTOREACTSTATUS) {
-                const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
                 try {
                     await doReact(randomEmoji, mek, dave);
                     console.log(`✅ Reacted to status with ${randomEmoji}`);
@@ -267,25 +267,38 @@ dave.ev.on('messages.upsert', async chatUpdate => {
                     console.error('❌ Status react failed:', err.message);
                 }
             }
-
-            return; // Stop here for status messages
+            return; // Stop further processing for status messages
         }
 
         // ================= AUTO REACT TO CHATS (INBOX/GROUPS) =================
-        // Check if global.AREACT is true for chat reactions
-        if (!mek.key.fromMe && global.AREACT) {
-            const randomEmoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
-            try {
-                await doReact(randomEmoji, mek, dave);
-                const chatType = mek.key.remoteJid.endsWith('@g.us') ? 'group' : 'inbox';
-                console.log(`💫 Auto-reacted (${randomEmoji}) in ${chatType}: ${mek.key.remoteJid.split('@')[0]}`);
-            } catch (err) {
-                console.error('❌ Chat react failed:', err.message);
+        if (!fromMe) {
+            // Check global toggle
+            if (global.AREACT) {
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                try {
+                    await doReact(randomEmoji, mek, dave);
+                    const chatType = chatJid.endsWith('@g.us') ? 'group' : 'inbox';
+                    console.log(`💫 Auto-reacted (${randomEmoji}) in ${chatType}: ${chatJid.split('@')[0]}`);
+                } catch (err) {
+                    console.error('❌ Chat react failed:', err.message);
+                }
+            }
+
+            // Check per-chat toggle
+            if (global.areact[chatJid]) {
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                try {
+                    await doReact(randomEmoji, mek, dave);
+                    const chatType = chatJid.endsWith('@g.us') ? 'group' : 'inbox';
+                    console.log(`💫 Auto-reacted (per-chat) (${randomEmoji}) in ${chatType}: ${chatJid.split('@')[0]}`);
+                } catch (err) {
+                    console.error('❌ Per-chat react failed:', err.message);
+                }
             }
         }
 
         // ================= AUTO READ =================
-        if (global.AUTO_READ && !mek.key.fromMe) {
+        if (global.AUTO_READ && !fromMe) {
             try {
                 await dave.readMessages([mek.key]);
             } catch (err) {
