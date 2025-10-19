@@ -28,8 +28,10 @@ global.footer = '𝘿𝙖𝙫𝙚𝘼𝙄';
 
 // ==================== AUTO STATUS FEATURES ==================== //
 // Controlled by .env or default values
-global.AUTOVIEWSTATUS = process.env.AUTOVIEWSTATUS === 'true';
-global.AUTOREACTSTATUS = process.env.AUTOREACTSTATUS === 'true';
+// ==================== AUTO STATUS FEATURES ==================== //
+// Controlled by .env or default values
+global.AUTOVIEWSTATUS = process.env.AUTOVIEWSTATUS !== 'false';  // Default: true
+global.AUTOREACTSTATUS = process.env.AUTOREACTSTATUS === 'true'; // Default: false
 
 // ==================== AUTO READ FEATURE ==================== //
 // Reads from .env; default false. Use ".autoread on/off" to toggle at runtime (set global.AUTO_READ)
