@@ -9,52 +9,41 @@ let daveplug = async (m, { dave, text, reply, args }) => {
   try {
     await react('🎵');
 
-    if (!text) return reply('*Please provide a song name!*\n\nExample: `.song Faded Alan Walker`');
+    if (!text) return reply('*Please provide a song name!*\n\nExample: .song Faded Alan Walker');
 
-    const asDocument = args.includes('-d');
-    const searchQuery = text.replace('-d', '').trim();
-
+    const searchQuery = text.trim();
     const search = await yts(searchQuery);
+
     if (!search?.videos?.length) {
       await react('🔥');
-      return reply('🔍 *No songs found!* Try another search term.');
+      return reply('*No songs found!* Try another search.');
     }
 
     const video = search.videos[0];
     const urlYt = video.url;
 
-    await reply('⏳ *Downloading...*');
+    await reply('*Downloading...*');
 
     const response = await axios.get(`https://api.goodnesstechhost.xyz/download/youtube/audio?url=${urlYt}`);
     const data = response.data;
 
     const audioUrl = data?.result?.download_url || data?.result?.url;
     const title = data?.result?.title || video.title;
-    const duration = video.timestamp || 'Unknown';
 
     if (!audioUrl) {
-      await react('🔥');
-      return reply('*Failed to get audio link!*');
+      await react('❌');
+      return reply('*Failed to fetch audio link!*');
     }
 
-    const caption = `🎵 *${title}*\n⏱️ ${duration}\n🔗 ${urlYt}`;
-
-    if (asDocument) {
-      await dave.sendMessage(m.chat, {
-        document: { url: audioUrl },
-        mimetype: 'audio/mpeg',
-        fileName: `${title}.mp3`,
-        caption
-      }, { quoted: m });
-    } else {
-      await dave.sendMessage(m.chat, {
+    await dave.sendMessage(
+      m.chat,
+      {
         audio: { url: audioUrl },
         mimetype: 'audio/mpeg',
-        fileName: `${title}.mp3`
-      }, { quoted: m });
-
-      await reply(caption);
-    }
+        fileName: `${title}.mp3`,
+      },
+      { quoted: m }
+    );
 
     await react('🔥');
 
