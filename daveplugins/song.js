@@ -1,75 +1,73 @@
 const yts = require('yt-search');
 const axios = require('axios');
 
-let daveplug = async (m, { dave, reply, text }) => {
+let daveplug = async (m, { dave, text, reply, react, args }) => {
     try {
+        await react('🎵');
+
         if (!text) {
-            return dave.sendMessage(m.chat, { 
-                text: "specify the song you want stop wasting my time bitch!"
-            }, { quoted: m });
+            return reply('❌ *Please provide a song name!*\n\nExample: `.song Faded Alan Walker`');
         }
 
-        // Search for the song
-        const { videos } = await yts(text);
+        // Check if user wants document format
+        const asDocument = args[0]?.toLowerCase() === '-d';
+        const searchQuery = asDocument ? args.slice(1).join(' ') : text;
+
+        const { videos } = await yts(searchQuery);
         if (!videos || videos.length === 0) {
-            return dave.sendMessage(m.chat, { 
-                text: "No songs found!"
-            }, { quoted: m });
+            await react('❌');
+            return reply('🔍 *No songs found!* Try a different search term.');
         }
 
-        // Send loading message
-        await dave.sendMessage(m.chat, {
-            text: "```hold tight dropping it for you fam```"
-        }, { quoted: m });
+        await reply('⏳ *Downloading...*');
 
-        // Get the first video result
         const video = videos[0];
         const urlYt = video.url;
 
-        // Fetch audio data from API
         const response = await axios.get(`https://api.goodnesstechhost.xyz/download/youtube/audio?url=${urlYt}`);
         const data = response.data;
 
-        if (!data || !data.status || !data.result || !data.result.download_url) {
-            return dave.sendMessage(m.chat, { 
-                text: "Failed to fetch audio from the API. Please try again later."
-            }, { quoted: m });
+        if (!data?.status || !data?.result?.download_url) {
+            await react('❌');
+            return reply('❌ *API Error!* Try again later.');
         }
 
         const audioUrl = data.result.download_url;
-        const title = data.result.title;
+        const title = data.result.title || video.title;
+        const duration = video.timestamp || 'Unknown';
 
-        // Send the audio
-        await dave.sendMessage(m.chat, {
-            audio: { url: audioUrl },
-            mimetype: "audio/mpeg",
-            fileName: `${title}.mp3`
-        }, { quoted: m });
+        const caption = `🎵 *${title}*\n⏱️ ${duration}\n🔗 ${urlYt}`;
 
-        //successful react ✔️
-        await dave.sendMessage(m.chat, { 
-            react: { text: '🔥', key: m.key } 
-        });
-        
-        await dave.sendMessage(m.chat, {
-            text: `_𝘿𝙖𝙫𝙚𝘼𝙄 is on fire 🔥_`
-        }, { quoted: m });
+        if (asDocument) {
+            // Send as document
+            await dave.sendMessage(m.chat, {
+                document: { url: audioUrl },
+                mimetype: 'audio/mpeg',
+                fileName: `${title}.mp3`,
+                caption: caption
+            }, { quoted: m });
+        } else {
+            // Send as audio
+            await dave.sendMessage(m.chat, {
+                audio: { url: audioUrl },
+                mimetype: 'audio/mpeg',
+                fileName: `${title}.mp3`
+            }, { quoted: m });
+            
+            await reply(caption);
+        }
+
+        await react('🔥');
 
     } catch (error) {
-        console.error('Error in song command:', error);
-        await dave.sendMessage(m.chat, { 
-            text: "Download failed. Please try again later."
-        }, { quoted: m });
-
-        //err react ❌
-        await dave.sendMessage(m.chat, {
-            react: { text: '❌', key: m.key }
-        });
+        console.error('SONG ERROR:', error);
+        await react('❌');
+        return reply('❌ *Download failed!* Try again later.');
     }
 };
 
 daveplug.help = ['song'];
 daveplug.tags = ['downloader'];
-daveplug.command = ['song'];
+daveplug.command = ['song', 'play', 'music'];
 
 module.exports = daveplug;
