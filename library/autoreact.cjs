@@ -1,6 +1,17 @@
-const emojis = ['💜', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '❤️‍', '🔥', '❤️‍', '🩹', '💯',  '🔰', '⭕️', '✅', '❌', '〽️', '🔥', '💐'];
 
-async function doReact(emoji, mek, gss) {
+const emojis = [
+  '💜','💝','💖','💗','💓','💞','💕','💟','❣️','💔',
+  '❤️','🧡','💛','💚','💙','🤎','🖤','🤍','❤️‍🔥','🩹',
+  '💯','🔰','⭕️','✅','❌','〽️','💐'
+];
+
+/**
+ * Send a reaction to a message
+ * @param {import('@whiskeysockets/baileys').WAMessage} mek - The message to react to
+ * @param {import('@whiskeysockets/baileys').MakeWASocket} dave - Your bot instance
+ * @param {string} emoji - Emoji to react with
+ */
+async function doReact(emoji, mek, dave) {
   try {
     const react = {
       react: {
@@ -8,7 +19,6 @@ async function doReact(emoji, mek, gss) {
         key: mek.key,
       },
     };
-
     await dave.sendMessage(mek.key.remoteJid, react);
   } catch (error) {
     console.error('Error sending auto reaction:', error);
