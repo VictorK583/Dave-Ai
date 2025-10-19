@@ -269,8 +269,8 @@ dave.ev.on('messages.upsert', async chatUpdate => {
     }
 });
 
-    // 🟣 AUTO REACT TO CHATS (inbox/groups)
-    if (!mek.key.fromMe && global.AREACT) {
+        // 🟣 AUTO REACT TO CHATS (inbox/groups)
+    if (!mek.key.fromMe && global.areact && global.areact[mek.key.remoteJid]) {
       const areactEmojis = [
         '😎', '🔥', '❤️', '😂', '🤩', '🥰', '💀', '😈', '🤖', '😜',
         '👑', '💫', '🚀', '⚡', '💥', '🐐', '💯', '🎉', '👀', '🙌', '🌟'
