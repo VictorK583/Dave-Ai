@@ -28,6 +28,7 @@ let daveplug = async (m, { dave, reply, text }) => {
         await dave.sendMessage(m.chat, {
             document: { url: data.downloadLink },
             mimetype: 'audio/mpeg',
+            fileName: fileName
         }, { quoted: m });
 
     } catch (err) {
