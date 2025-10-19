@@ -28,8 +28,6 @@ global.footer = '𝘿𝙖𝙫𝙚𝘼𝙄';
 
 // ==================== AUTO STATUS FEATURES ==================== //
 // Controlled by .env or default values
-// ==================== AUTO STATUS FEATURES ==================== //
-// Controlled by .env or default values
 global.AUTOVIEWSTATUS = process.env.AUTOVIEWSTATUS !== 'false';  // Default: true
 global.AUTOREACTSTATUS = process.env.AUTOREACTSTATUS === 'true'; // Default: false
 
