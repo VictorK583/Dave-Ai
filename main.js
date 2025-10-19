@@ -292,9 +292,13 @@ dave.ev.on("messages.upsert", async (chatUpdate) => {
       }
     }
 
-    // 🟡 AUTO READ (optional)
-    if (global.AUTOREAD && !mek.key.fromMe) {
-      await dave.readMessages([mek.key]);
+    // 🟡 AUTO READ (based on toggle)
+    if (global.AUTO_READ && !mek.key.fromMe) {
+      try {
+        await dave.readMessages([mek.key]);
+      } catch (err) {
+        console.error('Auto-read error:', err.message);
+      }
     }
 
   } catch (err) {
