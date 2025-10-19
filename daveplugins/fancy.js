@@ -2,7 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 let daveplug = async (m, { daveshown, text, reply, prefix, command }) => {
-    if (!text) return reply(`⚠️ Format invalid!\nExample: ${prefix + command} Giddy Tennor`);
+    if (!text) return reply(`Format invalid!\nExample: ${prefix + command} 𝘿𝙖𝙫𝙚𝘼𝙄`);
 
     try {
         const res = await axios.get(`https://qaz.wtf/u/convert.cgi?text=${encodeURIComponent(text)}`);
@@ -15,13 +15,13 @@ let daveplug = async (m, { daveshown, text, reply, prefix, command }) => {
             if (style && txt) hasil.push(`*${style}:*\n${txt}`);
         });
 
-        if (hasil.length === 0) return reply('❌ No results found for that text.');
+        if (hasil.length === 0) return reply('No results found for that text.');
 
-        const teks = `✨ *Here is your fancy text:* ${text}\n\n` + hasil.join('\n\n');
+        const teks = `Here is your fancy text: ${text}\n\n` + hasil.join('\n\n');
         reply(teks);
     } catch (err) {
         console.error(err);
-        reply('❌ An error occurred while fetching fancy text.');
+        reply('An error occurred while fetching fancy text.');
     }
 };
 
