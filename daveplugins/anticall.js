@@ -1,4 +1,14 @@
 const fs = require('fs');
+const path = './library/database/anticall.json';
+
+// Ensure the JSON file exists with default OFF
+if (!fs.existsSync(path)) {
+    fs.writeFileSync(path, JSON.stringify({ anticall: false }, null, 2));
+}
+
+// Load current state from JSON
+let db = JSON.parse(fs.readFileSync(path, 'utf8'));
+global.anticall = db.anticall || false; // default OFF
 
 let daveplug = async (m, { dave, daveshown, args, reply }) => {
     try {
@@ -9,25 +19,18 @@ let daveplug = async (m, { dave, daveshown, args, reply }) => {
             return reply('Usage: .anticall <on|off>');
         }
 
-        global.anticall = mode === 'on';
+        const state = mode === 'on';
 
-        // Persist to .env file for next restart
-        try {
-            let envData = fs.readFileSync('.env', 'utf8');
-            if (/ANTI_CALL=.*/.test(envData)) {
-                envData = envData.replace(/ANTI_CALL=.*/, `ANTI_CALL=${global.anticall}`);
-            } else {
-                envData += `\nANTI_CALL=${global.anticall}`;
-            }
-            fs.writeFileSync('.env', envData);
-        } catch (err) {
-            console.error('Failed to write .env:', err.message);
-        }
+        // Update global runtime variable
+        global.anticall = state;
 
-        reply(`Anti-call feature has been turned *${mode.toUpperCase()}*`);
+        // Save to JSON for persistence
+        fs.writeFileSync(path, JSON.stringify({ anticall: state }, null, 2));
+
+        reply(`✅ Anti-call feature has been turned *${mode.toUpperCase()}*`);
     } catch (error) {
         console.error('anticall error:', error.message);
-        reply('An error occurred while updating anticall mode.');
+        reply('❌ An error occurred while updating anticall mode.');
     }
 };
 
