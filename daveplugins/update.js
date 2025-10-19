@@ -181,4 +181,4 @@ daveplug.help = ['update', 'restart', 'start']
 daveplug.tags = ['system']
 daveplug.command = ['update', 'restart', 'start']
 
-module.exports = daveplug
+module.exports = daveplug;
