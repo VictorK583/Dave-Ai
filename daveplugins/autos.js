@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = './settings.js';
 
 let daveplug = async (m, { dave, daveshown, args, reply }) => {
   try {
@@ -18,29 +19,26 @@ let daveplug = async (m, { dave, daveshown, args, reply }) => {
 
     const state = mode === 'on';
 
+    // Initialize globals if they don't exist
+    if (typeof global.AUTOVIEWSTATUS === 'undefined') global.AUTOVIEWSTATUS = true;
+    if (typeof global.AUTOREACTSTATUS === 'undefined') global.AUTOREACTSTATUS = false;
+
     if (feature === 'view') global.AUTOVIEWSTATUS = state;
-    else if (feature === 'react') global.AUTOREACTSTATUS = state;
+    if (feature === 'react') global.AUTOREACTSTATUS = state;
 
-    try {
-      // read current settings file
-      let current = fs.readFileSync('./settings.js', 'utf8');
+    // Prepare settings content
+    const settingsContent = `
+// Auto-generated settings
+global.AUTOVIEWSTATUS = ${global.AUTOVIEWSTATUS};
+global.AUTOREACTSTATUS = ${global.AUTOREACTSTATUS};
+module.exports = { AUTOVIEWSTATUS: global.AUTOVIEWSTATUS, AUTOREACTSTATUS: global.AUTOREACTSTATUS };
+`;
 
-      // Update AUTOVIEWSTATUS and AUTOREACTSTATUS
-      if (/global\.AUTOVIEWSTATUS\s*=/.test(current)) {
-        current = current.replace(/global\.AUTOVIEWSTATUS\s*=.*;/, `global.AUTOVIEWSTATUS = ${global.AUTOVIEWSTATUS};`);
-      }
-      if (/global\.AUTOREACTSTATUS\s*=/.test(current)) {
-        current = current.replace(/global\.AUTOREACTSTATUS\s*=.*;/, `global.AUTOREACTSTATUS = ${global.AUTOREACTSTATUS};`);
-      }
+    // Write to settings.js (creates if missing)
+    fs.writeFileSync(path, settingsContent, 'utf8');
 
-      fs.writeFileSync('./settings.js', current);
-    } catch (err) {
-      console.error('Error saving settings:', err.message);
-      return reply('Failed to save settings.');
-    }
-
-    // Send confirmation with both current states
-    reply(`✅ Auto-status settings updated:\n\nView: ${global.AUTOVIEWSTATUS ? 'ON' : 'OFF'}\nReact: ${global.AUTOREACTSTATUS ? 'ON' : 'OFF'}`);
+    // Confirmation message
+    reply(`✅ Auto-status settings updated:\n\n👀 View: ${global.AUTOVIEWSTATUS ? 'ON' : 'OFF'}\n❤️ React: ${global.AUTOREACTSTATUS ? 'ON' : 'OFF'}`);
 
   } catch (err) {
     console.error('Autostatus error:', err.message);
