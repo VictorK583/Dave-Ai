@@ -17,13 +17,13 @@ function run(cmd) {
 
 async function downloadFile(url, dest) {
   const writer = fs.createWriteStream(dest);
-  const response = await axios({ url, method: 'GET', responseType: 'stream', maxRedirects: 5, timeout: 30000 });
+  const response = await axios({ url, method: 'GET', responseType: 'stream', maxRedirects: 5, timeout: 60000 });
   response.data.pipe(writer);
   return new Promise((resolve, reject) => {
     writer.on('finish', resolve);
     writer.on('error', reject);
     response.data.on('error', reject);
-    setTimeout(() => reject(new Error('Download timeout')), 60000);
+    setTimeout(() => reject(new Error('Download timeout')), 120000);
   });
 }
 
@@ -51,6 +51,24 @@ async function copyRecursive(src, dest, ignore = []) {
   }
 }
 
+function backupSettings(settingsFile = path.join(process.cwd(), 'settings.js')) {
+  if (!fs.existsSync(settingsFile)) return null;
+  return fs.readFileSync(settingsFile, 'utf8');
+}
+
+function mergeSettings(runtimeGlobals, oldSettings) {
+  let merged = oldSettings || '// Auto-generated settings\n';
+  for (const [key, value] of Object.entries(runtimeGlobals)) {
+    const regex = new RegExp(`global\\.${key}\\s*=.*;`);
+    if (regex.test(merged)) {
+      merged = merged.replace(regex, `global.${key} = ${JSON.stringify(value)};`);
+    } else {
+      merged += `\nglobal.${key} = ${JSON.stringify(value)};`;
+    }
+  }
+  return merged;
+}
+
 async function getLatestCommitInfo() {
   try {
     const url = `https://api.github.com/repos/${githubRepo}/commits/main`;
@@ -70,6 +88,20 @@ async function getLatestCommitInfo() {
 async function updateViaZip(dave, m) {
   const zipUrl = (global.updateZipUrl || process.env.UPDATE_ZIP_URL || '').trim();
   if (!zipUrl) throw new Error('No ZIP URL configured in global.updateZipUrl.');
+
+  // Backup runtime settings
+  const settingsPath = path.join(process.cwd(), 'settings.js');
+  const oldSettings = backupSettings(settingsPath);
+
+  // Gather runtime globals to preserve
+  const runtimeGlobals = {
+    AUTOVIEWSTATUS: global.AUTOVIEWSTATUS,
+    AUTOREACTSTATUS: global.AUTOREACTSTATUS,
+    AUTO_READ: global.AUTO_READ,
+    anticall: global.anticall,
+    AREACT: global.AREACT
+    // Add any other global toggles here
+  };
 
   let currentVersion = 'unknown';
   try {
@@ -93,50 +125,37 @@ async function updateViaZip(dave, m) {
   let statusMessage;
 
   try {
-    // Send initial status message
     statusMessage = await dave.sendMessage(m.chat, {
       text: `DaveAI Updater\n\nCurrent version: v${currentVersion}\nRepository: ${githubRepo}${changelog}\n\nStatus: Downloading update...`
     });
 
-    // Download zip
     await downloadFile(zipUrl, zipPath);
-    await dave.sendMessage(m.chat, {
-      text: `DaveAI Updater\n\nCurrent version: v${currentVersion}\nStatus: Extracting files...`,
-      edit: statusMessage.key
-    });
-
-    // Extract
+    await dave.sendMessage(m.chat, { text: 'Extracting update...', edit: statusMessage.key });
     await extractZip(zipPath, extractTo);
 
     const folders = fs.readdirSync(extractTo);
     const mainFolder = folders.length === 1 ? path.join(extractTo, folders[0]) : extractTo;
     if (!fs.existsSync(mainFolder)) throw new Error('Extracted folder not found.');
 
-    // Copy files
-    await dave.sendMessage(m.chat, {
-      text: `DaveAI Updater\n\nCurrent version: v${currentVersion}\nStatus: Copying files...`,
-      edit: statusMessage.key
-    });
+    await dave.sendMessage(m.chat, { text: 'Copying files...', edit: statusMessage.key });
     await copyRecursive(mainFolder, process.cwd(), [
       'node_modules', '.git', 'session', 'tmp', 'tmp_update', '.env', 'config.js', 'settings.js', 'database.json'
     ]);
 
-    // Install dependencies
-    await dave.sendMessage(m.chat, {
-      text: `DaveAI Updater\n\nCurrent version: v${currentVersion}\nStatus: Installing dependencies...`,
-      edit: statusMessage.key
-    });
+    // Merge runtime globals into settings.js
+    const mergedSettings = mergeSettings(runtimeGlobals, oldSettings);
+    fs.writeFileSync(settingsPath, mergedSettings, 'utf8');
+
+    await dave.sendMessage(m.chat, { text: 'Installing dependencies...', edit: statusMessage.key });
     await run('npm install --omit=dev --no-audit --no-fund');
 
     if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
 
-    // Final update message
     await dave.sendMessage(m.chat, {
       text: `✅ Update Complete!\n\nDaveAI updated successfully.\nFrom: v${currentVersion}\nTo: latest version${changelog}\n\nRestarting bot...`,
       edit: statusMessage.key
     });
 
-    // Restart bot after short delay
     setTimeout(() => {
       console.log('Restarting DaveAI...');
       process.exit(0);
@@ -145,10 +164,7 @@ async function updateViaZip(dave, m) {
   } catch (error) {
     if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
     if (statusMessage) {
-      await dave.sendMessage(m.chat, {
-        text: `❌ Update Failed\n\nError: ${error.message}\nCheck internet, repository, or permissions and try again.`,
-        edit: statusMessage.key
-      });
+      await dave.sendMessage(m.chat, { text: `❌ Update Failed\n\nError: ${error.message}`, edit: statusMessage.key });
     }
     throw error;
   }
@@ -156,17 +172,13 @@ async function updateViaZip(dave, m) {
 
 let daveplug = async (m, { dave, daveshown, command, reply }) => {
   if (!daveshown) return reply('Owner only command.');
-
   try {
     if (command === 'update') {
       await reply('Starting update process...');
       await updateViaZip(dave, m);
     } else if (command === 'restart' || command === 'start') {
       await reply('Restarting DaveAI...');
-      setTimeout(() => {
-        console.log('Manual restart initiated...');
-        process.exit(0);
-      }, 2000);
+      setTimeout(() => process.exit(0), 2000);
     } else {
       reply('Usage:\n.update - Update bot\n.restart - Restart bot');
     }
