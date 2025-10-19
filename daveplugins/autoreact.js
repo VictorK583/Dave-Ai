@@ -18,16 +18,17 @@ let daveplug = async (m, { dave, daveshown, args, reply }) => {
 
         // Load existing settings if file exists
         if (fs.existsSync(settingsPath)) {
+            delete require.cache[require.resolve(settingsPath)]; // clear cache
             settings = require(settingsPath);
         }
 
-        // Update only AREACT key
+        // Update only AREACT key, keep other settings intact
         settings.AREACT = global.AREACT;
 
         // Save back to settings.js
         fs.writeFileSync(
             settingsPath,
-            `module.exports = ${JSON.stringify(settings, null, 2)};`,
+            `// Auto-generated settings\nmodule.exports = ${JSON.stringify(settings, null, 2)};\n`,
             'utf8'
         );
 
@@ -35,7 +36,7 @@ let daveplug = async (m, { dave, daveshown, args, reply }) => {
         console.log(`🔧 AREACT is now ${global.AREACT}`);
     } catch (err) {
         console.error('Failed to save autoreact settings:', err.message);
-        reply('Failed to save settings!');
+        reply('❌ Failed to save settings!');
     }
 };
 
