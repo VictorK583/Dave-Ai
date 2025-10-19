@@ -1,40 +1,38 @@
 const fs = require('fs');
 const path = require('path');
-const settingsPath = path.join(__dirname, '../settings.js');
+const settingsPath = path.join(process.cwd(), 'settings.js');
 
 let daveplug = async (m, { dave, daveshown, args, reply }) => {
   try {
-    if (!daveshown) return reply('Only the owner can use this command.');
+    if (!daveshown) return reply('Owner only command.');
 
     const mode = args[0]?.toLowerCase();
-    if (!mode || !['on', 'off'].includes(mode)) {
+    if (!mode || !['on', 'off'].includes(mode))
       return reply('Usage: .autoread <on|off>');
-    }
 
-    global.AUTO_READ = mode === 'on';
+    const state = mode === 'on';
+    global.AUTO_READ = state;
 
-    // Safely update settings.js
     try {
-      let content = fs.readFileSync(settingsPath, 'utf8');
-
-      if (/AUTO_READ\s*=/.test(content)) {
-        // Update existing AUTO_READ value
-        content = content.replace(/AUTO_READ\s*=\s*(true|false)/, `AUTO_READ = ${global.AUTO_READ}`);
-      } else {
-        // Append if missing
-        content += `\n\nglobal.AUTO_READ = ${global.AUTO_READ}`;
+      let currentSettings = {};
+      if (fs.existsSync(settingsPath)) {
+        currentSettings = require(settingsPath);
       }
 
-      fs.writeFileSync(settingsPath, content);
+      // Update only AUTO_READ
+      currentSettings.AUTO_READ = global.AUTO_READ;
+
+      fs.writeFileSync(settingsPath, `module.exports = ${JSON.stringify(currentSettings, null, 2)};`);
     } catch (err) {
       console.error('Error saving settings:', err.message);
-      return reply('Failed to update settings file.');
+      return reply('⚠️ Failed to save settings, but global variable was updated.');
     }
 
-    reply(`Auto-read has been turned *${mode.toUpperCase()}*`);
+    reply(`✅ Auto-read has been turned ${mode.toUpperCase()}`);
+
   } catch (err) {
     console.error('Autoread error:', err.message);
-    reply('An error occurred while processing the command.');
+    reply('❌ An error occurred while processing the command.');
   }
 };
 
