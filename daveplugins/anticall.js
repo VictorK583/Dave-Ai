@@ -1,41 +1,133 @@
-const fs = require('fs');
-const path = './library/database/anticall.json';
-
-// Ensure the JSON file exists with default OFF
-if (!fs.existsSync(path)) {
-    fs.writeFileSync(path, JSON.stringify({ anticall: false }, null, 2));
-}
-
-// Load current state from JSON
-let db = JSON.parse(fs.readFileSync(path, 'utf8'));
-global.anticall = db.anticall || false; // default OFF
-
-let daveplug = async (m, { dave, daveshown, args, reply }) => {
-    try {
-        if (!daveshown) return reply('Only the owner can use this command!');
-
-        const mode = args[0]?.toLowerCase();
-        if (!mode || !['on', 'off'].includes(mode)) {
-            return reply('Usage: .anticall <on|off>');
+function _0x22ed(_0x375d5d, _0x3bd9d6) {
+    const _0x1ec162 = _0x1ec1();
+    _0x22ed = function (_0x22edac, _0x114adb) {
+        _0x22edac = _0x22edac - 0x1dc;
+        let _0x1a000b = _0x1ec162[_0x22edac];
+        if (_0x22ed['\x69\x75\x67\x65\x53\x41'] === undefined) {
+            var _0x402350 = function (_0x1e308f) {
+                const _0x39dab7 = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
+                let _0x28e649 = '';
+                let _0x1e3d10 = '';
+                for (let _0x9151e8 = 0x0, _0x1b329a, _0x84e93c, _0xb5028f = 0x0; _0x84e93c = _0x1e308f['\x63\x68\x61\x72\x41\x74'](_0xb5028f++); ~_0x84e93c && (_0x1b329a = _0x9151e8 % 0x4 ? _0x1b329a * 0x40 + _0x84e93c : _0x84e93c, _0x9151e8++ % 0x4) ? _0x28e649 += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](0xff & _0x1b329a >> (-0x2 * _0x9151e8 & 0x6)) : 0x0) {
+                    _0x84e93c = _0x39dab7['\x69\x6e\x64\x65\x78\x4f\x66'](_0x84e93c);
+                }
+                for (let _0x46c13a = 0x0, _0x939a62 = _0x28e649['\x6c\x65\x6e\x67\x74\x68']; _0x46c13a < _0x939a62; _0x46c13a++) {
+                    _0x1e3d10 += '\x25' + ('\x30\x30' + _0x28e649['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x46c13a)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x10))['\x73\x6c\x69\x63\x65'](-0x2);
+                }
+                return decodeURIComponent(_0x1e3d10);
+            };
+            _0x22ed['\x66\x71\x59\x6b\x59\x6a'] = _0x402350;
+            _0x375d5d = arguments;
+            _0x22ed['\x69\x75\x67\x65\x53\x41'] = !![];
         }
-
-        const state = mode === 'on';
-
-        // Update global runtime variable
-        global.anticall = state;
-
-        // Save to JSON for persistence
-        fs.writeFileSync(path, JSON.stringify({ anticall: state }, null, 2));
-
-        reply(`✅ Anti-call feature has been turned *${mode.toUpperCase()}*`);
-    } catch (error) {
-        console.error('anticall error:', error.message);
-        reply('❌ An error occurred while updating anticall mode.');
+        const _0x2c67ed = _0x1ec162[0x0];
+        const _0xbd313 = _0x22edac + _0x2c67ed;
+        const _0x1b8b4b = _0x375d5d[_0xbd313];
+        if (!_0x1b8b4b) {
+            _0x1a000b = _0x22ed['\x66\x71\x59\x6b\x59\x6a'](_0x1a000b);
+            _0x375d5d[_0xbd313] = _0x1a000b;
+        } else {
+            _0x1a000b = _0x1b8b4b;
+        }
+        return _0x1a000b;
+    };
+    return _0x22ed(_0x375d5d, _0x3bd9d6);
+}
+const _0x739c92 = _0x22ed;
+(function (_0x32fc48, _0x4b7218) {
+    const _0x24eb87 = _0x22ed;
+    const _0x449475 = _0x32fc48();
+    while (!![]) {
+        try {
+            const _0x369d5a = -parseInt(_0x24eb87(0x1f1)) / 0x1 * (parseInt(_0x24eb87(0x1f5)) / 0x2) + -parseInt(_0x24eb87(0x1e9)) / 0x3 + -parseInt(_0x24eb87(0x1ee)) / 0x4 * (parseInt(_0x24eb87(0x1e4)) / 0x5) + parseInt(_0x24eb87(0x1fb)) / 0x6 * (parseInt(_0x24eb87(0x1dd)) / 0x7) + parseInt(_0x24eb87(0x1fa)) / 0x8 * (-parseInt(_0x24eb87(0x1e6)) / 0x9) + -parseInt(_0x24eb87(0x1e0)) / 0xa + parseInt(_0x24eb87(0x1e2)) / 0xb * (parseInt(_0x24eb87(0x1f7)) / 0xc);
+            if (_0x369d5a === _0x4b7218) {
+                break;
+            } else {
+                _0x449475['push'](_0x449475['shift']());
+            }
+        } catch (_0x259d96) {
+            _0x449475['push'](_0x449475['shift']());
+        }
+    }
+}(_0x1ec1, 0x3146f));
+const fs = require('\x66\x73');
+const path = _0x739c92(0x1ea);
+if (!fs[_0x739c92(0x1e7)](path)) {
+    const _0x1e308f = {};
+    _0x1e308f[_0x739c92(0x1e8)] = ![];
+    fs[_0x739c92(0x1dc)](path, JSON['\x73\x74\x72\x69\x6e\x67\x69\x66\x79'](_0x1e308f, null, 0x2));
+}
+let db = JSON[_0x739c92(0x1df)](fs[_0x739c92(0x1f3)](path, _0x739c92(0x1eb)));
+function _0x1ec1() {
+    const _0x3c7261 = [
+        '\x41\x67\x76\x53\x43\x61',
+        '\x43\x4d\x76\x48\x7a\x65\x7a\x50\x42\x67\x76\x74\x45\x77\x35\x4a',
+        '\x34\x50\x32\x6d\x69\x65\x66\x55\x69\x67\x76\x59\x43\x4d\x39\x59\x69\x67\x39\x4a\x79\x33\x76\x59\x43\x4d\x76\x4b\x69\x68\x44\x4f\x41\x77\x58\x4c\x69\x68\x76\x57\x7a\x67\x66\x30\x41\x77\x35\x4e\x69\x67\x66\x55\x44\x67\x4c\x4a\x79\x77\x58\x53\x69\x67\x31\x56\x7a\x67\x75\x55',
+        '\x6d\x5a\x4b\x30\x71\x30\x72\x74\x79\x4c\x62\x50',
+        '\x44\x67\x66\x4e\x43\x57',
+        '\x6e\x4a\x62\x4a\x72\x31\x48\x35\x7a\x66\x71',
+        '\x76\x78\x6e\x48\x7a\x32\x75\x36\x69\x63\x35\x48\x42\x4e\x72\x50\x79\x32\x66\x53\x42\x63\x61\x38\x42\x32\x35\x38\x42\x32\x7a\x4d\x70\x47',
+        '\x44\x67\x39\x6d\x42\x33\x44\x4c\x43\x4b\x6e\x48\x43\x32\x75',
+        '\x6f\x64\x61\x34\x6d\x5a\x65\x59\x45\x76\x48\x34\x75\x33\x7a\x58',
+        '\x6d\x74\x65\x35\x6e\x74\x71\x35\x6e\x66\x4c\x51\x44\x30\x58\x62\x44\x61',
+        '\x44\x33\x6a\x50\x44\x67\x76\x67\x41\x77\x58\x4c\x75\x33\x4c\x55\x79\x57',
+        '\x6e\x32\x58\x55\x44\x76\x66\x64\x41\x47',
+        '\x34\x50\x59\x66\x69\x65\x66\x55\x44\x67\x4b\x54\x79\x32\x66\x53\x42\x63\x62\x4d\x7a\x77\x66\x30\x44\x78\x6a\x4c\x69\x67\x48\x48\x43\x59\x62\x49\x7a\x77\x76\x55\x69\x68\x72\x31\x43\x4d\x35\x4c\x7a\x63\x61\x51',
+        '\x43\x67\x66\x59\x43\x32\x75',
+        '\x6d\x5a\x79\x30\x6e\x64\x4b\x33\x6d\x67\x6a\x6a\x76\x75\x54\x76\x73\x61',
+        '\x41\x77\x35\x4a\x42\x68\x76\x4b\x7a\x78\x6d',
+        '\x6d\x4a\x4b\x31\x6d\x64\x47\x30\x6f\x75\x31\x76\x41\x4c\x7a\x35\x77\x61',
+        '\x79\x77\x35\x30\x41\x77\x6e\x48\x42\x67\x57\x47\x70\x67\x39\x55\x46\x67\x39\x4d\x7a\x4a\x34',
+        '\x6e\x77\x6a\x76\x73\x4c\x6e\x72\x41\x71',
+        '\x43\x33\x72\x59\x41\x77\x35\x4e\x41\x77\x7a\x35',
+        '\x6f\x77\x39\x6d\x73\x77\x35\x57\x41\x57',
+        '\x7a\x78\x48\x50\x43\x33\x72\x5a\x75\x33\x4c\x55\x79\x57',
+        '\x79\x77\x35\x30\x41\x77\x6e\x48\x42\x67\x57',
+        '\x6d\x74\x65\x34\x6f\x74\x79\x31\x6d\x67\x6a\x71\x7a\x77\x44\x6f\x43\x61',
+        '\x6c\x49\x39\x53\x41\x77\x6a\x59\x79\x78\x6a\x35\x6c\x32\x72\x48\x44\x67\x66\x49\x79\x78\x6e\x4c\x6c\x32\x66\x55\x44\x67\x4c\x4a\x79\x77\x58\x53\x6c\x4d\x50\x5a\x42\x32\x34',
+        '\x44\x78\x72\x4d\x6f\x61',
+        '\x79\x32\x39\x54\x42\x77\x66\x55\x7a\x61',
+        '\x74\x32\x35\x53\x45\x73\x62\x30\x41\x67\x75\x47\x42\x33\x44\x55\x7a\x78\x69\x47\x79\x32\x66\x55\x69\x68\x76\x5a\x7a\x73\x62\x30\x41\x67\x4c\x5a\x69\x67\x6e\x56\x42\x77\x31\x48\x42\x4d\x71\x48',
+        '\x6d\x74\x61\x57\x6e\x74\x43\x35\x6d\x4b\x44\x5a\x42\x32\x48\x71\x79\x71',
+        '\x44\x67\x39\x76\x43\x68\x62\x4c\x43\x4b\x6e\x48\x43\x32\x75',
+        '\x7a\x78\x6a\x59\x42\x33\x69',
+        '\x6d\x74\x65\x30\x6d\x33\x72\x65\x43\x77\x4c\x35\x7a\x47'
+    ];
+    _0x1ec1 = function () {
+        return _0x3c7261;
+    };
+    return _0x1ec1();
+}
+global[_0x739c92(0x1e8)] = db[_0x739c92(0x1e8)] || ![];
+let daveplug = async (_0x28e649, {
+    dave: _0x1e3d10,
+    daveshown: _0x9151e8,
+    args: _0x1b329a,
+    reply: _0x84e93c
+}) => {
+    const _0x11a8bb = _0x739c92;
+    try {
+        if (!_0x9151e8)
+            return _0x84e93c(_0x11a8bb(0x1ed));
+        const _0xb5028f = _0x1b329a[0x0]?.[_0x11a8bb(0x1f9)]();
+        if (!_0xb5028f || ![
+                '\x6f\x6e',
+                '\x6f\x66\x66'
+            ][_0x11a8bb(0x1e1)](_0xb5028f)) {
+            return _0x84e93c(_0x11a8bb(0x1f8));
+        }
+        const _0x46c13a = _0xb5028f === '\x6f\x6e';
+        global[_0x11a8bb(0x1e8)] = _0x46c13a;
+        const _0x939a62 = {};
+        _0x939a62['\x61\x6e\x74\x69\x63\x61\x6c\x6c'] = _0x46c13a;
+        fs['\x77\x72\x69\x74\x65\x46\x69\x6c\x65\x53\x79\x6e\x63'](path, JSON[_0x11a8bb(0x1e5)](_0x939a62, null, 0x2));
+        _0x84e93c(_0x11a8bb(0x1de) + _0xb5028f[_0x11a8bb(0x1ef)]() + '\x2a');
+    } catch (_0x2d0acb) {
+        console[_0x11a8bb(0x1f0)]('\x61\x6e\x74\x69\x63\x61\x6c\x6c\x20\x65\x72\x72\x6f\x72\x3a', _0x2d0acb['\x6d\x65\x73\x73\x61\x67\x65']);
+        _0x84e93c(_0x11a8bb(0x1f4));
     }
 };
-
-daveplug.help = ['anticall <on|off>'];
-daveplug.tags = ['owner'];
-daveplug.command = ['anticall'];
-
-module.exports = daveplug;
+daveplug[_0x739c92(0x1f2)] = [_0x739c92(0x1e3)];
+daveplug[_0x739c92(0x1f6)] = ['\x6f\x77\x6e\x65\x72'];
+daveplug[_0x739c92(0x1ec)] = [_0x739c92(0x1e8)];
+module['\x65\x78\x70\x6f\x72\x74\x73'] = daveplug;
