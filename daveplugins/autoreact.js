@@ -1,47 +1,28 @@
-const fs = require('fs');
-const path = require('path');
-
-const settingsPath = path.join(process.cwd(), 'settings.js');
+const fs = require('fs')
 
 let daveplug = async (m, { dave, daveshown, args, reply }) => {
-    if (!daveshown) return reply('This command is only for the owner.');
-
-    const mode = args[0]?.toLowerCase();
-    if (!mode || !['on', 'off'].includes(mode)) {
-        return reply('Usage: .autoreact <on|off>');
-    }
-
-    global.AREACT = mode === 'on';
-
     try {
-        let settings = {};
-
-        // Load existing settings if file exists
-        if (fs.existsSync(settingsPath)) {
-            delete require.cache[require.resolve(settingsPath)]; // clear cache
-            settings = require(settingsPath);
+        if (!daveshown) {
+            return reply('Only the owner can use this command.')
         }
 
-        // Update only AREACT key, keep other settings intact
-        settings.AREACT = global.AREACT;
+        const mode = args[0] ? args[0].toLowerCase() : ''
+        if (!['on', 'off'].includes(mode)) {
+            return reply('Usage: .autoreact on or .autoreact off')
+        }
 
-        // Save back to settings.js
-        fs.writeFileSync(
-            settingsPath,
-            `// Auto-generated settings\nmodule.exports = ${JSON.stringify(settings, null, 2)};\n`,
-            'utf8'
-        );
+        global.AREACT = mode === 'on'
 
-        reply(`✅ Auto-react has been turned ${mode.toUpperCase()}`);
-        console.log(`🔧 AREACT is now ${global.AREACT}`);
+        reply(`Auto React has been turned ${global.AREACT ? 'ON' : 'OFF'} (resets on restart).`)
+        console.log(`Auto React mode: ${global.AREACT ? 'ENABLED' : 'DISABLED'}`)
     } catch (err) {
-        console.error('Failed to save autoreact settings:', err.message);
-        reply('❌ Failed to save settings!');
+        console.error('Error in autoreact command:', err)
+        reply('Failed to change autoreact mode.')
     }
-};
+}
 
-daveplug.help = ['autoreact <on|off>'];
-daveplug.tags = ['owner'];
-daveplug.command = ['autoreact'];
+daveplug.help = ['autoreact <on/off>']
+daveplug.tags = ['owner']
+daveplug.command = ['autoreact']
 
-module.exports = daveplug;
+module.exports = daveplug
