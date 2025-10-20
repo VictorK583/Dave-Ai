@@ -1,52 +1,45 @@
 const fetch = require("node-fetch");
 
-let daveplug = async (m, { dave, reply, text, fetchJson }) => {
-    try {
-        if (!text) {
-            return reply('Provide a TikTok link for the audio');
-        }
-        
-        if (!text.includes("tiktok.com")) {
-            return reply('That is not a valid TikTok link');
-        }
+let daveplug = async (m, { dave, reply, text }) => {
+  try {
+    if (!text) return reply('Provide a TikTok link for the audio.');
+    if (!text.includes("tiktok.com")) return reply('Invalid TikTok link.');
 
-        const fetchTikTokData = async (url, retries = 3) => {
-            for (let attempt = 0; attempt < retries; attempt++) {
-                const data = await fetchJson(url);
-                if (data && data.status === 200 && data.tiktok && data.tiktok.music) {
-                    return data;
-                }
-            }
-            throw new Error("Failed to fetch valid TikTok data after multiple attempts");
-        };
+    const apiUrl = `https://api.dreaded.site/api/tiktok?url=${text}`;
+    reply('Fetching TikTok audio...');
 
-        const url = `https://api.dreaded.site/api/tiktok?url=${text}`;
-        const data = await fetchTikTokData(url);
+    const response = await fetch(apiUrl);
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-        const tikAudioUrl = data.tiktok.music;
+    const data = await response.json();
+    if (!data || !data.tiktok || !data.tiktok.music) throw new Error('No audio found for that TikTok link.');
 
-        await reply('TikTok audio data fetched successfully! Sending...');
+    const audioUrl = data.tiktok.music;
+    reply('TikTok audio found. Downloading...');
 
-        const response = await fetch(tikAudioUrl);
+    // Download audio with headers to prevent CDN block
+    const audioRes = await fetch(audioUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 10)',
+        'Referer': 'https://www.tiktok.com/',
+      },
+    });
 
-        if (!response.ok) {
-            throw new Error(`Failed to download audio: HTTP ${response.status}`);
-        }
+    if (!audioRes.ok) throw new Error(`Failed to fetch audio file: ${audioRes.status}`);
 
-        const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = Buffer.from(arrayBuffer);
+    const audioBuffer = Buffer.from(await audioRes.arrayBuffer());
 
-        await dave.sendMessage(m.chat, {
-            audio: audioBuffer,
-            mimetype: "audio/mpeg",
-            ptt: false,
-            fileName: "tiktok_audio.mp3"
-        }, { quoted: m });
+    await dave.sendMessage(m.chat, {
+      audio: audioBuffer,
+      mimetype: 'audio/mpeg',
+      fileName: 'tiktok_audio.mp3',
+      ptt: false,
+    }, { quoted: m });
 
-    } catch (error) {
-        console.error('TikTok audio error:', error.message);
-        reply(`Error: ${error.message}`);
-    }
+  } catch (error) {
+    console.error('TikTok audio error:', error);
+    reply(`Error: ${error.message}`);
+  }
 };
 
 daveplug.help = ['tiktokaudio <tiktok url>'];
