@@ -1,17 +1,25 @@
 {
   "name": "Dave-Ai",
-  "version": "1.0.0",
-  "description": "A WhatsApp bot created using Node.js",
+  "version": "1.2.4",
+  "description": "WhatsApp Bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "start:dev": "pm2 start index.js --deep-monitoring --attach --name Dave-Ai",
-    "stop": "pm2 stop Dave-Ai",
-    "restart": "pm2 restart Dave-Ai"
+    "start:optimized": "node --max-old-space-size=512 --optimize-for-size --gc-interval=100 index.js",
+    "cleanup": "node cleanup.js",
+    "reset-session": "node reset-session.js",
+    "start:clean": "npm run cleanup && npm run start:optimized",
+    "start:fresh": "npm run reset-session && npm start",
+    "install:panel": "npm install --legacy-peer-deps",
+    "install:force": "npm install --force",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docker:build": "docker build -t docker run -e SESSION_ID=$SESSION_ID Dave-md"
   },
-  "engines": {
-    "node": ">=20.0.0 <21.0.0"
-  },
+  "keywords": [
+    "whatsapp-bot"
+  ],
+  "author": "dave",
+  "license": "ISC",
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
     "@ffmpeg/ffmpeg": "^0.12.15",
@@ -79,5 +87,8 @@
     "yargs": "^17.6.0",
     "yt-search": "^2.10.4",
     "ytdl-core": "^4.11.5"
-    }
+      },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
