@@ -49,7 +49,7 @@ function detectHost() {
 // Get dynamic menu data
 function getMenuData() {
     try {
-        let data = JSON.parse(fs.readFileSync('./library/database/messageCount.json'))
+        let data = JSON.parse(fs.readFileSync('./library/lib/database/messageCount.json'))
         const uptimeInSeconds = process.uptime()
         const uptimeFormatted = formatTime(uptimeInSeconds)
         const currentMode = data.isPublic ? 'Public' : 'Private'
