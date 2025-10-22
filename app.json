@@ -1,34 +1,43 @@
 {
-  "name": "Dave-Ai",
-  "description": "A WhatsApp bot based on Baileys Multi Device",
-  "repository": "https://github.com/giftdedavesmd/Dave-Ai",
-  "logo": "https://telegra.ph/file/7aa528767ed96ddc17bc2.jpg",
-  "keywords": ["nodejs", "whatsapp-bot", "multi-device"],
-  "env": {
-    "SESSION_ID": {
-      "description": "Your session ID (required)",
-      "value": "dave~",
-      "required": true
-    },
-    "PREFIX": {
-      "description": "Bot command prefix",
-      "value": ".",
-      "required": false
-    },
-    "BOT_NAME": {
-      "description": "Your bot name",
-      "value": "𝘿𝙖𝙫𝙚𝘼𝙄",
-      "required": false
-    },
-    "OWNER_NUMBER": {
-      "description": "Your WhatsApp number with country code",
-      "value": "254104260236",
-      "required": false
+  "name": "Dave-md",
+  "description": "June-md, your friendly assistant!",
+  "logo": "https://h.uguu.se/GiYWpWoC.jpg",
+  "keywords": [],
+  "repository": "https://github.com/gifteddevsmd/Dave-Ai",
+  "stack": "container",
+  "addons": [
+    {
+      "plan": "heroku-postgresql"
+    }
+  ],
+  "scripts": {
+    "start": "node index.js"
+  },
+"env": {
+  "SESSION_ID": {
+    "description": "Must begin with 'dave~'.",
+    "value": "",
+    "required": true
+  }
+},  
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "standard-2x"
     }
   },
   "buildpacks": [
-    { "url": "heroku/nodejs" },
-    { "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest" },
-    { "url": "https://github.com/clhuang/heroku-buildpack-webp-binaries.git" }
+    {
+      "url": "heroku/nodejs"
+    },
+    {
+      "url": "https://github.com/DuckyTeam/heroku-buildpack-imagemagick.git"
+    },
+    {
+      "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest"
+    },
+    {
+      "url": "https://github.com/clhuang/heroku-buildpack-webp-binaries.git"
+    }
   ]
 }
