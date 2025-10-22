@@ -39,7 +39,7 @@ const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./libr
 const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, sleep, reSize } = require('./library/lib/function')
 
 // Load store and settings - CORRECTED PATH
-const store = require('./library/lib/database/basestore')
+const store = require('./library/database/basestore')
 const settings = require('./settings')
 
 // Global state
@@ -49,9 +49,9 @@ global.errorRetryCount = 0
 global.messageBackup = {}
 
 // File paths - CORRECTED TO MATCH YOUR STRUCTURE
-const MESSAGE_STORE_FILE = path.join(__dirname, 'library/lib/database/message_backup.json')
-const SESSION_ERROR_FILE = path.join(__dirname, 'library/lib/database/sessionErrorCount.json')
-const MESSAGE_COUNT_FILE = path.join(__dirname, 'library/lib/database/messageCount.json')
+const MESSAGE_STORE_FILE = path.join(__dirname, 'library/database/message_backup.json')
+const SESSION_ERROR_FILE = path.join(__dirname, 'library/database/sessionErrorCount.json')
+const MESSAGE_COUNT_FILE = path.join(__dirname, 'library/database/messageCount.json')
 const sessionDir = path.join(__dirname, 'session')
 const credsPath = path.join(sessionDir, 'creds.json')
 const loginFile = path.join(sessionDir, 'login.json')
