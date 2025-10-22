@@ -10,17 +10,16 @@ let daveplug = async (m, { dave, replymenu, menu }) => {
         const end = Date.now()
         const ping = end - start
 
-        // Reload menu to get fresh data with ping
         delete require.cache[require.resolve('./library/listmenu/menulist')]
 const menuModule = require('./library/listmenu/menulist')
 
-        // Build menu with dynamic data
-        let data = JSON.parse(fs.readFileSync('./library/lib/database/messageCount.json'))
-        const uptimeFormatted = formatTime(process.uptime())
-        const currentMode = data.isPublic ? 'Public' : 'Private'
-        const hostName = detectHost()
-        
-        const dynamicMenu = menuModule.replace('*0 ms*', `*${ping} ms*`)
+// Build menu with dynamic data
+let data = JSON.parse(fs.readFileSync('./library/database/messageCount.json'))
+const uptimeFormatted = formatTime(process.uptime())
+const currentMode = data.isPublic ? 'Public' : 'Private'
+const hostName = detectHost()
+
+const dynamicMenu = menuModule.replace('*0 ms*', `*${ping} ms*`)
 
         // Send image with menu as caption
         await dave.sendMessage(
