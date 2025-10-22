@@ -9,10 +9,6 @@ const {
     fetchLatestBaileysVersion,
     jidNormalizedUser,
     makeCacheableSignalKeyStore,
-    jidDecode,
-    generateForwardMessageContent,
-    generateWAMessageFromContent,
-    downloadContentFromMessage,
     delay 
 } = require("@whiskeysockets/baileys")
 
