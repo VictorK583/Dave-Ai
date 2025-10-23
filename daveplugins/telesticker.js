@@ -14,141 +14,82 @@ let daveplug = async (m, { dave, reply, text, prefix, command }) => {
             return await reply(`Please enter the Telegram sticker URL!\n\nExample: ${prefix + command} https://t.me/addstickers/Porcientoreal`);
         }
 
-        // Validate URL format
         if (!args[0].match(/(https:\/\/t.me\/addstickers\/)/gi)) {
             return await reply('Invalid URL! Make sure it is a Telegram sticker URL.');
         }
 
-        // Add processing reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '...', key: m.key }
-        });
+        await dave.sendMessage(m.chat, { react: { text: '...', key: m.key } });
 
-        // Get pack name from URL
         const packName = args[0].replace("https://t.me/addstickers/", "");
-
-        // Using working bot token
         const botToken = '7801479976:AAGuPL0a7kXXBYz6XUSR_ll2SR5V_W6oHl4';
 
-        // Fetch sticker pack info
-        const response = await fetch(
-            `https://api.telegram.org/bot${botToken}/getStickerSet?name=${encodeURIComponent(packName)}`,
-            { 
-                method: "GET",
-                headers: {
-                    "Accept": "application/json",
-                    "User-Agent": "Mozilla/5.0"
-                }
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/getStickerSet?name=${encodeURIComponent(packName)}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const stickerSet = await response.json();
+        if (!stickerSet.ok || !stickerSet.result) throw new Error('Invalid sticker pack or API response');
 
-        if (!stickerSet.ok || !stickerSet.result) {
-            throw new Error('Invalid sticker pack or API response');
-        }
-
-        // Send initial message with sticker count
         await reply(`Found ${stickerSet.result.stickers.length} stickers\nStarting download...`);
 
-        // Create temp directory if it doesn't exist
-        const tmpDir = path.join(process.cwd(), 'tmp');
-        if (!fs.existsSync(tmpDir)) {
-            fs.mkdirSync(tmpDir, { recursive: true });
-        }
+        const tempDir = path.join(process.cwd(), 'temp'); // Use your existing temp folder
 
-        // Process each sticker
         let successCount = 0;
         for (let i = 0; i < stickerSet.result.stickers.length; i++) {
             try {
                 const sticker = stickerSet.result.stickers[i];
                 const fileId = sticker.file_id;
 
-                // Get file path
-                const fileInfo = await fetch(
-                    `https://api.telegram.org/bot${botToken}/getFile?file_id=${fileId}`
-                );
-
+                const fileInfo = await fetch(`https://api.telegram.org/bot${botToken}/getFile?file_id=${fileId}`);
                 if (!fileInfo.ok) continue;
-
                 const fileData = await fileInfo.json();
                 if (!fileData.ok || !fileData.result.file_path) continue;
 
-                // Download sticker
                 const fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`;
-                const imageResponse = await fetch(fileUrl);
-                const imageBuffer = await imageResponse.buffer();
+                const imageBuffer = await (await fetch(fileUrl)).buffer();
 
-                // Generate temp file paths
-                const tempInput = path.join(tmpDir, `temp_${Date.now()}_${i}`);
-                const tempOutput = path.join(tmpDir, `sticker_${Date.now()}_${i}.webp`);
+                const tempInput = path.join(tempDir, `input_${i}.tgs`);
+                const tempOutput = path.join(tempDir, `output_${i}.webp`);
 
-                // Write media to temp file
                 fs.writeFileSync(tempInput, imageBuffer);
 
-                // Check if sticker is animated or video
                 const isAnimated = sticker.is_animated || sticker.is_video;
-
-                // Convert to WebP using ffmpeg with optimized settings
                 const ffmpegCommand = isAnimated
                     ? `ffmpeg -i "${tempInput}" -vf "scale=512:512:force_original_aspect_ratio=decrease,fps=15,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000" -c:v libwebp -preset default -loop 0 -vsync 0 -pix_fmt yuva420p -quality 75 -compression_level 6 "${tempOutput}"`
                     : `ffmpeg -i "${tempInput}" -vf "scale=512:512:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000" -c:v libwebp -preset default -loop 0 -vsync 0 -pix_fmt yuva420p -quality 75 -compression_level 6 "${tempOutput}"`;
 
                 await new Promise((resolve, reject) => {
-                    exec(ffmpegCommand, (error) => {
-                        if (error) {
-                            console.error('FFmpeg error:', error);
-                            reject(error);
-                        } else resolve();
-                    });
+                    exec(ffmpegCommand, (error) => (error ? reject(error) : resolve()));
                 });
 
-                // Read the WebP file
                 const webpBuffer = fs.readFileSync(tempOutput);
-
-                // Add metadata using webpmux
                 const img = new webp.Image();
                 await img.load(webpBuffer);
 
-                // Create metadata
                 const metadata = {
                     'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
                     'sticker-pack-name': settings.packname || 'DaveAI',
                     'sticker-pack-publisher': settings.author || 'DaveAI',
-                    'emojis': sticker.emoji ? [sticker.emoji] : ['🤖']
+                    'emojis': sticker.emoji ? [sticker.emoji] : []
                 };
 
-                // Create exif buffer
-                const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00]);
+                const exifAttr = Buffer.from([
+                    0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00,
+                    0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x16, 0x00, 0x00, 0x00
+                ]);
                 const jsonBuffer = Buffer.from(JSON.stringify(metadata), 'utf8');
                 const exif = Buffer.concat([exifAttr, jsonBuffer]);
                 exif.writeUIntLE(jsonBuffer.length, 14, 4);
-
-                // Set the exif data
                 img.exif = exif;
 
-                // Get the final buffer
                 const finalBuffer = await img.save(null);
-
-                // Send sticker
-                await dave.sendMessage(m.chat, { 
-                    sticker: finalBuffer 
-                });
+                await dave.sendMessage(m.chat, { sticker: finalBuffer });
 
                 successCount++;
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 800));
 
-                // Cleanup temp files
-                try {
-                    fs.unlinkSync(tempInput);
-                    fs.unlinkSync(tempOutput);
-                } catch (err) {
-                    console.error('Error cleaning up temp files:', err);
-                }
+                fs.unlinkSync(tempInput);
+                fs.unlinkSync(tempOutput);
 
             } catch (err) {
                 console.error(`Error processing sticker ${i}:`, err);
@@ -156,23 +97,13 @@ let daveplug = async (m, { dave, reply, text, prefix, command }) => {
             }
         }
 
-        // Add success reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '✓', key: m.key }
-        });
-
-        // Send completion message
+        await dave.sendMessage(m.chat, { react: { text: '✓', key: m.key } });
         await reply(`Successfully downloaded ${successCount}/${stickerSet.result.stickers.length} stickers!`);
 
     } catch (error) {
         console.error('Telegram Sticker Command Error:', error);
-
-        // Add error reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '✗', key: m.key }
-        });
-
-        await reply('Failed to process Telegram stickers!\nMake sure:\n1. The URL is correct\n2. The sticker pack exists\n3. The sticker pack is public');
+        await dave.sendMessage(m.chat, { react: { text: '✗', key: m.key } });
+        await reply('Failed to process Telegram stickers! Check if:\n1. The URL is correct\n2. The sticker pack exists\n3. The sticker pack is public');
     }
 };
 
