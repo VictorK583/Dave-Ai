@@ -58,6 +58,6 @@ let daveplug = async (m, { dave, reply, uploadtoimgur, text }) => {
 
 daveplug.help = ['upload (reply to image/video or provide URL)'];
 daveplug.tags = ['tools'];
-daveplug.command = ['upload', 'tourl'];
+daveplug.command = ['upload', 'tourl3'];
 
 module.exports = daveplug;
