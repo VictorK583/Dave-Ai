@@ -1,7 +1,7 @@
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const fs = require('fs');
 const path = require('path');
-const { UploadFileUgu, TelegraPh } = require('./library/lib/uploader');
+const { UploadFileUgu, TelegraPh } = require('../library/lib/uploader');
 
 async function getMediaBufferAndExt(message) {
     const m = message.message || {};
