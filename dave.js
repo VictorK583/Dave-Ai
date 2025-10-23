@@ -883,49 +883,57 @@ case 'repo': {
 break
 
 case 'antibot': {
-if (!m.isGroup) return m.reply(mess.group)
-if (!isAdmins && !daveshown) return m.reply(mess.owner)
-  try {
-    await m.reply("Scanning group for suspected bot accounts...");
+    if (!m.isGroup) return m.reply(mess.group);
+    if (!isAdmins && !daveshown) return m.reply(mess.owner);
 
-    const groupMeta = await dave.groupMetadata(from);
-    
-    const suspectedBots = groupMeta.participants.filter(p => {
-      const hasBotInId = p.id.toLowerCase().includes('bot');
-      const noProfilePic = !p.picture || p.picture === null;
-      const defaultStatus = !p.status || p.status === null;
-      return hasBotInId || (noProfilePic && defaultStatus);
-    });
+    try {
+        await m.reply("Scanning group for suspected bot accounts...");
 
-    if (suspectedBots.length === 0) {
-      return m.reply("No suspected bots detected in this group.");
+        const groupMeta = await dave.groupMetadata(from);
+        const botJid = dave.user.id.split(':')[0] + '@s.whatsapp.net';
+
+        const suspectedBots = groupMeta.participants.filter(p => {
+            const hasBotInId = p.id.toLowerCase().includes('bot');
+            const noProfilePic = !p.picture || p.picture === null;
+            const defaultStatus = !p.status || p.status === null;
+
+            // EXCLUDE: bot itself, message sender, and group admins
+            const isAdmin = p.admin !== null; 
+            const isSelf = p.id === m.sender;
+            const isBotSelf = p.id === botJid;
+
+            return (hasBotInId || (noProfilePic && defaultStatus)) && !isAdmin && !isSelf && !isBotSelf;
+        });
+
+        if (suspectedBots.length === 0) {
+            return m.reply("No suspected bots detected in this group.");
+        }
+
+        let botListText = suspectedBots.map((b, i) => `${i + 1}. @${b.id.split('@')[0]}`).join('\n');
+        await dave.sendMessage(from, {
+            text: `Suspected bot accounts detected:\n\n${botListText}\n\nThese accounts will be removed in 10 seconds.`,
+            mentions: suspectedBots.map(b => b.id)
+        });
+
+        await new Promise(res => setTimeout(res, 10000));
+
+        let removedCount = 0;
+        for (const bot of suspectedBots) {
+            try {
+                await dave.groupParticipantsUpdate(from, [bot.id], 'remove');
+                removedCount++;
+            } catch (err) {
+                console.error(`Failed to remove ${bot.id}:`, err.message);
+            }
+        }
+
+        m.reply(`Removed ${removedCount} suspected bot(s) from the group!`);
+    } catch (err) {
+        console.error("antibot error:", err);
+        m.reply("Failed to scan/remove bots. Make sure I'm an admin!");
     }
-
-    let botListText = suspectedBots.map((b, i) => `${i + 1}. @${b.id.split('@')[0]}`).join('\n');
-    await dave.sendMessage(from, {
-      text: `Suspected bot accounts detected:\n\n${botListText}\n\nThese accounts will be removed in 10 seconds.`,
-      mentions: suspectedBots.map(b => b.id)
-    });
-
-    await new Promise(res => setTimeout(res, 10000));
-
-    let removedCount = 0;
-    for (const bot of suspectedBots) {
-      try {
-        await dave.groupParticipantsUpdate(from, [bot.id], 'remove');
-        removedCount++;
-      } catch (err) {
-        console.error(`Failed to remove ${bot.id}:`, err.message);
-      }
-    }
-
-    m.reply(`Removed ${removedCount} suspected bot(s) from the group!`);
-  } catch (err) {
-    console.error("antibot error:", err);
-    m.reply("Failed to scan/remove bots. Make sure I'm an admin!");
-  }
 }
-break
+break;
 
 case 'sc':
 case 'git':
