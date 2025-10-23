@@ -727,7 +727,7 @@ module.exports = async (dave, m) => {
       );
     }
 
-    //////// rest of your code continues unchanged ////////
+    ////code continues unchanged ////////
 
     ////bug group/////////////////
     async function trashgc(target) {
@@ -1129,6 +1129,14 @@ module.exports = async (dave, m) => {
         }
       }
     }
+
+
+  // Save updated warnings
+      const { saveSettings } = require('./settingsManager');
+      saveSettings(global.settings);
+    }
+  }
+}
 
     if (!dave.isPublic && !daveshown) {
       return; // ignore all messages from non-owner when in private mode
