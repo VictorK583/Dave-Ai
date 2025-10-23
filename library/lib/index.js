@@ -1,22 +1,36 @@
 const fs = require('fs');
 const path = require('path');
 
-/**
- * Read or create Antitag configuration from JSON database
- */
+const filePath = path.join(__dirname, '../../database/antitag.json');
+
+// Ensure database file exists
+function ensureDB() {
+    if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        fs.writeFileSync(filePath, JSON.stringify({}, null, 2));
+    }
+}
+
+// Read database
+function readDB() {
+    ensureDB();
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+// Write database
+function writeDB(data) {
+    ensureDB();
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+// Get current antitag settings
 async function getAntitag(chatId, defaultState = 'off') {
     try {
-        const filePath = path.join(__dirname, '../../database/antitag.json');
-        if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, JSON.stringify({}, null, 2));
-        }
-
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        const data = readDB();
         if (!data[chatId]) {
             data[chatId] = { enabled: defaultState === 'on', action: 'delete' };
-            fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+            writeDB(data);
         }
-
         return data[chatId];
     } catch (error) {
         console.error('Error reading antitag settings:', error);
@@ -24,63 +38,37 @@ async function getAntitag(chatId, defaultState = 'off') {
     }
 }
 
-/**
- * Detects tag-all behavior and takes configured action (delete or kick)
- */
-async function handleTagDetection(dave, m) {
+// Set or update antitag configuration
+async function setAntitag(chatId, state = 'on', action = 'delete') {
     try {
-        const antitagSetting = await getAntitag(m.chat, 'on');
-        if (!antitagSetting || !antitagSetting.enabled) return;
-
-        // Extract mentioned JIDs
-        const mentions = m.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-
-        // Only act if tagging multiple users
-        if (mentions.length >= 3) {
-            const groupMetadata = await dave.groupMetadata(m.chat);
-            const participants = groupMetadata.participants || [];
-            const mentionThreshold = Math.ceil(participants.length * 0.5);
-
-            if (mentions.length >= mentionThreshold) {
-                const action = antitagSetting.action || 'delete';
-
-                if (action === 'delete') {
-                    await dave.sendMessage(m.chat, {
-                        delete: {
-                            remoteJid: m.chat,
-                            fromMe: false,
-                            id: m.key.id,
-                            participant: m.sender
-                        }
-                    });
-
-                    await dave.sendMessage(m.chat, { text: `🚫 Tagall Detected and Message Deleted!` });
-
-                } else if (action === 'kick') {
-                    await dave.sendMessage(m.chat, {
-                        delete: {
-                            remoteJid: m.chat,
-                            fromMe: false,
-                            id: m.key.id,
-                            participant: m.sender
-                        }
-                    });
-
-                    await dave.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
-
-                    await dave.sendMessage(m.chat, {
-                        text: `🚫 Antitag Detected!\n@${m.sender.split('@')[0]} has been removed for tagging all members.`,
-                        mentions: [m.sender]
-                    });
-                }
-            }
-        }
+        const data = readDB();
+        data[chatId] = {
+            enabled: state === 'on',
+            action: action || 'delete'
+        };
+        writeDB(data);
+        return true;
     } catch (error) {
-        console.error('Error in tag detection:', error);
+        console.error('Error saving antitag settings:', error);
+        return false;
+    }
+}
+
+// Remove antitag entry (turn off)
+async function removeAntitag(chatId) {
+    try {
+        const data = readDB();
+        delete data[chatId];
+        writeDB(data);
+        return true;
+    } catch (error) {
+        console.error('Error removing antitag entry:', error);
+        return false;
     }
 }
 
 module.exports = {
-    handleTagDetection,
-    getAntitag
+    getAntitag,
+    setAntitag,
+    removeAntitag
 };
