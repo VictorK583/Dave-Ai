@@ -24,7 +24,7 @@ let daveplug = async (m, { dave, replymenu, menu }) => {
         const hostName = detectHost();
 
         // Replace ping dynamically (always show)
-        const dynamicMenu = menuModule.replace('*0 ms*', `*${ping} ms*`);
+        const dynamicMenu = menuModule.replace('*300 ms*', `*${ping} ms*`);
 
         // Send image with menu caption
         await dave.sendMessage(
