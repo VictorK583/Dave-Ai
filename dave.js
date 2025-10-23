@@ -881,6 +881,103 @@ case 'repo': {
   reply(botInfo)
 }
 break
+
+case 'antibot': {
+if (!m.isGroup) return m.reply(mess.group)
+if (!isAdmins && !daveshown) return m.reply(mess.owner)
+  try {
+    await m.reply("Scanning group for suspected bot accounts...");
+
+    const groupMeta = await dave.groupMetadata(from);
+    
+    const suspectedBots = groupMeta.participants.filter(p => {
+      const hasBotInId = p.id.toLowerCase().includes('bot');
+      const noProfilePic = !p.picture || p.picture === null;
+      const defaultStatus = !p.status || p.status === null;
+      return hasBotInId || (noProfilePic && defaultStatus);
+    });
+
+    if (suspectedBots.length === 0) {
+      return m.reply("No suspected bots detected in this group.");
+    }
+
+    let botListText = suspectedBots.map((b, i) => `${i + 1}. @${b.id.split('@')[0]}`).join('\n');
+    await dave.sendMessage(from, {
+      text: `Suspected bot accounts detected:\n\n${botListText}\n\nThese accounts will be removed in 10 seconds.`,
+      mentions: suspectedBots.map(b => b.id)
+    });
+
+    await new Promise(res => setTimeout(res, 10000));
+
+    let removedCount = 0;
+    for (const bot of suspectedBots) {
+      try {
+        await dave.groupParticipantsUpdate(from, [bot.id], 'remove');
+        removedCount++;
+      } catch (err) {
+        console.error(`Failed to remove ${bot.id}:`, err.message);
+      }
+    }
+
+    m.reply(`Removed ${removedCount} suspected bot(s) from the group!`);
+  } catch (err) {
+    console.error("antibot error:", err);
+    m.reply("Failed to scan/remove bots. Make sure I'm an admin!");
+  }
+}
+break
+
+case 'sc':
+case 'git':
+case 'deployme':
+case 'rep':
+case 'DaveAi': {
+    const axios = require('axios');
+    const owner = "gifteddevsmd";
+    const repo = "Dave-Ai";
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
+    const collabUrl = `https://api.github.com/repos/${owner}/${repo}/collaborators`;
+
+    await reply("Fetching repository details...");
+
+    try {
+        const repoRes = await axios.get(apiUrl, { headers: { "User-Agent": "DaveAi" } });
+        const data = repoRes.data;
+
+        let collabCount = 0;
+        try {
+            const collabRes = await axios.get(collabUrl, { headers: { "User-Agent": "DaveAi" } });
+            collabCount = collabRes.data.length;
+        } catch {
+            collabCount = "Private/Hidden";
+        }
+
+        const msg = `
+𝘿𝙖𝙫𝙚𝘼𝙄 REPO
+
+Repository: ${data.html_url}
+
+Stars: ${data.stargazers_count}
+Forks: ${data.forks_count}
+
+Collaborators: ${collabCount}
+
+Last Updated: ${new Date(data.updated_at).toLocaleString()}
+
+Owner: ${data.owner.login}
+
+Language: ${data.language || "Kijaluo"}
+
+Description: "_𝘿𝙖𝙫𝙚𝘼𝙄 by Dave_"
+`;
+
+        await reply(msg);
+    } catch (err) {
+        console.error(err);
+        await reply("Failed to fetch repository info. Please try again later.");
+    }
+}
+break
 //==================================================//     
         case "updateheroku": case "redeploy": {
                       const axios = require('axios');
