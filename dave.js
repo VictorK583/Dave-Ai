@@ -978,7 +978,191 @@ Description: "_𝘿𝙖𝙫𝙚𝘼𝙄 by Dave_"
     }
 }
 break
-//==================================================//     
+//==================================================//  
+
+case 'whois': {
+  try {
+    if (!m.quoted && args.length === 0) 
+      return reply("Provide a user number (e.g., 2547xxxxxxx) to get info.");
+
+    const jid = m.quoted ? m.quoted.sender : `${args[0].replace(/[^0-9]/g, '')}@s.whatsapp.net`;
+
+    let ppUrl;
+    try {
+      ppUrl = await dave.profilePictureUrl(jid);
+    } catch {
+      ppUrl = 'https://i.ibb.co/0jqHpnp/No-Profile-Pic.png';
+    }
+
+    let about = 'Not set';
+    try {
+      const status = await dave.status(jid);
+      about = status.status || about;
+    } catch {}
+
+    const number = jid.split('@')[0];
+
+    await dave.sendMessage(from, {
+      image: { url: ppUrl },
+      caption: `Whois Info:\n\nNumber: +${number}\nAbout: ${about}`
+    }, { quoted: m });
+
+  } catch (err) {
+    console.error('whois command error:', err);
+    await reply('Failed to fetch user info.');
+  }
+}
+break
+
+case 'checkphone': {
+    try {
+        let target;
+        if (m.message.extendedTextMessage?.contextInfo?.mentionedJid?.length) {
+            target = m.message.extendedTextMessage.contextInfo.mentionedJid[0];
+        } else if (m.quoted && m.quoted.sender) {
+            target = m.quoted.sender;
+        } else {
+            target = m.sender;
+        }
+
+        const [userData] = await dave.onWhatsApp(target);
+        if (!userData) return reply("User not found on WhatsApp.");
+
+        let deviceType = "Unknown";
+        if (m.key.id.startsWith("3EB0")) deviceType = "Android";
+        else if (m.key.id.startsWith("3AEB")) deviceType = "iPhone";
+        else if (m.key.id.startsWith("BAE5")) deviceType = "Web";
+        else if (m.key.id.startsWith("7EBA")) deviceType = "KaiOS";
+
+        const ua = (dave.user?.platform || "WhatsApp MD").toLowerCase();
+        let phoneBrand = "Unknown";
+
+        if (/samsung|sm-|galaxy/.test(ua)) phoneBrand = "Samsung";
+        else if (/tecno/.test(ua)) phoneBrand = "Tecno";
+        else if (/infinix/.test(ua)) phoneBrand = "Infinix";
+        else if (/itel/.test(ua)) phoneBrand = "Itel";
+        else if (/nokia/.test(ua)) phoneBrand = "Nokia";
+        else if (/iphone|ios/.test(ua)) phoneBrand = "Apple iPhone";
+        else if (/xiaomi|redmi/.test(ua)) phoneBrand = "Xiaomi";
+        else if (/huawei/.test(ua)) phoneBrand = "Huawei";
+        else if (/oppo/.test(ua)) phoneBrand = "Oppo";
+        else if (/vivo/.test(ua)) phoneBrand = "Vivo";
+        else if (/desktop|mac/.test(ua)) phoneBrand = "Desktop/PC";
+
+        const result = `
+Device Check
+
+User: @${target.split('@')[0]}
+Device Type: ${deviceType}
+Brand / Model: ${phoneBrand}
+Platform: ${dave.user?.platform || "WhatsApp Multi-Device"}
+WhatsApp Version: ${dave.user?.waVersion?.join('.') || "Unknown"}
+        `.trim();
+
+        await dave.sendMessage(from, { text: result, mentions: [target] }, { quoted: m });
+    } catch (err) {
+        console.error("checkphone error:", err);
+        reply("Failed to fetch device information.");
+    }
+}
+break
+
+case 'uptime':
+case 'runtime': {
+  const uptime = process.uptime();
+  const days = Math.floor(uptime / (24 * 3600));
+  const hours = Math.floor((uptime % (24 * 3600)) / 3600);
+  const minutes = Math.floor((uptime % 3600) / 60);
+  const seconds = Math.floor(uptime % 60);
+  dave.sendMessage(m.chat, { text: `𝘿𝙖𝙫𝙚𝘼𝙄 Runtime: ${days}d ${hours}h ${minutes}m ${seconds}s` });
+}
+break
+
+case 'setdp': {
+  try {
+    const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+    const fs = require('fs');
+    const path = require('path');
+    const tmp = require('os').tmpdir();
+
+    const quotedMsg = m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+    if (!quotedMsg || !quotedMsg.imageMessage) {
+      return reply("Reply to an image to set it as bot profile picture!");
+    }
+
+    reply("Updating profile picture...");
+
+    const stream = await downloadContentFromMessage(quotedMsg.imageMessage, 'image');
+    let buffer = Buffer.from([]);
+    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+
+    const tempFile = path.join(tmp, `dp_${Date.now()}.jpg`);
+    fs.writeFileSync(tempFile, buffer);
+
+    await dave.updateProfilePicture(dave.user.id, { url: tempFile });
+
+    fs.unlinkSync(tempFile);
+
+    reply("Bot profile picture updated!");
+  } catch (err) {
+    console.error("setdp error:", err);
+    reply("Failed to update bot profile picture.");
+  }
+}
+break
+
+case 'ping': {
+  const start = Date.now();
+  const sentMsg = await m.reply('Pinging...');
+  const latency = Date.now() - start;
+
+  await dave.sendMessage(
+    m.chat,
+    { text: `Pong! Latency: ${latency}ms` },
+    { edit: sentMsg.key }
+  );
+}
+break
+
+case 'claude-al': {
+  try {
+    const question = args.join(' ');
+    if (!question) return reply('Please provide a question. Usage: .claude-al <your question>');
+
+    await reply('Asking Claude, please wait...');
+
+    const fetch = require('node-fetch');
+    const apiUrl = `https://savant-api.vercel.app/ai/claude?question=${encodeURIComponent(question)}`;
+
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      const text = await res.text();
+      data = { answer: text };
+    }
+
+    console.log('Claude API response:', data);
+
+    const answer =
+      data.answer ||
+      data.response ||
+      data.result ||
+      data.output ||
+      data.text ||
+      "No valid response received from API.";
+
+    await reply(`Claude AI Response:\n\n${answer}`);
+  } catch (err) {
+    console.error('Claude Command Error:', err);
+    await reply(`Failed to fetch response from Claude API.\nError: ${err.message}`);
+  }
+}
+break
+   
         case "updateheroku": case "redeploy": {
                       const axios = require('axios');
 
