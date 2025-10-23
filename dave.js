@@ -1130,13 +1130,9 @@ module.exports = async (dave, m) => {
       }
     }
 
-
-  // Save updated warnings
-      const { saveSettings } = require('./settingsManager');
-      saveSettings(global.settings);
-    }
-  }
-}
+    // Save updated warnings
+    const { saveSettings } = require('./settingsManager');
+    saveSettings(global.settings);
 
     if (!dave.isPublic && !daveshown) {
       return; // ignore all messages from non-owner when in private mode
@@ -1219,9 +1215,9 @@ module.exports = async (dave, m) => {
     if (!pluginsDisable) return;
 
     switch (command) {
-case 'script':
-case 'repo': {
-  const botInfo = `
+      case 'script':
+      case 'repo': {
+        const botInfo = `
 ╭─ ⌬ Bot Info
 │ • Name    : ${botname}
 │ • Owner   : ${ownername}
@@ -1229,9 +1225,9 @@ case 'repo': {
 │ • Repo : gitHub.com/gifteddevsmd/Dave-Ai/fork 
 │ • Runtime  : ${runtime(process.uptime())}\n╰─────────────
 `
-  reply(botInfo)
-}
-break
+        reply(botInfo)
+      }
+      break
 
 case 'antibot': {
 if (!m.isGroup) return m.reply(mess.group)
