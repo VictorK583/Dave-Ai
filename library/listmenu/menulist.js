@@ -70,7 +70,7 @@ function getMenuData() {
 }
 
 // Calculate ping (you'll need to call this from your plugin)
-let cachedPing = '0'
+let cachedPing = '300'
 function updatePing(ping) {
     cachedPing = ping
 }
