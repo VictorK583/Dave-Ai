@@ -49,6 +49,9 @@ global.messageBackup = {}
 const MESSAGE_STORE_FILE = path.join(__dirname, 'library/database/message_backup.json')
 const SESSION_ERROR_FILE = path.join(__dirname, 'library/database/sessionErrorCount.json')
 const MESSAGE_COUNT_FILE = path.join(__dirname, 'library/database/messageCount.json')
+// --- 🔒 MESSAGE/ERROR STORAGE
+
+global.messageBackup = {};
 const sessionDir = path.join(__dirname, 'session')
 const credsPath = path.join(sessionDir, 'creds.json')
 const loginFile = path.join(sessionDir, 'login.json')
