@@ -174,11 +174,17 @@ const Menu = `
 > ${global.xprefix}open
 > ${global.xprefix}vcf
 > ${global.xprefix}vcf2
+> ${global.xprefix}antitag *[on/off]*
+> ${global.xprefix}antidemote *[on/off]*
+> ${global.xprefix}antipromote *[on/off]*
+> ${global.xprefix}antibadword *[on/off]*
+> ${global.xprefix}antibot
 
 ╰┈➤ *ᴍᴀɪɴ ᴍᴇɴᴜ*
 > ${global.xprefix}menu
 > ${global.xprefix}buypremium
 > ${global.xprefix}runtime
+> ${global.xprefix}uptime
 > ${global.xprefix}script
 > ${global.xprefix}donate
 > ${global.xprefix}owner
@@ -194,6 +200,7 @@ const Menu = `
 > ${global.xprefix}toimage
 > ${global.xprefix}toaudio
 > ${global.xprefix}tovn
+> ${global.xprefix}tovoice
 > ${global.xprefix}togif
 > ${global.xprefix}tourl
 > ${global.xprefix}url
@@ -207,6 +214,20 @@ const Menu = `
 > ${global.xprefix}remini
 > ${global.xprefix}hdvideo
 > ${global.xprefix}readmore
+
+╰┈➤ *ᴀᴜᴅɪᴏ ᴇꜰꜰᴇᴄᴛꜱ*
+> ${global.xprefix}bass
+> ${global.xprefix}blown
+> ${global.xprefix}deep
+> ${global.xprefix}earrape
+> ${global.xprefix}fast
+> ${global.xprefix}fat
+> ${global.xprefix}nightcore
+> ${global.xprefix}reverse
+> ${global.xprefix}robot
+> ${global.xprefix}slow
+> ${global.xprefix}smooth
+> ${global.xprefix}tupai
 
 ╰┈➤ *ᴅᴏᴡɴʟᴏᴀᴅ ᴍᴇɴᴜ*
 > ${global.xprefix}play
@@ -232,6 +253,7 @@ const Menu = `
 > ${global.xprefix}luminai
 > ${global.xprefix}openai
 > ${global.xprefix}dave
+> ${global.xprefix}claude-al
 
 ╰┈➤ *ɪᴍᴀɢᴇ ᴀɪ*
 > ${global.xprefix}imagebing
@@ -242,6 +264,7 @@ const Menu = `
 > ${global.xprefix}editanime
 > ${global.xprefix}faceblur
 > ${global.xprefix}removebg
+> ${global.xprefix}ephoto
 
 ╰┈➤ *sᴇᴀʀᴄʜ ᴛᴏᴏʟs*
 > ${global.xprefix}pinterest
@@ -256,6 +279,10 @@ const Menu = `
 > ${global.xprefix}whatsong
 > ${global.xprefix}getpastebin
 > ${global.xprefix}getpp
+> ${global.xprefix}checktime
+> ${global.xprefix}time
+> ${global.xprefix}whois
+> ${global.xprefix}checkphone
 
 ╰┈➤ *ꜱᴘᴏʀᴛꜱ*
 > ${global.xprefix}fixtures
@@ -276,6 +303,11 @@ const Menu = `
 > ${global.xprefix}tojs
 > ${global.xprefix}listcase
 > ${global.xprefix}pair
+> ${global.xprefix}sc
+> ${global.xprefix}git
+> ${global.xprefix}repo
+> ${global.xprefix}rep
+> ${global.xprefix}DaveAi
 
 ╰┈➤ *ᴇᴍᴀɪʟ & ᴜᴛɪʟs*
 > ${global.xprefix}sendemail
@@ -293,6 +325,9 @@ const Menu = `
 > ${global.xprefix}save
 > ${global.xprefix}viewonce
 > ${global.xprefix}rvo
+
+╰┈➤ *ᴘʀᴏꜰɪʟᴇ & ᴅᴘ*
+> ${global.xprefix}setdp
 
 ╰┈➤ *ɢᴀᴍᴇꜱ & ꜰᴜɴ*
 > ${global.xprefix}truth
