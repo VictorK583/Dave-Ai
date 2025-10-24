@@ -1,16 +1,53 @@
-let daveplug = async (m, { dave, daveshown, args, reply }) => {
-    if (!daveshown) return reply('This command is only available for the owner!');
+const fs = require('fs');
+const path = require('path');
 
-    const newPrefix = args[0];
-    if (!newPrefix) return reply('Usage: .setprefix <new prefix>');
-    if (newPrefix.length > 1) return reply('Prefix must be one character only');
+let daveplug = async (m, { dave, daveshown, reply, text }) => {
+    try {
+        if (!daveshown) return reply("Owner only command!");
+        if (!text) return reply("Please provide a prefix!\nExample: setprefix .\nOr use 'none' to remove the prefix");
 
-    global.xprefix = newPrefix; // Temporarily update global prefix
-    reply(`Prefix has been changed to: ${newPrefix}\n\n⚠️ It will reset to default after restart.`);
+        // Add processing reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '...', key: m.key }
+        });
+
+        let newPrefix = text.toLowerCase().trim();
+        if (newPrefix === 'none') newPrefix = '';
+
+        // Correct path to prefix settings
+        const prefixSettingsPath = path.join(__dirname, '../library/database/prefixSettings.json');
+        
+        // Create database directory if it doesn't exist
+        const databaseDir = path.dirname(prefixSettingsPath);
+        if (!fs.existsSync(databaseDir)) {
+            fs.mkdirSync(databaseDir, { recursive: true });
+        }
+
+        // Save the new prefix
+        const prefixSettings = { prefix: newPrefix };
+        fs.writeFileSync(prefixSettingsPath, JSON.stringify(prefixSettings, null, 2));
+
+        // Add success reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '✓', key: m.key }
+        });
+
+        await reply(`Prefix successfully set to: ${newPrefix === '' ? 'none (no prefix required)' : newPrefix}`);
+
+    } catch (err) {
+        console.error('Set Prefix Command Error:', err);
+        
+        // Add error reaction
+        await dave.sendMessage(m.chat, {
+            react: { text: '✗', key: m.key }
+        });
+        
+        await reply('Failed to set prefix!');
+    }
 };
 
-daveplug.help = ['setprefix <new prefix>'];
-daveplug.tags = ['owner'];
+daveplug.help = ['setprefix'];
+daveplug.tags = ['system'];
 daveplug.command = ['setprefix'];
 
 module.exports = daveplug;
