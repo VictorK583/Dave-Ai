@@ -28,6 +28,7 @@ const pino = require("pino")
 const readline = require("readline")
 const { rmSync } = require('fs')
 const FileType = require('file-type')
+const { emojis: areactEmojis, doReact } = require('./library/autoreact')
 
 // Custom modules
 const { color } = require('./library/lib/color')
