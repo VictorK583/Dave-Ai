@@ -1,5 +1,6 @@
 // ==================== MODULES ==================== //
 const fs = require('fs');
+const path = require('path');
 const chalk = require('chalk');
 if (fs.existsSync('.env')) require('dotenv').config({ path: __dirname + '/.env' });
 
@@ -42,12 +43,42 @@ global.welcome = process.env.WELCOME === 'true';
 global.anticall = process.env.ANTI_CALL === 'true';
 global.adminevent = true;
 global.groupevent = true;
-global.antidelete = process.env.ANTI_DELETE !== 'false';
 global.connect = true;
 
+// ==================== ANTI-DELETE SETTINGS ==================== //
+// Path to JSON storage
+const antiDelPath = path.join(__dirname, 'library/database/antidelete.json');
+
+// Load anti-delete settings
+function loadAntiDel() {
+  try {
+    if (fs.existsSync(antiDelPath)) {
+      return JSON.parse(fs.readFileSync(antiDelPath, 'utf8'));
+    }
+  } catch (e) {
+    console.error('Error loading anti-delete settings:', e);
+  }
+  return { enabled: true }; // default ON
+}
+
+// Save anti-delete settings
+function saveAntiDel(settings) {
+  try {
+    const dir = path.dirname(antiDelPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(antiDelPath, JSON.stringify(settings, null, 2));
+  } catch (e) {
+    console.error('Error saving anti-delete settings:', e);
+  }
+}
+
+// Global variable for anti-delete toggle
+global.antiDelSettings = loadAntiDel();
+global.antidelete = global.antiDelSettings.enabled;
+
 // ==================== AUTO REACTIONS ==================== //
-global.AREACT = false;     // Global toggle for chat auto-react
-global.areact = {};        // Per-chat auto-react storage
+global.AREACT = false;     
+global.areact = {};        
 
 // ==================== BOT CONFIG ==================== //
 global.botversion = '1.0.0';
@@ -89,3 +120,9 @@ fs.watchFile(file, () => {
   delete require.cache[file];
   require(file);
 });
+
+// ==================== EXPORT FUNCTIONS ==================== //
+module.exports = { 
+  loadAntiDel: loadAntiDel, 
+  saveAntiDel: saveAntiDel 
+};
