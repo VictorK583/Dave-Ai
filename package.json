@@ -41,7 +41,7 @@
     "cfonts": "^3.2.0",
     "colors": "^1.4.0",
     "crypto-js": "^4.2.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.3.1",
     "events": "^3.3.0",
     "file-type": "^18.0.0",
     "figlet": "^1.5.2",
@@ -56,7 +56,7 @@
     "human-readable": "^0.2.1",
     "imgur": "^2.3.0",
     "javascript-obfuscator": "^4.1.0",
-    "jimp": "^0.16.13",
+    "jimp":"latest"
     "jsdom": "^22.1.0",
     "libphonenumber-js": "^1.11.18",
     "link-preview-js": "^3.0.5",
