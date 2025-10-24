@@ -1,4 +1,4 @@
-const { setAntitag, getAntitag, removeAntitag } = require('../lib/index');
+const { setAntitag, getAntitag, removeAntitag } = require('../library/lib/index');
 
 let daveplug = async (m, { dave, daveshown, isAdmins, reply, text, xprefix }) => {
     try {
