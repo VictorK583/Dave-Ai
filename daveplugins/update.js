@@ -2,11 +2,11 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const AdmZip = require('adm-zip');
 
 global.updateZipUrl = "https://codeload.github.com/gifteddevsmd/Dave-Ai/zip/refs/heads/main";
 const githubRepo = "gifteddevsmd/Dave-Ai";
 
-// Run shell command
 function run(cmd) {
   return new Promise((resolve, reject) => {
     exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
@@ -19,13 +19,7 @@ function run(cmd) {
 // Download file
 async function downloadFile(url, dest) {
   const writer = fs.createWriteStream(dest);
-  const response = await axios({
-    url,
-    method: 'GET',
-    responseType: 'stream',
-    maxRedirects: 5,
-    timeout: 60000
-  });
+  const response = await axios({ url, method: 'GET', responseType: 'stream', timeout: 60000 });
   response.data.pipe(writer);
   return new Promise((resolve, reject) => {
     writer.on('finish', resolve);
@@ -41,7 +35,6 @@ async function extractZip(zipPath, outDir) {
   try {
     await run(`unzip -o "${zipPath}" -d "${outDir}"`);
   } catch {
-    const AdmZip = require('adm-zip');
     const zip = new AdmZip(zipPath);
     zip.extractAllTo(outDir, true);
   }
@@ -64,7 +57,22 @@ async function copyRecursive(src, dest, ignore = []) {
   }
 }
 
-// Create backup
+// Delete old backups & temp folders, excluding current backup
+function deleteOldBackupsAndTemps(excludeDir = '') {
+  const items = fs.readdirSync('.');
+  for (const item of items) {
+    if (
+      (item.startsWith('backup_') || item.startsWith('tmp_')) &&
+      item !== path.basename(excludeDir) &&
+      fs.lstatSync(item).isDirectory()
+    ) {
+      fs.rmSync(item, { recursive: true, force: true });
+      console.log(`Deleted old folder: ${item}`);
+    }
+  }
+}
+
+// Backup critical files
 function backupCriticalFiles() {
   const backupDir = path.join(process.cwd(), 'backup_' + Date.now());
   fs.mkdirSync(backupDir, { recursive: true });
@@ -72,31 +80,27 @@ function backupCriticalFiles() {
   for (const f of critical) {
     if (fs.existsSync(f)) fs.copyFileSync(f, path.join(backupDir, f));
   }
-  console.log(`🗂️ Backup created: ${backupDir}`);
-  scheduleBackupDeletion(); // Schedule auto-delete
+  console.log(`Backup created: ${backupDir}`);
+  deleteOldBackupsAndTemps(backupDir);
   return backupDir;
 }
 
-// Delete backups & temps
-function deleteAllBackupsAndTemps() {
-  const items = fs.readdirSync('.');
-  for (const item of items) {
-    if (
-      (item.startsWith('backup_') || item.startsWith('tmp_')) &&
-      fs.lstatSync(item).isDirectory()
-    ) {
-      fs.rmSync(item, { recursive: true, force: true });
-      console.log(`🧹 Deleted old folder: ${item}`);
-    }
-  }
+// Safety checks
+function safetyChecks() {
+  if (!fs.existsSync('./package.json'))
+    throw new Error('Not in project root directory - missing package.json');
+  fs.accessSync('.', fs.constants.W_OK);
 }
 
-// Auto-delete backups after 2 minutes
-function scheduleBackupDeletion() {
-  setTimeout(() => {
-    console.log("🕒 Auto-deleting old backups & temps...");
-    deleteAllBackupsAndTemps();
-  }, 2 * 60 * 1000); // 2 minutes
+// Compare version
+async function checkForUpdates() {
+  try {
+    const current = JSON.parse(fs.readFileSync('./package.json'));
+    const latest = (await axios.get(`https://raw.githubusercontent.com/${githubRepo}/main/package.json`)).data;
+    return current.version !== latest.version;
+  } catch {
+    return true;
+  }
 }
 
 // Get latest commit info
@@ -118,41 +122,17 @@ async function getLatestCommitInfo() {
   }
 }
 
-// Safety checks
-function safetyChecks() {
-  if (!fs.existsSync('./package.json'))
-    throw new Error('Not in project root directory - missing package.json');
-  fs.accessSync('.', fs.constants.W_OK);
-}
-
-// Compare version
-async function checkForUpdates() {
-  try {
-    const current = JSON.parse(fs.readFileSync('./package.json'));
-    const latest = (await axios.get(`https://raw.githubusercontent.com/${githubRepo}/main/package.json`)).data;
-    return current.version !== latest.version;
-  } catch {
-    return true;
-  }
-}
-
 // Main update logic
 async function updateViaZip(dave, m) {
   safetyChecks();
 
-  const zipUrl = global.updateZipUrl?.trim();
-  if (!zipUrl) throw new Error('No ZIP URL configured.');
-
   let currentVersion = 'unknown';
-  try {
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    currentVersion = pkg.version || 'unknown';
-  } catch {}
+  try { currentVersion = JSON.parse(fs.readFileSync('package.json')).version || 'unknown'; } catch {}
 
   const updateNeeded = await checkForUpdates();
   if (!updateNeeded) {
-    await dave.sendMessage(m.chat, { text: '✅ Already on latest version! No update needed.' });
-    deleteAllBackupsAndTemps();
+    await dave.sendMessage(m.chat, { text: 'Already on latest version. No update needed.' });
+    deleteOldBackupsAndTemps();
     return;
   }
 
@@ -168,43 +148,39 @@ async function updateViaZip(dave, m) {
   if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
   fs.mkdirSync(tmpDir, { recursive: true });
 
-  let msg;
   try {
-    msg = await dave.sendMessage(m.chat, {
-      text: `🔄 DaveAI Updater\n\nCurrent: v${currentVersion}\nRepository: ${githubRepo}${changelog}\n\nStatus: Downloading update...`
-    });
-
-    await downloadFile(zipUrl, zipPath);
-    await dave.sendMessage(m.chat, { text: '📦 Extracting update...', edit: msg.key });
+    const msg = await dave.sendMessage(m.chat, { text: `DaveAI Updater\n\nCurrent: v${currentVersion}${changelog}\n\nDownloading update...` });
+    await downloadFile(global.updateZipUrl, zipPath);
+    await dave.sendMessage(m.chat, { text: 'Extracting update...', edit: msg.key });
     await extractZip(zipPath, extractTo);
 
     const folders = fs.readdirSync(extractTo);
     const mainFolder = folders.length === 1 ? path.join(extractTo, folders[0]) : extractTo;
 
-    await dave.sendMessage(m.chat, { text: '📁 Copying files...', edit: msg.key });
+    await dave.sendMessage(m.chat, { text: 'Copying files...', edit: msg.key });
     await copyRecursive(mainFolder, process.cwd(), [
       'node_modules', '.git', 'session', 'tmp', 'tmp_update', '.env',
       'config.js', 'settings.js', 'database.json'
     ]);
 
-    console.log('✅ Preserved config and settings files.');
+    console.log('Config and settings preserved.');
     await run('npm install --omit=dev --no-audit --no-fund --silent');
 
     await dave.sendMessage(m.chat, {
-      text: `✅ Update Complete!\n\nDaveAI updated successfully.\nFrom: v${currentVersion}\nTo: latest version${changelog}\n\nRestarting in 3s...`,
+      text: `Update complete!\nFrom: v${currentVersion} → latest\nRestarting in 3s...`,
       edit: msg.key
     });
 
-    deleteAllBackupsAndTemps();
+    deleteOldBackupsAndTemps(backupDir);
+    if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
     setTimeout(() => process.exit(0), 3000);
 
   } catch (err) {
     console.error('Update Error:', err.message);
     await copyRecursive(backupDir, process.cwd());
-    await dave.sendMessage(m.chat, { text: `❌ Update Failed: ${err.message}\nRestored from backup.` });
-    deleteAllBackupsAndTemps();
-  } finally {
-    if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+    await dave.sendMessage(m.chat, { text: `Update failed: ${err.message}\nRestored from backup.` });
+    deleteOldBackupsAndTemps(backupDir);
+    setTimeout(() => process.exit(1), 2000);
   }
 }
 
@@ -213,16 +189,16 @@ let daveplug = async (m, { dave, daveshown, command, reply }) => {
   if (!daveshown) return reply('Owner only command.');
   try {
     if (command === 'update') {
-      await reply('Starting update process...');
+      await reply('Starting update...');
       await updateViaZip(dave, m);
     } else if (command === 'restart' || command === 'start') {
-      await reply('Restarting DaveAI...');
+      await reply('Restarting...');
       setTimeout(() => process.exit(0), 2000);
     } else {
       reply('Usage:\n.update - Update bot\n.restart - Restart bot');
     }
   } catch (err) {
-    console.error('Update Error:', err);
+    console.error('Update error:', err);
     reply(`Update failed: ${err.message || err}`);
   }
 };
