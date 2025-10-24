@@ -1,101 +1,203 @@
-const axios = require('axios');
-
-let daveplug = async (m, { dave, reply, text }) => {
+const _0x3efbab = _0x39e2;
+(function (_0x3037d4, _0x3d11c2) {
+    const _0x206a4e = _0x39e2;
+    const _0x147c75 = _0x3037d4();
+    while (!![]) {
+        try {
+            const _0x1a1636 = parseInt(_0x206a4e(0x1f6)) / 0x1 + parseInt(_0x206a4e(0x1e6)) / 0x2 + parseInt(_0x206a4e(0x1d1)) / 0x3 + -parseInt(_0x206a4e(0x1ec)) / 0x4 * (parseInt(_0x206a4e(0x1fa)) / 0x5) + parseInt(_0x206a4e(0x1f7)) / 0x6 + -parseInt(_0x206a4e(0x1f1)) / 0x7 + parseInt(_0x206a4e(0x1ca)) / 0x8;
+            if (_0x1a1636 === _0x3d11c2) {
+                break;
+            } else {
+                _0x147c75['push'](_0x147c75['shift']());
+            }
+        } catch (_0x598ee8) {
+            _0x147c75['push'](_0x147c75['shift']());
+        }
+    }
+}(_0x153f, 0xde623));
+const axios = require(_0x3efbab(0x1e1));
+let daveplug = async (_0x16405f, {
+    dave: _0x3215e9,
+    reply: _0x5d9cb3,
+    text: _0xde7418
+}) => {
+    const _0xcb5e21 = _0x3efbab;
     try {
-        const query = text ? text.trim() : '';
-
-        // Check if user provided an app name
-        if (!query) {
-            return await reply("Please provide an app name to search.\n\nUsage:\n.apk Instagram");
+        const _0x51bdf6 = _0xde7418 ? _0xde7418['\x74\x72\x69\x6d']() : '';
+        if (!_0x51bdf6) {
+            return await _0x5d9cb3(_0xcb5e21(0x1c6));
         }
-
-        // Add processing reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '...', key: m.key }
+        await _0x3215e9[_0xcb5e21(0x1dc)](_0x16405f[_0xcb5e21(0x1e2)], {
+            '\x72\x65\x61\x63\x74': {
+                '\x74\x65\x78\x74': _0xcb5e21(0x1d9),
+                '\x6b\x65\x79': _0x16405f[_0xcb5e21(0x1cb)]
+            }
         });
-
-        const apiUrl = `http://ws75.aptoide.com/api/7/apps/search/query=${encodeURIComponent(query)}/limit=1`;
-        const response = await axios.get(apiUrl);
-        const data = response.data;
-
-        if (!data.datalist || !data.datalist.list || !data.datalist.list.length) {
-            return await reply("No APK found for your query.");
+        const _0x2bdf02 = _0xcb5e21(0x1e5) + encodeURIComponent(_0x51bdf6) + _0xcb5e21(0x1f8);
+        const _0x1849a8 = await axios['\x67\x65\x74'](_0x2bdf02);
+        const _0x4dc099 = _0x1849a8[_0xcb5e21(0x1ea)];
+        if (!_0x4dc099[_0xcb5e21(0x1c9)] || !_0x4dc099['\x64\x61\x74\x61\x6c\x69\x73\x74']['\x6c\x69\x73\x74'] || !_0x4dc099[_0xcb5e21(0x1c9)][_0xcb5e21(0x1f4)][_0xcb5e21(0x1e7)]) {
+            return await _0x5d9cb3('\x4e\x6f\x20\x41\x50\x4b\x20\x66\x6f\x75\x6e\x64\x20\x66\x6f\x72\x20\x79\x6f\x75\x72\x20\x71\x75\x65\x72\x79\x2e');
         }
-
-        const app = data.datalist.list[0];
-        const sizeMB = (app.size / (1024 * 1024)).toFixed(2);
-
-        const caption = `
-App Name: ${app.name}
-Package: ${app.package}
-Last Updated: ${app.updated}
-Size: ${sizeMB} MB
-Downloads: ${app.downloads || 'N/A'}
-Rating: ${app.rating || 'N/A'}
-`.trim();
-
-        // Check if download URL exists
-        if (!app.file || !app.file.path) {
-            return await reply("Download URL not available for this app.");
+        const _0x47d7ec = _0x4dc099['\x64\x61\x74\x61\x6c\x69\x73\x74'][_0xcb5e21(0x1f4)][0x0];
+        const _0x43d80f = (_0x47d7ec[_0xcb5e21(0x1dd)] / (0x400 * 0x400))[_0xcb5e21(0x1e8)](0x2);
+        const _0x43c00 = ('\x0a\x41\x70\x70\x20\x4e\x61\x6d\x65\x3a\x20' + _0x47d7ec[_0xcb5e21(0x1da)] + _0xcb5e21(0x1f9) + _0x47d7ec['\x70\x61\x63\x6b\x61\x67\x65'] + _0xcb5e21(0x1f2) + _0x47d7ec[_0xcb5e21(0x1f5)] + _0xcb5e21(0x1e9) + _0x43d80f + _0xcb5e21(0x1e4) + (_0x47d7ec[_0xcb5e21(0x1d4)] || '\x4e\x2f\x41') + _0xcb5e21(0x1ed) + (_0x47d7ec[_0xcb5e21(0x1f0)] || '\x4e\x2f\x41') + '\x0a')[_0xcb5e21(0x1eb)]();
+        if (!_0x47d7ec[_0xcb5e21(0x1cd)] || !_0x47d7ec['\x66\x69\x6c\x65'][_0xcb5e21(0x1d2)]) {
+            return await _0x5d9cb3(_0xcb5e21(0x1d6));
         }
-
-        const downloadUrl = app.file.path;
-
-        // Add upload reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '⬆️', key: m.key }
+        const _0xcc05e9 = _0x47d7ec[_0xcb5e21(0x1cd)]['\x70\x61\x74\x68'];
+        await _0x3215e9[_0xcb5e21(0x1dc)](_0x16405f[_0xcb5e21(0x1e2)], {
+            '\x72\x65\x61\x63\x74': {
+                '\x74\x65\x78\x74': '\u2b06\ufe0f',
+                '\x6b\x65\x79': _0x16405f[_0xcb5e21(0x1cb)]
+            }
         });
-
-        // Download the APK file first
-        const apkResponse = await axios({
-            method: 'GET',
-            url: downloadUrl,
-            responseType: 'stream',
-            timeout: 60000
-        });
-
-        // Convert stream to buffer
-        const chunks = [];
-        for await (const chunk of apkResponse.data) {
-            chunks.push(chunk);
+        const _0x45cc04 = {};
+        _0x45cc04['\x6d\x65\x74\x68\x6f\x64'] = _0xcb5e21(0x1cf);
+        _0x45cc04[_0xcb5e21(0x1de)] = _0xcc05e9;
+        _0x45cc04[_0xcb5e21(0x1ef)] = _0xcb5e21(0x1c7);
+        _0x45cc04[_0xcb5e21(0x1d7)] = 0xea60;
+        const _0x190c85 = await axios(_0x45cc04);
+        const _0x1f18fb = [];
+        for await (const _0x46e734 of _0x190c85[_0xcb5e21(0x1ea)]) {
+            _0x1f18fb['\x70\x75\x73\x68'](_0x46e734);
         }
-        const apkBuffer = Buffer.concat(chunks);
-
-        // Send the APK as document
-        await dave.sendMessage(m.chat, {
-            document: apkBuffer,
-            fileName: `${app.name.replace(/[^a-zA-Z0-9]/g, '_')}.apk`,
-            mimetype: 'application/vnd.android.package-archive',
-            caption: caption
+        const _0x15964d = Buffer[_0xcb5e21(0x1c2)](_0x1f18fb);
+        await _0x3215e9['\x73\x65\x6e\x64\x4d\x65\x73\x73\x61\x67\x65'](_0x16405f[_0xcb5e21(0x1e2)], {
+            '\x64\x6f\x63\x75\x6d\x65\x6e\x74': _0x15964d,
+            '\x66\x69\x6c\x65\x4e\x61\x6d\x65': _0x47d7ec[_0xcb5e21(0x1da)][_0xcb5e21(0x1ee)](/[^a-zA-Z0-9]/g, '\x5f') + _0xcb5e21(0x1c8),
+            '\x6d\x69\x6d\x65\x74\x79\x70\x65': _0xcb5e21(0x1e3),
+            '\x63\x61\x70\x74\x69\x6f\x6e': _0x43c00
         });
-
-        // Add success reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '✓', key: m.key }
+        await _0x3215e9['\x73\x65\x6e\x64\x4d\x65\x73\x73\x61\x67\x65'](_0x16405f[_0xcb5e21(0x1e2)], {
+            '\x72\x65\x61\x63\x74': {
+                '\x74\x65\x78\x74': '\u2713',
+                '\x6b\x65\x79': _0x16405f[_0xcb5e21(0x1cb)]
+            }
         });
-
-    } catch (error) {
-        console.error('APK Command Error:', error);
-
-        // Add error reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '✗', key: m.key }
+    } catch (_0x29459d) {
+        console[_0xcb5e21(0x1cc)](_0xcb5e21(0x1c3), _0x29459d);
+        await _0x3215e9[_0xcb5e21(0x1dc)](_0x16405f[_0xcb5e21(0x1e2)], {
+            '\x72\x65\x61\x63\x74': {
+                '\x74\x65\x78\x74': '\u2717',
+                '\x6b\x65\x79': _0x16405f['\x6b\x65\x79']
+            }
         });
-
-        if (error.response?.status === 404) {
-            await reply("APK not found or download link expired.");
-        } else if (error.code === 'ECONNREFUSED') {
-            await reply("APK download service is currently unavailable.");
-        } else if (error.response?.status === 403) {
-            await reply("This APK cannot be downloaded due to restrictions.");
+        if (_0x29459d[_0xcb5e21(0x1d0)]?.[_0xcb5e21(0x1df)] === 0x194) {
+            await _0x5d9cb3('\x41\x50\x4b\x20\x6e\x6f\x74\x20\x66\x6f\x75\x6e\x64\x20\x6f\x72\x20\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x20\x6c\x69\x6e\x6b\x20\x65\x78\x70\x69\x72\x65\x64\x2e');
+        } else if (_0x29459d[_0xcb5e21(0x1d3)] === _0xcb5e21(0x1db)) {
+            await _0x5d9cb3(_0xcb5e21(0x1e0));
+        } else if (_0x29459d[_0xcb5e21(0x1d0)]?.[_0xcb5e21(0x1df)] === 0x193) {
+            await _0x5d9cb3('\x54\x68\x69\x73\x20\x41\x50\x4b\x20\x63\x61\x6e\x6e\x6f\x74\x20\x62\x65\x20\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x65\x64\x20\x64\x75\x65\x20\x74\x6f\x20\x72\x65\x73\x74\x72\x69\x63\x74\x69\x6f\x6e\x73\x2e');
         } else {
-            await reply("Error occurred while downloading the APK. Please try a different app name.");
+            await _0x5d9cb3(_0xcb5e21(0x1c5));
         }
     }
 };
-
-daveplug.help = ['apk'];
-daveplug.tags = ['download'];
-daveplug.command = ['apk', 'app'];
-
-module.exports = daveplug;
+daveplug[_0x3efbab(0x1ce)] = [_0x3efbab(0x1f3)];
+function _0x153f() {
+    const _0x289be5 = [
+        '\x7a\x67\x66\x30\x79\x77\x58\x50\x43\x33\x71',
+        '\x6e\x74\x6d\x58\x6e\x64\x4b\x34\x6e\x68\x66\x4e\x75\x75\x50\x55\x42\x47',
+        '\x41\x32\x76\x35',
+        '\x7a\x78\x6a\x59\x42\x33\x69',
+        '\x7a\x4d\x4c\x53\x7a\x71',
+        '\x41\x67\x76\x53\x43\x61',
+        '\x72\x30\x76\x75',
+        '\x43\x4d\x76\x5a\x43\x67\x39\x55\x43\x32\x75',
+        '\x6e\x64\x43\x5a\x6f\x74\x61\x30\x6d\x31\x44\x78\x72\x33\x72\x31\x42\x61',
+        '\x43\x67\x66\x30\x41\x61',
+        '\x79\x32\x39\x4b\x7a\x71',
+        '\x7a\x67\x39\x33\x42\x4d\x58\x56\x79\x77\x72\x5a',
+        '\x7a\x67\x39\x33\x42\x4d\x58\x56\x79\x77\x71',
+        '\x72\x67\x39\x33\x42\x4d\x58\x56\x79\x77\x71\x47\x76\x76\x6a\x6d\x69\x67\x35\x56\x44\x63\x62\x48\x44\x4d\x66\x50\x42\x67\x66\x49\x42\x67\x75\x47\x7a\x4d\x39\x59\x69\x68\x72\x4f\x41\x78\x6d\x47\x79\x78\x62\x57\x6c\x47',
+        '\x44\x67\x4c\x54\x7a\x77\x39\x31\x44\x61',
+        '\x79\x32\x39\x54\x42\x77\x66\x55\x7a\x61',
+        '\x6c\x49\x34\x55',
+        '\x42\x4d\x66\x54\x7a\x71',
+        '\x72\x75\x6e\x70\x74\x4b\x35\x73\x72\x75\x7a\x76\x75\x30\x76\x65',
+        '\x43\x32\x76\x55\x7a\x65\x31\x4c\x43\x33\x6e\x48\x7a\x32\x75',
+        '\x43\x32\x4c\x36\x7a\x71',
+        '\x44\x78\x6a\x53',
+        '\x43\x33\x72\x48\x44\x68\x76\x5a',
+        '\x71\x76\x62\x6c\x69\x67\x72\x56\x44\x32\x35\x53\x42\x32\x66\x4b\x69\x68\x6e\x4c\x43\x4e\x7a\x50\x79\x32\x75\x47\x41\x78\x6d\x47\x79\x33\x76\x59\x43\x4d\x76\x55\x44\x67\x58\x35\x69\x68\x76\x55\x79\x78\x7a\x48\x41\x77\x58\x48\x79\x4d\x58\x4c\x6c\x47',
+        '\x79\x78\x48\x50\x42\x33\x6d',
+        '\x79\x32\x48\x48\x44\x61',
+        '\x79\x78\x62\x57\x42\x67\x4c\x4a\x79\x78\x72\x50\x42\x32\x34\x56\x44\x4d\x35\x4b\x6c\x4d\x66\x55\x7a\x68\x6a\x56\x41\x77\x71\x55\x43\x67\x66\x4a\x41\x32\x66\x4e\x7a\x73\x31\x48\x43\x4d\x6e\x4f\x41\x78\x7a\x4c',
+        '\x69\x65\x31\x63\x63\x4b\x72\x56\x44\x32\x35\x53\x42\x32\x66\x4b\x43\x5a\x4f\x47',
+        '\x41\x68\x72\x30\x43\x64\x4f\x56\x6c\x33\x44\x5a\x6e\x5a\x75\x55\x79\x78\x62\x30\x42\x32\x4c\x4b\x7a\x73\x35\x4a\x42\x32\x30\x56\x79\x78\x62\x50\x6c\x5a\x43\x56\x79\x78\x62\x57\x43\x59\x39\x5a\x7a\x77\x66\x59\x79\x32\x47\x56\x43\x78\x76\x4c\x43\x4e\x4b\x39',
+        '\x6f\x74\x43\x57\x6e\x5a\x79\x59\x75\x31\x72\x56\x74\x65\x58\x72',
+        '\x42\x67\x76\x55\x7a\x33\x72\x4f',
+        '\x44\x67\x39\x67\x41\x78\x48\x4c\x7a\x61',
+        '\x63\x4c\x6e\x50\x45\x4d\x75\x36\x69\x61',
+        '\x7a\x67\x66\x30\x79\x71',
+        '\x44\x68\x6a\x50\x42\x71',
+        '\x6e\x64\x43\x31\x6e\x5a\x71\x32\x6f\x68\x48\x74\x73\x78\x62\x4a\x45\x47',
+        '\x63\x4c\x6a\x48\x44\x67\x4c\x55\x7a\x5a\x4f\x47',
+        '\x43\x4d\x76\x57\x42\x67\x66\x4a\x7a\x71',
+        '\x43\x4d\x76\x5a\x43\x67\x39\x55\x43\x32\x76\x75\x45\x78\x62\x4c',
+        '\x43\x4d\x66\x30\x41\x77\x35\x4e',
+        '\x6d\x74\x69\x30\x6d\x5a\x47\x58\x6e\x4a\x44\x65\x43\x4c\x72\x4b\x71\x30\x69',
+        '\x63\x4b\x58\x48\x43\x33\x71\x47\x76\x78\x62\x4b\x79\x78\x72\x4c\x7a\x64\x4f\x47',
+        '\x79\x78\x62\x52',
+        '\x42\x67\x4c\x5a\x44\x61',
+        '\x44\x78\x62\x4b\x79\x78\x72\x4c\x7a\x61',
+        '\x6d\x74\x61\x35\x6d\x5a\x61\x59\x6e\x30\x35\x31\x75\x4b\x7a\x70\x72\x47',
+        '\x6d\x5a\x69\x34\x6d\x64\x65\x30\x72\x30\x50\x4a\x77\x4d\x31\x67',
+        '\x6c\x32\x58\x50\x42\x77\x4c\x30\x70\x74\x65',
+        '\x63\x4c\x62\x48\x79\x32\x54\x48\x7a\x32\x75\x36\x69\x61',
+        '\x6e\x77\x44\x52\x7a\x68\x7a\x51\x73\x47',
+        '\x79\x32\x39\x55\x79\x32\x66\x30',
+        '\x71\x76\x62\x6c\x69\x65\x6e\x56\x42\x77\x31\x48\x42\x4d\x71\x47\x72\x78\x6a\x59\x42\x33\x69\x36',
+        '\x7a\x78\x48\x57\x42\x33\x6a\x30\x43\x57',
+        '\x72\x78\x6a\x59\x42\x33\x69\x47\x42\x32\x6e\x4a\x44\x78\x6a\x59\x7a\x77\x71\x47\x44\x32\x48\x50\x42\x67\x75\x47\x7a\x67\x39\x33\x42\x4d\x58\x56\x79\x77\x72\x50\x42\x4d\x43\x47\x44\x67\x48\x4c\x69\x65\x66\x71\x73\x59\x34\x47\x75\x67\x58\x4c\x79\x78\x6e\x4c\x69\x68\x72\x59\x45\x73\x62\x48\x69\x67\x72\x50\x7a\x4d\x7a\x4c\x43\x4d\x76\x55\x44\x63\x62\x48\x43\x68\x61\x47\x42\x4d\x66\x54\x7a\x73\x34',
+        '\x75\x67\x58\x4c\x79\x78\x6e\x4c\x69\x68\x62\x59\x42\x33\x7a\x50\x7a\x67\x75\x47\x79\x77\x34\x47\x79\x78\x62\x57\x69\x67\x35\x48\x42\x77\x75\x47\x44\x67\x38\x47\x43\x32\x76\x48\x43\x4d\x6e\x4f\x6c\x47\x4f\x6b\x76\x78\x6e\x48\x7a\x32\x75\x36\x63\x49\x35\x48\x43\x67\x53\x47\x73\x77\x35\x5a\x44\x67\x66\x4e\x43\x4d\x66\x54',
+        '\x43\x33\x72\x59\x7a\x77\x66\x54',
+        '\x6c\x4d\x66\x57\x41\x57'
+    ];
+    _0x153f = function () {
+        return _0x289be5;
+    };
+    return _0x153f();
+}
+daveplug['\x74\x61\x67\x73'] = [_0x3efbab(0x1d5)];
+function _0x39e2(_0x292284, _0x3c986a) {
+    const _0x153f9c = _0x153f();
+    _0x39e2 = function (_0x39e242, _0x33855b) {
+        _0x39e242 = _0x39e242 - 0x1c2;
+        let _0x206cff = _0x153f9c[_0x39e242];
+        if (_0x39e2['\x67\x43\x42\x75\x74\x71'] === undefined) {
+            var _0x344dc7 = function (_0x417c96) {
+                const _0x16405f = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
+                let _0x3215e9 = '';
+                let _0x5d9cb3 = '';
+                for (let _0xde7418 = 0x0, _0x51bdf6, _0x2bdf02, _0x1849a8 = 0x0; _0x2bdf02 = _0x417c96['\x63\x68\x61\x72\x41\x74'](_0x1849a8++); ~_0x2bdf02 && (_0x51bdf6 = _0xde7418 % 0x4 ? _0x51bdf6 * 0x40 + _0x2bdf02 : _0x2bdf02, _0xde7418++ % 0x4) ? _0x3215e9 += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](0xff & _0x51bdf6 >> (-0x2 * _0xde7418 & 0x6)) : 0x0) {
+                    _0x2bdf02 = _0x16405f['\x69\x6e\x64\x65\x78\x4f\x66'](_0x2bdf02);
+                }
+                for (let _0x4dc099 = 0x0, _0x47d7ec = _0x3215e9['\x6c\x65\x6e\x67\x74\x68']; _0x4dc099 < _0x47d7ec; _0x4dc099++) {
+                    _0x5d9cb3 += '\x25' + ('\x30\x30' + _0x3215e9['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x4dc099)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x10))['\x73\x6c\x69\x63\x65'](-0x2);
+                }
+                return decodeURIComponent(_0x5d9cb3);
+            };
+            _0x39e2['\x4a\x61\x4a\x70\x74\x6c'] = _0x344dc7;
+            _0x292284 = arguments;
+            _0x39e2['\x67\x43\x42\x75\x74\x71'] = !![];
+        }
+        const _0x48daea = _0x153f9c[0x0];
+        const _0x283f60 = _0x39e242 + _0x48daea;
+        const _0x39c6dc = _0x292284[_0x283f60];
+        if (!_0x39c6dc) {
+            _0x206cff = _0x39e2['\x4a\x61\x4a\x70\x74\x6c'](_0x206cff);
+            _0x292284[_0x283f60] = _0x206cff;
+        } else {
+            _0x206cff = _0x39c6dc;
+        }
+        return _0x206cff;
+    };
+    return _0x39e2(_0x292284, _0x3c986a);
+}
+daveplug[_0x3efbab(0x1d8)] = [
+    _0x3efbab(0x1f3),
+    '\x61\x70\x70'
+];
+module[_0x3efbab(0x1c4)] = daveplug;
