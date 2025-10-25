@@ -4,10 +4,11 @@ const path = require('path');
 const chalk = require('chalk');
 if (fs.existsSync('.env')) require('dotenv').config({ path: __dirname + '/.env' });
 
-// ==================== SETTINGS FILE ==================== //
+// ==================== SETTINGS FILES ==================== //
 const settingsPath = path.join(__dirname, 'library/database/settings.json');
+const prefixSettingsPath = path.join(__dirname, 'library/database/prefixSettings.json');
 
-// Load settings from JSON file
+// ==================== LOAD SETTINGS ==================== //
 function loadSettings() {
   try {
     if (!fs.existsSync(settingsPath)) {
@@ -16,8 +17,7 @@ function loadSettings() {
         botname: process.env.BOT_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄',
         ownername: process.env.OWNER_NAME || 'GIFTED DAVE',
         owner: process.env.OWNER_NUMBER || '254104260236',
-        xprefix: process.env.PREFIX || '.',
-        
+
         // Features
         autoread: { enabled: false },
         autorecord: { enabled: false },
@@ -27,17 +27,17 @@ function loadSettings() {
         welcome: process.env.WELCOME === 'true',
         anticall: process.env.ANTI_CALL === 'true',
         antidelete: { enabled: true },
-        
+
         // Sticker Info
         packname: process.env.PACK_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄',
         author: process.env.AUTHOR || '𝘿𝙖𝙫𝙚𝘼𝙄',
-        
+
         // Auto Reactions
         areact: { enabled: false, chats: {} },
-        
+
         // Group Settings
         antilinkgc: { enabled: false },
-        
+
         // Security Features
         antitag: {},
         antibadword: {},
@@ -45,13 +45,13 @@ function loadSettings() {
         antipromote: {},
         antibot: {}
       };
-      
+
       const dir = path.dirname(settingsPath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
       return defaultSettings;
     }
-    
+
     return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
   } catch (error) {
     console.error('Error loading settings:', error);
@@ -59,7 +59,39 @@ function loadSettings() {
   }
 }
 
-// Save settings to JSON file
+// ==================== PREFIX SYSTEM ==================== //
+function loadXPrefix() {
+  try {
+    if (fs.existsSync(prefixSettingsPath)) {
+      const prefixData = JSON.parse(fs.readFileSync(prefixSettingsPath, 'utf8'));
+      return prefixData.xprefix !== undefined ? prefixData.xprefix : '.';
+    } else {
+      const defaultPrefix = { xprefix: '.' };
+      const dir = path.dirname(prefixSettingsPath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(prefixSettingsPath, JSON.stringify(defaultPrefix, null, 2));
+      return defaultPrefix.xprefix;
+    }
+  } catch (error) {
+    console.error('Error loading prefix settings:', error);
+    return '.';
+  }
+}
+
+function saveXPrefix(newPrefix) {
+  try {
+    const prefixData = { xprefix: newPrefix };
+    const dir = path.dirname(prefixSettingsPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(prefixSettingsPath, JSON.stringify(prefixData, null, 2));
+    global.xprefix = newPrefix;
+    console.log(chalk.green(`✅ Prefix changed to '${newPrefix || 'none'}'`));
+  } catch (error) {
+    console.error('Error saving prefix:', error);
+  }
+}
+
+// ==================== SAVE SETTINGS ==================== //
 function saveSettings(settings) {
   try {
     const dir = path.dirname(settingsPath);
@@ -70,7 +102,7 @@ function saveSettings(settings) {
   }
 }
 
-// Load initial settings
+// ==================== LOAD SETTINGS INIT ==================== //
 const settings = loadSettings();
 
 // ==================== BOT INFO ==================== //
@@ -96,42 +128,29 @@ global.author = settings.author;
 global.caption = '𝘿𝙖𝙫𝙚𝘼𝙄';
 global.footer = '𝘿𝙖𝙫𝙚𝘼𝙄';
 
-// ==================== AUTO STATUS FEATURES ==================== //
+// ==================== FEATURES ==================== //
 global.AUTOVIEWSTATUS = settings.autoviewstatus;
 global.AUTOREACTSTATUS = settings.autoreactstatus;
-
-// ==================== AUTO READ FEATURE ==================== //
 global.AUTO_READ = settings.autoread.enabled;
-
-// ==================== BOT SETTINGS ==================== //
-global.xprefix = settings.xprefix; // Using xprefix as you specified
-global.premium = [global.owner];
-global.hituet = 0;
-
-global.welcome = settings.welcome;
-global.anticall = settings.anticall;
-global.adminevent = true;
-global.groupevent = true;
-global.connect = true;
-
-// ==================== ANTI-DELETE SETTINGS ==================== //
 global.antidelete = settings.antidelete.enabled;
-
-// ==================== AUTO REACTIONS ==================== //
 global.AREACT = settings.areact.enabled;
 global.areact = settings.areact.chats;
+global.welcome = settings.welcome;
+global.anticall = settings.anticall;
 
 // ==================== BOT CONFIG ==================== //
+global.xprefix = loadXPrefix();
+global.premium = [global.owner];
 global.botversion = '1.0.0';
 global.typebot = 'Plugin × Case';
 global.session = 'davesession';
 global.updateZipUrl = 'https://github.com/gifteddevsmd/Dave-Ai/archive/refs/heads/main.zip';
 
-// ==================== THUMBNAIL / MENU ==================== //
+// ==================== IMAGES ==================== //
 global.thumb = 'https://files.catbox.moe/cp8oat.jpg';
 global.menuImage = global.thumb;
 
-// ==================== LEGACY / OTHER TOGGLES ==================== //
+// ==================== STATUS FLAGS ==================== //
 global.statusview = global.AUTOVIEWSTATUS;
 global.antilinkgc = settings.antilinkgc.enabled;
 global.autoTyping = settings.autotyping.enabled;
@@ -153,22 +172,26 @@ global.mess = {
   error: 'Error occurred.'
 };
 
-// ==================== GLOBAL SETTINGS ACCESS ==================== //
+// ==================== GLOBAL EXPORTS ==================== //
 global.settings = settings;
 global.loadSettings = loadSettings;
 global.saveSettings = saveSettings;
+global.loadXPrefix = loadXPrefix;
+global.saveXPrefix = saveXPrefix;
 
 // ==================== FILE WATCHER ==================== //
 let file = require.resolve(__filename);
 fs.watchFile(file, () => {
   fs.unwatchFile(file);
-  console.log(chalk.redBright(`Update detected: '${__filename}'`));
+  console.log(chalk.yellowBright(`♻️ Reloaded: '${path.basename(__filename)}'`));
   delete require.cache[file];
   require(file);
 });
 
 // ==================== EXPORT FUNCTIONS ==================== //
-module.exports = { 
-  loadSettings, 
-  saveSettings 
+module.exports = {
+  loadSettings,
+  saveSettings,
+  loadXPrefix,
+  saveXPrefix
 };
