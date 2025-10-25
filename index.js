@@ -31,7 +31,8 @@ const FileType = require('file-type')
 
 // Custom modules
 const { color } = require('./library/lib/color')
-const { emojis: areactEmojis, doReact } = require('./library/autoreact.js')
+const { loadSettings, saveSettings } = require('./settings.js');
+const { emojis: areactEmojis, doReact } = require('./library/autoreact.js');
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./library/lib/exif')
 const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, sleep, reSize } = require('./library/lib/function')
 
@@ -504,8 +505,65 @@ async function startDave() {
 
     store.bind(dave.ev);
 
-      // ============ IMPORTS ============
-const { emojis: areactEmojis, doReact } = require('./library/autoreact.js');
+      // ========== IMPORTS ==========
+
+// ========== GROUP PARTICIPANT HANDLER ==========
+dave.ev.on('group-participants.update', async (anu) => {
+  try {
+    const settings = loadSettings();
+    const chatId = anu.id;
+    const participants = anu.participants || [];
+    const action = anu.action;
+    const botNumber = dave.user.id.split(':')[0] + '@s.whatsapp.net';
+
+    
+    const { welcome } = require('./library/lib/welcome');
+    const iswel = global.welcome?.[chatId] || false;
+    const isLeft = global.goodbye?.[chatId] || false;
+    await welcome(iswel, isLeft, dave, anu);
+
+    // Anti Promote Feature
+    if (action === 'promote' && settings.antipromote?.[chatId]?.enabled) {
+      const groupSettings = settings.antipromote[chatId];
+      for (const user of participants) {
+        if (user !== botNumber) {
+          await dave.sendMessage(chatId, {
+            text: `🚫 *Promotion Blocked!*\nUser: @${user.split('@')[0]}\nMode: ${groupSettings.mode.toUpperCase()}`,
+            mentions: [user],
+          });
+
+          if (groupSettings.mode === 'revert') {
+            await dave.groupParticipantsUpdate(chatId, [user], 'demote');
+          } else if (groupSettings.mode === 'kick') {
+            await dave.groupParticipantsUpdate(chatId, [user], 'remove');
+          }
+        }
+      }
+    }
+
+    // 🧩 Anti Demote Feature
+    if (action === 'demote' && settings.antidemote?.[chatId]?.enabled) {
+      const groupSettings = settings.antidemote[chatId];
+      for (const user of participants) {
+        if (user !== botNumber) {
+          await dave.sendMessage(chatId, {
+            text: `🚫 *Demotion Blocked!*\nUser: @${user.split('@')[0]}\nMode: ${groupSettings.mode.toUpperCase()}`,
+            mentions: [user],
+          });
+
+          if (groupSettings.mode === 'revert') {
+            await dave.groupParticipantsUpdate(chatId, [user], 'promote');
+          } else if (groupSettings.mode === 'kick') {
+            await dave.groupParticipantsUpdate(chatId, [user], 'remove');
+          }
+        }
+      }
+    }
+
+  } catch (err) {
+    console.error('AntiPromote/AntiDemote Error:', err);
+  }
+});
 
 // ============ MESSAGE HANDLER ============
 dave.ev.on('messages.upsert', async (chatUpdate) => {
@@ -522,7 +580,7 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
     const chatId = mek.key.remoteJid;
     const fromMe = mek.key.fromMe || false;
 
-    // ✅ STATUS HANDLER
+    // STATUS HANDLER
     if (chatId === 'status@broadcast') {
       try {
         const participant = mek.key.participant || mek.participant || mek.pushName || null;
@@ -536,7 +594,7 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
         if (global.AUTOREACTSTATUS && areactEmojis.length > 0 && participant) {
           const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
 
-          // If you have a helper like doReact(), use it:
+          // If helper exists (doReact)
           if (typeof doReact === 'function') {
             await doReact(dave, 'status@broadcast', mek, emoji, participant);
           } else {
@@ -546,7 +604,7 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
               {
                 react: { text: emoji, key: mek.key },
               },
-              { statusJidList: [participant] } // required for recent Baileys
+              { statusJidList: [participant] }
             );
           }
         }
@@ -556,12 +614,12 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
       return; // stop further processing for statuses
     }
 
-    // ✅ Auto-read regular messages
+    // Auto-read regular messages
     if (global.AUTO_READ && !fromMe) {
       await dave.readMessages([mek.key]).catch(() => {});
     }
 
-    // ✅ Auto-react to regular messages (use doReact if defined)
+    // Auto-react to regular messages (use doReact if defined)
     if (!fromMe && (global.AREACT || (global.areact && global.areact[chatId]))) {
       const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
       if (typeof doReact === 'function') {
@@ -586,6 +644,7 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
     console.error(`Message handler error: ${err.message}`);
   }
 });
+
     // Anti-call handler
     const antiCallNotified = new Set()
 
