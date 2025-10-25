@@ -23,8 +23,8 @@ let daveplug = async (m, { dave, daveshown, reply, text }) => {
             fs.mkdirSync(databaseDir, { recursive: true });
         }
 
-        // Save the new prefix
-        const prefixSettings = { prefix: newPrefix };
+        // Save the new prefix using xprefix
+        const prefixSettings = { xprefix: newPrefix };
         fs.writeFileSync(prefixSettingsPath, JSON.stringify(prefixSettings, null, 2));
 
         // Update global variable immediately
