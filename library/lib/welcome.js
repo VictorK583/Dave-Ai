@@ -1,125 +1,98 @@
-const { generateWAMessageFromContent, generateWAMessage, prepareWAMessageMedia, downloadContentFromMessage, proto, delay } = require('@whiskeysockets/baileys')
-const fs = require('fs')
-const axios = require('axios')
-const path = require('path')
-const chalk = require('chalk')
-require('../../settings')
+const {
+  generateWAMessageFromContent,
+  generateWAMessage,
+  prepareWAMessageMedia,
+  downloadContentFromMessage,
+  proto,
+  delay
+} = require('@whiskeysockets/baileys');
+const fs = require('fs');
+const chalk = require('chalk');
+// Remove the loadSettings import since we're using globals
 
 module.exports.welcome = async (iswel, isleft, dave, anu) => {
   try {
-    const metadata = await dave.groupMetadata(anu.id)
-    const participants = anu.participants
-    const num = participants[0]
-    const groupName = metadata.subject
-    const groupDesc = metadata.desc
-    const memberCount = metadata.participants.length
-    const isWelcomeEnabled = global.db.data.chats[anu.id]?.welcome
-    const isLeftEnabled = global.db.data.chats[anu.id]?.goodbye
-    const mentionedJid = [`${num}@s.whatsapp.net`]
-    let avatarUrl, ppgroup
+    // ✅ Use global settings instead of loading from file
+    const settings = global.settings || {};
+    const metadata = await dave.groupMetadata(anu.id);
+    const participants = anu.participants || [];
+    const num = participants[0];
+    const groupName = metadata.subject;
+    const groupDesc = metadata.desc || '';
+    const memberCount = metadata.participants.length;
+
+    // ✅ Use global settings directly
+    const isWelcomeEnabled = global.welcome || settings.welcome || false;
+    const isLeftEnabled = settings.goodbye || false; // Note: goodbye setting not in your globals
+
+    const mentionedJid = [`${num}`];
+    let avatarUrl, ppgroup;
 
     try {
-      avatarUrl = await dave.profilePictureUrl(num, 'image')
+      avatarUrl = await dave.profilePictureUrl(num, 'image');
     } catch {
-      avatarUrl = 'https:'                                            
+      avatarUrl = 'https://i.ibb.co/Z2Fyf4t/default-avatar.png';
     }
 
-    
     try {
-      ppgroup = await dave.profilePictureUrl(anu.id, 'image')
+      ppgroup = await dave.profilePictureUrl(anu.id, 'image');
     } catch {
-      ppgroup = 'https://url.bwmxmd.online/Adams.gpfw8239.jpg'
+      ppgroup = 'https://url.bwmxmd.online/Adams.gpfw8239.jpg';
     }
 
-    if (anu.action == 'add' && (iswel || isWelcomeEnabled)) {
-      let fullMessage
-      if (global.db.data.chats[anu.id]?.text_welcome) {
-        let text = global.db.data.chats[anu.id].text_welcome
-        fullMessage = text
-          .replace(/@user/gi, `@${num.split('@')[0]}`)
-          .replace(/@group/gi, groupName)
-          .replace(/@desc/gi, groupDesc || '')
-      } else {
-        fullMessage = `Welcome @${num.split('@')[0]}\nTo Group: ${groupName}`
-      }
+    // ✅ Welcome Message - use global botname
+    if (anu.action === 'add' && (iswel || isWelcomeEnabled)) {
+      const text =
+        settings.text_welcome ||
+        `👋 Welcome @${num.split('@')[0]}!\nTo *${groupName}* 🎉`;
+
       await dave.sendMessage(anu.id, {
-        text: fullMessage,
+        text,
         contextInfo: {
           mentionedJid,
           externalAdReply: {
-            title: `Hello! Welcome!`,
-            body: `${global.botname}`,
+            title: 'Hello! Welcome!',
+            body: `${global.botname || 'DaveAI'}`,
             thumbnailUrl: ppgroup,
-            sourceUrl: "https://github.com",                                          
+            sourceUrl: 'https://github.com/gifteddevsmd/Dave-AI',
             mediaType: 1,
             renderLargerThumbnail: true
           }
         }
-      })
+      });
     }
 
-    if (anu.action == 'remove' && (isleft || isLeftEnabled)) {
-      let fullMessage
-      if (global.db.data.chats[anu.id]?.text_left) {
-        let text = global.db.data.chats[anu.id].text_left
-        fullMessage = text
-          .replace(/@user/gi, `@${num.split('@')[0]}`)
-          .replace(/@group/gi, groupName)
-          .replace(/@desc/gi, groupDesc || '')
-      } else {
-        fullMessage = `Goodbye @${num.split('@')[0]}\nFrom Group: ${groupName}`
-      }
+    // ✅ Goodbye Message - use global botname
+    if (anu.action === 'remove' && (isleft || isLeftEnabled)) {
+      const text =
+        settings.text_left ||
+        `👋 Goodbye @${num.split('@')[0]}!\nFrom *${groupName}* 😢`;
+
       await dave.sendMessage(anu.id, {
-        text: fullMessage,
+        text,
         contextInfo: {
           mentionedJid,
           externalAdReply: {
-            title: `Goodbye! See you later!`,
-            body: `${global.botname}`,
+            title: 'Goodbye! See you soon!',
+            body: `${global.botname || 'DaveAI'}`,
             thumbnailUrl: ppgroup,
-            sourceUrl: "https://whatsapp.com/channel/0029VbApvFQ2Jl84lhONkc3k",
+            sourceUrl: 'https://whatsapp.com/channel/0029VbApvFQ2Jl84lhONkc3k',
             mediaType: 1,
             renderLargerThumbnail: true
           }
         }
-      })
-    }
-
-    if (anu.action == 'remove' && (isleft || isLeftEnabled)) {
-      let fullMessage
-      if (global.db.data.chats[anu.id]?.text_left) {
-        let text = global.db.data.chats[anu.id].text_left
-        fullMessage = text
-          .replace(/@user/gi, `@${num.split('@')[0]}`)
-          .replace(/@group/gi, groupName)
-          .replace(/@desc/gi, groupDesc || '')
-      } else {
-        fullMessage = `Goodbye @${num.split('@')[0]}\nFrom Group: ${groupName}`
-      }
-      await dave.sendMessage(anu.id, {
-        text: fullMessage,
-        contextInfo: {
-          mentionedJid,
-          externalAdReply: {
-            title: `Goodbye! See you later!`,
-            body: `${global.botname}`,
-            thumbnailUrl: ppgroup,
-            sourceUrl: "https://whatsapp.com/channel/0029VbApvFQ2Jl84lhONkc3k",
-            mediaType: 1,
-            renderLargerThumbnail: true
-          }
-        }
-      })
+      });
     }
   } catch (err) {
-    console.error('Error welcome handler:', err)
+    console.error('Error in welcome handler:', err);
   }
-}
+};
 
-let file = require.resolve(__filename)
+// ✅ Auto reload on save
+let file = require.resolve(__filename);
 fs.watchFile(file, () => {
-  fs.unwatchFile(file)
-  console.log(chalk.greenBright(`Update File => ${__filename}`))
-  delete require.cache[file]
-  require(file)
-})
+  fs.unwatchFile(file);
+  console.log(chalk.greenBright(`Update File => ${__filename}`));
+  delete require.cache[file];
+  require(file);
+});
