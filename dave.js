@@ -22,49 +22,7 @@ const speed = require('performance-now')
 const { Sticker } = require('wa-sticker-formatter');
 const yts = require ('yt-search');
 const { appname,antidel, herokuapi} = require("./set.js");
-// Ensure global.db exists
 
-if (!global.db) global.db = {};
-
-// Safely read and parse the database file
-
-try {
-
-    const dbContent = fs.readFileSync('./library/database/database.json', 'utf8');
-
-    global.db.data = JSON.parse(dbContent);
-
-} catch (error) {
-
-    console.log('Database file not found or invalid, creating empty database...');
-
-    global.db.data = {};
-
-}
-
-// Merge with default structure
-
-global.db.data = {
-
-    sticker: {},
-
-    database: {}, 
-
-    game: {},
-
-    others: {},
-
-    users: {},
-
-    chats: {},
-
-    settings: {},
-
-    ...(global.db.data || {})
-
-};
-///////////database access/////////////////
-const { addPremiumUser, delPremiumUser } = require("./library/lib/premiun");
 /////////exports////////////////////////////////
 module.exports = async (dave, m) => {
 try {
@@ -103,107 +61,54 @@ const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
 console.log(chalk.black(chalk.bgWhite(!command ? '[ MESSAGE ]' : '[ COMMAND ]')), chalk.black(chalk.bgGreen(new Date)), chalk.black(chalk.bgBlue(budy || m.mtype)) + '\n' + chalk.magenta('=> From'), chalk.green(pushname), chalk.yellow(m.sender) + '\n' + chalk.blueBright('=> In'), chalk.green(m.isGroup ? pushname : 'Private Chat', m.chat))
 /////////quoted functions//////////////////
 const fkontak = { key: {fromMe: false,participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { 'contactMessage': { 'displayName': `𝘿𝙖𝙫𝙚𝘼𝙄`, 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:XL;Vinzx,;;;\nFN:${pushname},\nitem1.TEL;waid=${sender.split('@')[0]}:${sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`, 'jpegThumbnail': { url: 'https://files.catbox.moe/yqbio5.jpg' }}}}
-let chats = global.db.data.chats[from]
-               if (typeof chats !== 'object') global.db.data.chats[from] = {}
-               if (chats) {
-                   if (!('antilink' in chats)) chats.antilink = false
-                  if (!('antilinkgc' in chats)) chats.antilinkgc = false
-                           if (!('welcome' in chats)) chats.welcome = false
-        if (!('goodbye' in chats)) chats.goodbye = false
-        if (!('warn' in chats)) chats.warn = {}
-               } else global.db.data.chats[from] = {
-                  antilinkgc: false,
-                  antilinkgc: false,
-                  welcome: false,
-                  goodbye: false,
-                  warn: {} 
-               }
-    if (db.data.chats[m.chat].antilinkgc) {
-            if (budy.match(`chat.whatsapp.com`)) {
-               bvl = `\`\`\`「 GC Link Detected 」\`\`\`\n\nAdmin has sent a gc link, admin is free to send any link😇`
-if (isAdmins) return m.reply(bvl)
-if (m.key.fromMe) return m.reply(bvl)
-if (daveshown) return m.reply(bvl)
-               await dave.sendMessage(m.chat,
-                            {
-                                delete: {
-                                    remoteJid: m.chat,
-                                    fromMe: false,
-                                    id: m.key.id,
-                                    participant: m.key.participant
-                                }
-                            })
-                        dave.sendMessage(from, {text:`\`\`\`「 GC Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`, contextInfo:{mentionedJid:[m.sender]}}, {quoted:m})
-            }
-        }
-        if (db.data.chats[m.chat].antilink) {
-            if (budy.match('http') && budy.match('https')) {
-               bvl = `\`\`\`「 Link Detected 」\`\`\`\n\nAdmin has sent a link, admin is free to send any link😇`
-if (isAdmins) return m.reply(bvl)
-if (m.key.fromMe) return m.reply(bvl)
-if (daveshown) return m.reply(bvl)
-               await dave.sendMessage(m.chat,
-                            {
-                                delete: {
-                                    remoteJid: m.chat,
-                                    fromMe: false,
-                                    id: m.key.id,
-                                    participant: m.key.participant
-                                }
-                            })
-                        dave.sendMessage(from, {text:`\`\`\`「 Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`, contextInfo:{mentionedJid:[m.sender]}}, {quoted:m})
-            }
-        }
-        if (db.data.chats[m.chat].warn && db.data.chats[m.chat].warn[m.sender]) {
-      const warnings = db.data.chats[m.chat].warn[m.sender]
 
-      if (warnings >= setting.warnCount) {
-        if (!isBotAdmins || isAdmins || daveshown) return
-
+// ==================== ANTI-LINK SYSTEM ==================== //
+if (global.settings.antilinkgc && global.settings.antilinkgc.enabled) {
+    if (budy.match(`chat.whatsapp.com`)) {
+        const bvl = `\`\`\`「 GC Link Detected 」\`\`\`\n\nAdmin has sent a gc link, admin is free to send any link😇`
+        if (isAdmins) return m.reply(bvl)
+        if (m.key.fromMe) return m.reply(bvl)
+        if (daveshown) return m.reply(bvl)
+        
         await dave.sendMessage(m.chat, {
-          delete: {
-            remoteJid: m.chat,
-            fromMe: false,
-            id: m.key.id,
-            participant: m.sender
-          }
-        })
-      }
-    }
-
-const setting = db.data.settings[botNumber]
-        if (typeof setting !== 'object') db.data.settings[botNumber] = {}
-            if (setting) {
-                 if (!('anticall' in setting)) setting.anticall = false
-                    if (!isNumber(setting.status)) setting.status = 0
-                    if (!('autobio' in setting)) setting.autobio = false
-            if (!('autoread' in setting)) setting.autoread = false
-            if (!('online' in setting)) setting.online = true
-            if (!('autotyping' in setting)) setting.autoTyping = false
-            if (!('autorecording' in setting)) setting.autoRecord = false
-            if (!('autorecordtype' in setting)) setting.autorecordtype = false
-//        if (!('welcome' in setting)) chats.welcome = setting.auto_welcomeMsg
-       if (!('onlygrub' in setting)) setting.onlygrub = false
-        if (!('onlypc' in setting)) setting.onlygrub = false   
-          } else db.data.settings[botNumber] = {
-             anticall: false,
-                    status: 0,
-                    stock:10,
-                    autobio: false,
-                    autoTyping: true,
-                   auto_ai_grup: false,
-                   goodbye: false,
-                    onlygrub: false,
-            onlypc: false,
-            online: false,
-       welcome: true, 
-                    autoread: false,
-                    menuType: 'externalImage' //> buttonImage
+            delete: {
+                remoteJid: m.chat,
+                fromMe: false,
+                id: m.key.id,
+                participant: m.key.participant
             }
+        })
+        await dave.sendMessage(from, {
+            text: `\`\`\`「 GC Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`, 
+            contextInfo: { mentionedJid: [m.sender] }
+        }, { quoted: m })
+    }
+}
 
+if (global.settings.antilink && global.settings.antilink.enabled) {
+    if (budy.match('http') && budy.match('https')) {
+        const bvl = `\`\`\`「 Link Detected 」\`\`\`\n\nAdmin has sent a link, admin is free to send any link😇`
+        if (isAdmins) return m.reply(bvl)
+        if (m.key.fromMe) return m.reply(bvl)
+        if (daveshown) return m.reply(bvl)
+        
+        await dave.sendMessage(m.chat, {
+            delete: {
+                remoteJid: m.chat,
+                fromMe: false,
+                id: m.key.id,
+                participant: m.key.participant
+            }
+        })
+        await dave.sendMessage(from, {
+            text: `\`\`\`「 Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} has sent a link and successfully deleted`, 
+            contextInfo: { mentionedJid: [m.sender] }
+        }, { quoted: m })
+    }
+}
 
-
-if (!m.key.fromMe && db.data.settings[botNumber].autoread){
+// ==================== AUTO FEATURES ==================== //
+if (!m.key.fromMe && global.settings.autoread.enabled) {
     const readkey = {
         remoteJid: m.chat,
         id: m.key.id, 
@@ -214,96 +119,87 @@ if (!m.key.fromMe && db.data.settings[botNumber].autoread){
 
 dave.sendPresenceUpdate('available', m.chat)
 
-if (db.data.settings[botNumber].autoTyping) {
+if (global.settings.autotyping.enabled) {
     if (m.message) {
         dave.sendPresenceUpdate('composing', m.chat)
     }
 }
 
-if (db.data.settings[botNumber].autoRecord) {
+if (global.settings.autorecord.enabled) {
     if (m.message) {
         dave.sendPresenceUpdate('recording', m.chat)
     }
 }
 
-if (db.data.settings[botNumber].autorecordtype) {
-    let presenceModes = ['recording', 'composing']
-    let selectedPresence = presenceModes[Math.floor(Math.random() * presenceModes.length)]
-    dave.sendPresenceUpdate(selectedPresence, m.chat)
-}
-
-if (db.data.settings[botNumber].autobio) {
-    let setting = db.data.settings[botNumber]
-    if (new Date() * 1 - setting.status > 1000) {
+if (global.settings.autobio) {
+    let statusUpdateTime = global.settings.statusUpdateTime || 0;
+    if (new Date() * 1 - statusUpdateTime > 1000) {
         let uptime = await runtime(process.uptime())
         await dave.updateProfileStatus(`✳️𝘿𝙖𝙫𝙚𝘼𝙄 || Runtime : ${uptime}`)
-        setting.status = new Date() * 1
+        global.settings.statusUpdateTime = new Date() * 1;
+        global.saveSettings(global.settings);
     }
 }
 
-    if (!m.isGroup && !daveshown && db.data.settings[botNumber].onlygrub ) {
-                if (command){
-            return m.reply(`Hello buddy! Because We Want to Reduce Spam, Please Use Bot in the Group Chat !\n\nIf you have issue please chat owner wa.me/${global.owner}`)
-            }
-        }
-        // Private Only
-        if (!daveshown && db.data.settings[botNumber].onlypc && m.isGroup) {
-                if (command){
-                 return m.reply("Hello buddy! if you want to use this bot, please chat the bot in private chat")
-             }
-        }
+// ==================== CHAT RESTRICTIONS ==================== //
+if (!m.isGroup && !daveshown && global.settings.onlygroup) {
+    if (command) {
+        return m.reply(`Hello buddy! Because We Want to Reduce Spam, Please Use Bot in the Group Chat !\n\nIf you have issue please chat owner wa.me/${global.owner}`)
+    }
+}
 
-    ///unavailable and online 
-    if (!dave.public) {
-            if (daveshown && !m.key.fromMe) return
-        }
-        if (db.data.settings[botNumber].online) {
-                if (command) {
+if (!daveshown && global.settings.onlypc && m.isGroup) {
+    if (command) {
+        return m.reply("Hello buddy! if you want to use this bot, please chat the bot in private chat")
+    }
+}
 
-dave.sendPresenceUpdate('unavailable', from)
-        }
-        }
+// ==================== PRIVATE MODE ==================== //
+if (!dave.public) {
+    if (daveshown && !m.key.fromMe) return
+}
 
+// ==================== EPHOTO FUNCTION ==================== //
 async function ephoto(url, texk) {
-let form = new FormData 
-let gT = await axios.get(url, {
-  headers: {
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
-  }
-})
-let $ = cheerio.load(gT.data)
-let text = texk
-let token = $("input[name=token]").val()
-let build_server = $("input[name=build_server]").val()
-let build_server_id = $("input[name=build_server_id]").val()
-form.append("text[]", text)
-form.append("token", token)
-form.append("build_server", build_server)
-form.append("build_server_id", build_server_id)
-let res = await axios({
-  url: url,
-  method: "POST",
-  data: form,
-  headers: {
-    Accept: "*/*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-    cookie: gT.headers["set-cookie"]?.join("; "),
-
-  }
-})
-let $$ = cheerio.load(res.data)
-let json = JSON.parse($$("input[name=form_value_input]").val())
-json["text[]"] = json.text
-delete json.text
-let { data } = await axios.post("https://en.ephoto360.com/effect/create-image", new URLSearchParams(json), {
-  headers: {
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-    cookie: gT.headers["set-cookie"].join("; ")
-    }
-})
-return build_server + data.image
+    let form = new FormData 
+    let gT = await axios.get(url, {
+      headers: {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
+      }
+    })
+    let $ = cheerio.load(gT.data)
+    let text = texk
+    let token = $("input[name=token]").val()
+    let build_server = $("input[name=build_server]").val()
+    let build_server_id = $("input[name=build_server_id]").val()
+    form.append("text[]", text)
+    form.append("token", token)
+    form.append("build_server", build_server)
+    form.append("build_server_id", build_server_id)
+    let res = await axios({
+      url: url,
+      method: "POST",
+      data: form,
+      headers: {
+        Accept: "*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+        cookie: gT.headers["set-cookie"]?.join("; "),
+      }
+    })
+    let $$ = cheerio.load(res.data)
+    let json = JSON.parse($$("input[name=form_value_input]").val())
+    json["text[]"] = json.text
+    delete json.text
+    let { data } = await axios.post("https://en.ephoto360.com/effect/create-image", new URLSearchParams(json), {
+      headers: {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
+        cookie: gT.headers["set-cookie"].join("; ")
+        }
+    })
+    return build_server + data.image
 }
+
 const lol = {
   key: {
     fromMe: false,
@@ -328,8 +224,6 @@ const lol = {
     isForwarded: true,
   }
 }
-
-
 
 
 const mdmodes = {
