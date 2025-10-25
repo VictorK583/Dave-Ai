@@ -6,24 +6,17 @@
   "packname": "𝘿𝙖𝙫𝙚𝘼𝙄",
   "author": "𝘿𝙖𝙫𝙚𝘼𝙄",
 
-  "autoread": {
-    "enabled": false
-  },
-  "autorecord": {
-    "enabled": false
-  },
-  "autotyping": {
-    "enabled": false
-  },
+  "autoread": { "enabled": false },
+  "autorecord": { "enabled": false },
+  "autotyping": { "enabled": false },
   "autoviewstatus": true,
   "autoreactstatus": false,
 
   "welcome": false,
+  "goodbye": false,
   "anticall": false,
 
-  "antidelete": {
-    "enabled": true
-  },
+  "antidelete": { "enabled": true },
 
   "areact": {
     "enabled": false,
@@ -32,24 +25,14 @@
     "mode": "random"
   },
 
-  "antilinkgc": {
-    "enabled": false
-  },
+  "antilinkgc": { "enabled": false },
   "antilink": {},
   "antitag": {},
   "antibadword": {},
 
-  "antipromote": {
-    "enabled": false,
-    "mode": "revert"
-  },
-  "antidemote": {
-    "enabled": false,
-    "mode": "revert"
-  },
+  "antipromote": { "enabled": false, "mode": "revert" },
+  "antidemote": { "enabled": false, "mode": "revert" },
   "antibot": {},
 
-  "autolike": {
-    "enabled": false
-  }
+  "autolike": { "enabled": false }
 }
