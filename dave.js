@@ -1635,22 +1635,7 @@ case 'showallowed': {
 break;
 
 
-case 'goodbye': {
-  if (!m.isGroup) return reply(mess.owner)
-  if (!isAdmins) return reply(mess.admin)
-  if (args[0] === "on") {
-    if (db.data.chats[m.chat].goodbye) return reply('Already activated previously')
-    db.data.chats[m.chat].goodbye = true
-    reply('Successfully activated goodbye!')
-  } else if (args[0] === "off") {
-    if (!db.data.chats[m.chat].goodbye) return reply('Already deactivated previously')
-    db.data.chats[m.chat].goodbye = false
-    reply('Successfully deactivated goodbye!')
-  } else {
-    reply('Command not recognized. Use "on" to activate or "off" to deactivate.')
-  }
-}
-break;              
+             
 //==================================================// 
 case 'bass':
 case 'blown':
