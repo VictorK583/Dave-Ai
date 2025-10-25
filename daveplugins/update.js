@@ -16,48 +16,35 @@ function run(cmd) {
   });
 }
 
-// Download file
-async function downloadFile(url, dest) {
-  const writer = fs.createWriteStream(dest);
-  const response = await axios({ url, method: 'GET', responseType: 'stream', timeout: 60000 });
-  response.data.pipe(writer);
-  return new Promise((resolve, reject) => {
-    writer.on('finish', resolve);
-    writer.on('error', reject);
-    response.data.on('error', reject);
-    setTimeout(() => reject(new Error('Download timeout')), 120000);
-  });
+// Check for Git repo
+function hasGitRepo() {
+  return fs.existsSync(path.join(process.cwd(), '.git'));
 }
 
-// Extract zip
-async function extractZip(zipPath, outDir) {
-  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+// Restart process safely
+async function restartProcess() {
   try {
-    await run(`unzip -o "${zipPath}" -d "${outDir}"`);
+    await run('pm2 restart all');
+    console.log('Restarted using PM2.');
   } catch {
-    const zip = new AdmZip(zipPath);
-    zip.extractAllTo(outDir, true);
+    console.log('PM2 not found, restarting manually...');
+    setTimeout(() => process.exit(0), 2000);
   }
 }
 
-// Recursive copy
-async function copyRecursive(src, dest, ignore = []) {
-  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
-  for (const entry of fs.readdirSync(src)) {
-    if (ignore.includes(entry)) continue;
-    const s = path.join(src, entry);
-    const d = path.join(dest, entry);
-    const stat = fs.lstatSync(s);
-    try {
-      if (stat.isDirectory()) await copyRecursive(s, d, ignore);
-      else fs.copyFileSync(s, d);
-    } catch (err) {
-      console.error(`Copy failed: ${s}`, err.message);
-    }
+// Backup critical files
+function backupCriticalFiles() {
+  const backupDir = path.join(process.cwd(), 'backup_' + Date.now());
+  fs.mkdirSync(backupDir, { recursive: true });
+  const critical = ['settings.js', 'config.js', '.env', 'database.json'];
+  for (const f of critical) {
+    if (fs.existsSync(f)) fs.copyFileSync(f, path.join(backupDir, f));
   }
+  console.log(`Backup created: ${backupDir}`);
+  return backupDir;
 }
 
-// Delete old backups & temp folders, excluding current backup
+// Delete old backups & temp folders
 function deleteOldBackupsAndTemps(excludeDir = '') {
   const items = fs.readdirSync('.');
   for (const item of items) {
@@ -72,27 +59,14 @@ function deleteOldBackupsAndTemps(excludeDir = '') {
   }
 }
 
-// Backup critical files
-function backupCriticalFiles() {
-  const backupDir = path.join(process.cwd(), 'backup_' + Date.now());
-  fs.mkdirSync(backupDir, { recursive: true });
-  const critical = ['settings.js', 'config.js', '.env', 'database.json'];
-  for (const f of critical) {
-    if (fs.existsSync(f)) fs.copyFileSync(f, path.join(backupDir, f));
-  }
-  console.log(`Backup created: ${backupDir}`);
-  deleteOldBackupsAndTemps(backupDir);
-  return backupDir;
-}
-
-// Safety checks
+// Safety check
 function safetyChecks() {
   if (!fs.existsSync('./package.json'))
     throw new Error('Not in project root directory - missing package.json');
   fs.accessSync('.', fs.constants.W_OK);
 }
 
-// Compare version
+// Compare versions
 async function checkForUpdates() {
   try {
     const current = JSON.parse(fs.readFileSync('./package.json'));
@@ -122,7 +96,73 @@ async function getLatestCommitInfo() {
   }
 }
 
-// Main update logic
+// Git-based update
+async function updateViaGit(dave, m) {
+  try {
+    safetyChecks();
+    const backupDir = backupCriticalFiles();
+
+    await dave.sendMessage(m.chat, { text: '🔁 Updating via Git…' });
+    await run('git reset --hard');
+    await run('git pull origin main');
+    await run('npm install --omit=dev --no-audit --no-fund --silent');
+
+    const commit = await getLatestCommitInfo();
+    let info = commit
+      ? `✅ Updated to latest commit:\n\n📜 ${commit.message}\n👤 ${commit.author}\n🕓 ${commit.date}\n🔢 ${commit.sha}`
+      : '✅ Updated via Git successfully.';
+
+    await dave.sendMessage(m.chat, { text: info });
+    deleteOldBackupsAndTemps(backupDir);
+    await restartProcess();
+  } catch (err) {
+    console.error('Git update failed:', err.message);
+    await dave.sendMessage(m.chat, { text: `Git update failed: ${err.message}` });
+  }
+}
+
+// ZIP download
+async function downloadFile(url, dest) {
+  const writer = fs.createWriteStream(dest);
+  const response = await axios({ url, method: 'GET', responseType: 'stream', timeout: 60000 });
+  response.data.pipe(writer);
+  return new Promise((resolve, reject) => {
+    writer.on('finish', resolve);
+    writer.on('error', reject);
+    response.data.on('error', reject);
+    setTimeout(() => reject(new Error('Download timeout')), 120000);
+  });
+}
+
+// Extract ZIP
+async function extractZip(zipPath, outDir) {
+  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+  try {
+    await run(`unzip -o "${zipPath}" -d "${outDir}"`);
+  } catch {
+    const zip = new AdmZip(zipPath);
+    zip.extractAllTo(outDir, true);
+  }
+}
+
+// Copy recursive
+async function copyRecursive(src, dest, ignore = []) {
+  if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src)) {
+    if (ignore.includes(entry)) continue;
+    const s = path.join(src, entry);
+    const d = path.join(dest, entry);
+    const stat = fs.lstatSync(s);
+    try {
+      if (stat.isDirectory()) await copyRecursive(s, d, ignore);
+      else fs.copyFileSync(s, d);
+    } catch (err) {
+      console.error(`Copy failed: ${s}`, err.message);
+    }
+  }
+}
+
+// ZIP-based update
 async function updateViaZip(dave, m) {
   safetyChecks();
 
@@ -131,7 +171,7 @@ async function updateViaZip(dave, m) {
 
   const updateNeeded = await checkForUpdates();
   if (!updateNeeded) {
-    await dave.sendMessage(m.chat, { text: 'Already on latest version. No update needed.' });
+    await dave.sendMessage(m.chat, { text: '✅Already on latest version.' });
     deleteOldBackupsAndTemps();
     return;
   }
@@ -139,7 +179,7 @@ async function updateViaZip(dave, m) {
   const backupDir = backupCriticalFiles();
   const latestCommit = await getLatestCommitInfo();
   const changelog = latestCommit
-    ? `\n\nLatest Commit:\n${latestCommit.message}\nBy: ${latestCommit.author}\nDate: ${latestCommit.date}\nSHA: ${latestCommit.sha}`
+    ? `\n\n📜 ${latestCommit.message}\n👤 ${latestCommit.author}\n🕓 ${latestCommit.date}\n🔢 ${latestCommit.sha}`
     : '';
 
   const tmpDir = path.join(process.cwd(), 'tmp_update');
@@ -149,31 +189,26 @@ async function updateViaZip(dave, m) {
   fs.mkdirSync(tmpDir, { recursive: true });
 
   try {
-    const msg = await dave.sendMessage(m.chat, { text: `DaveAI Updater\n\nCurrent: v${currentVersion}${changelog}\n\nDownloading update...` });
+    await dave.sendMessage(m.chat, { text: `Downloading update (v${currentVersion})...${changelog}` });
     await downloadFile(global.updateZipUrl, zipPath);
-    await dave.sendMessage(m.chat, { text: 'Extracting update...', edit: msg.key });
+    await dave.sendMessage(m.chat, { text: 'Extracting update...' });
     await extractZip(zipPath, extractTo);
 
     const folders = fs.readdirSync(extractTo);
     const mainFolder = folders.length === 1 ? path.join(extractTo, folders[0]) : extractTo;
 
-    await dave.sendMessage(m.chat, { text: 'Copying files...', edit: msg.key });
+    await dave.sendMessage(m.chat, { text: 'Copying new files...' });
     await copyRecursive(mainFolder, process.cwd(), [
       'node_modules', '.git', 'session', 'tmp', 'tmp_update', '.env',
       'config.js', 'settings.js', 'database.json'
     ]);
 
-    console.log('Config and settings preserved.');
     await run('npm install --omit=dev --no-audit --no-fund --silent');
-
-    await dave.sendMessage(m.chat, {
-      text: `Update complete!\nFrom: v${currentVersion} → latest\nRestarting in 3s...`,
-      edit: msg.key
-    });
+    await dave.sendMessage(m.chat, { text: 'Update complete! Restarting...' });
 
     deleteOldBackupsAndTemps(backupDir);
     if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
-    setTimeout(() => process.exit(0), 3000);
+    await restartProcess();
 
   } catch (err) {
     console.error('Update Error:', err.message);
@@ -184,16 +219,17 @@ async function updateViaZip(dave, m) {
   }
 }
 
-// Plugin export
+// Command entry
 let daveplug = async (m, { dave, daveshown, command, reply }) => {
   if (!daveshown) return reply('Owner only command.');
   try {
     if (command === 'update') {
-      await reply('Starting update...');
-      await updateViaZip(dave, m);
+      await reply('Checking for updates...');
+      if (hasGitRepo()) await updateViaGit(dave, m);
+      else await updateViaZip(dave, m);
     } else if (command === 'restart' || command === 'start') {
       await reply('Restarting...');
-      setTimeout(() => process.exit(0), 2000);
+      await restartProcess();
     } else {
       reply('Usage:\n.update - Update bot\n.restart - Restart bot');
     }
