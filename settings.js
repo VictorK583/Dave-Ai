@@ -29,6 +29,10 @@ function loadSettings() {
         welcome: process.env.WELCOME === 'true',
         anticall: process.env.ANTI_CALL === 'true',
         antidelete: { enabled: true },
+        autobio: false,
+        statusUpdateTime: 0,
+        onlygroup: false,
+        onlypc: false,
 
         // Sticker Info
         packname: process.env.PACK_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄',
@@ -44,9 +48,9 @@ function loadSettings() {
 
         // Group Settings
         antilinkgc: { enabled: false },
+        antilink: { enabled: false },
 
         // Security Features
-        antilink: {},
         antitag: {},
         antibadword: {},
         antipromote: { enabled: false, mode: 'revert' },
@@ -70,6 +74,12 @@ function loadSettings() {
       settings.antidemote = settings.antidemote || { enabled: false, mode: 'revert' };
       settings.antidelete = settings.antidelete || { enabled: true };
       settings.autolike = settings.autolike || { enabled: false };
+      settings.antilinkgc = settings.antilinkgc || { enabled: false };
+      settings.antilink = settings.antilink || { enabled: false };
+      settings.autobio = settings.autobio || false;
+      settings.statusUpdateTime = settings.statusUpdateTime || 0;
+      settings.onlygroup = settings.onlygroup || false;
+      settings.onlypc = settings.onlypc || false;
     }
 
     return settings;
