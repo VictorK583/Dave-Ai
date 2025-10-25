@@ -916,7 +916,7 @@ if (global.antiDelSettings.enabled) {
     handleIncomingMessage(m);
   }
 }
-
+module.exports = { handleIncomingMessage, handleMessageRevocation };
 
 
 
