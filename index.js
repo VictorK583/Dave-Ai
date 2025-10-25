@@ -504,7 +504,7 @@ async function startDave() {
 
     store.bind(dave.ev);
 
-   const defaultEmojis = ['👍', '😂', '❤️', '🔥', '🥳', '👏'];
+      const defaultEmojis = ['👍', '😂', '❤️', '🔥', '🥳', '👏'];
 global.areactEmojis = defaultEmojis;
 
 // ============ MESSAGE UPSERT HANDLER ============
