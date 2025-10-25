@@ -1,7 +1,7 @@
 {
   "name": "babyboy",
   "version": "2.0.0",
-  "description": "Heroku worker bot app",
+  "description": "Dave hobby bot",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
@@ -17,9 +17,9 @@
     "MKad",
     "whatsapp",
     "whatsapp-bot",
-    "frediezra"
+    "dave"
   ],
-  "author": "frediezra",
+  "author": "dave",
   "license": "ISC",
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
