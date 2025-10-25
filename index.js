@@ -504,118 +504,87 @@ async function startDave() {
 
     store.bind(dave.ev);
 
-      const defaultEmojis = ['👍', '😂', '❤️', '🔥', '🥳', '👏'];
-global.areactEmojis = defaultEmojis;
+      // ============ IMPORTS ============
+const { emojis: areactEmojis, doReact } = require('./library/autoreact.js');
 
-// ============ MESSAGE UPSERT HANDLER ============
+// ============ MESSAGE HANDLER ============
 dave.ev.on('messages.upsert', async (chatUpdate) => {
-    try {
-        if (!chatUpdate.messages || chatUpdate.messages.length === 0) return;
-        const mek = chatUpdate.messages[0];
-        if (!mek.message) return;
+  try {
+    if (!chatUpdate.messages || chatUpdate.messages.length === 0) return;
+    const mek = chatUpdate.messages[0];
+    if (!mek.message) return;
 
-        // Unwrap ephemeral messages
-        mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage')
-            ? mek.message.ephemeralMessage.message
-            : mek.message;
+    // unwrap ephemeral messages
+    mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage')
+      ? mek.message.ephemeralMessage.message
+      : mek.message;
 
-        const chatId = mek.key.remoteJid;
-        const fromMe = mek.key.fromMe;
+    const chatId = mek.key.remoteJid;
+    const fromMe = mek.key.fromMe || false;
 
-        // Status broadcasts - handle first before other logic
-        if (chatId === 'status@broadcast') {
-            try {
-                if (global.AUTOVIEWSTATUS) {
-                    await dave.readMessages([mek.key]);
-                }
-                if (global.AUTOREACTSTATUS && defaultEmojis.length > 0) {
-                    const emoji = defaultEmojis[Math.floor(Math.random() * defaultEmojis.length)];
-                    await dave.sendMessage(chatId, {
-                        react: {
-                            text: emoji,
-                            key: mek.key
-                        }
-                    });
-                }
-            } catch (statusErr) {
-                console.log(`Status handling error: ${statusErr.message}`);
-            }
-            return; // Don't process status as regular messages
+    // ✅ STATUS HANDLER
+    if (chatId === 'status@broadcast') {
+      try {
+        const participant = mek.key.participant || mek.participant || mek.pushName || null;
+
+        // Auto view
+        if (global.AUTOVIEWSTATUS) {
+          await dave.readMessages([mek.key]);
         }
 
-        // Auto-read for regular messages
-        if (global.AUTO_READ && !fromMe) {
-            try {
-                await dave.readMessages([mek.key]);
-            } catch (readErr) {
-                console.log(`Auto-read error: ${readErr.message}`);
-            }
+        // Auto react to status using imported areactEmojis
+        if (global.AUTOREACTSTATUS && areactEmojis.length > 0 && participant) {
+          const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
+
+          // If you have a helper like doReact(), use it:
+          if (typeof doReact === 'function') {
+            await doReact(dave, 'status@broadcast', mek, emoji, participant);
+          } else {
+            // fallback: direct Baileys sendMessage
+            await dave.sendMessage(
+              'status@broadcast',
+              {
+                react: { text: emoji, key: mek.key },
+              },
+              { statusJidList: [participant] } // required for recent Baileys
+            );
+          }
         }
-
-        // Auto react to regular messages
-        if (!fromMe && (global.AREACT || (global.areact && global.areact[chatId]))) {
-            try {
-                const emoji = defaultEmojis[Math.floor(Math.random() * defaultEmojis.length)];
-                await dave.sendMessage(chatId, {
-                    react: {
-                        text: emoji,
-                        key: mek.key
-                    }
-                });
-            } catch (reactErr) {
-                console.log(`Auto-react error: ${reactErr.message}`);
-            }
-        }
-
-        // Skip bot-generated messages
-        if (mek.key.id.startsWith('dave') && mek.key.id.length === 16) return;
-        if (mek.key.id.startsWith('BAE5')) return;
-
-        // Skip if bot is private and message is not from owner
-        if (!dave.public && !fromMe && chatUpdate.type === 'notify') return;
-
-        // Pass to main handler - dave.js will handle anti-delete and commands
-        const m = smsg(dave, mek, store);
-        require("./dave")(dave, m, chatUpdate, store);
-
-    } catch (err) {
-        console.error(`Message handler error: ${err.message}`);
-        console.error(err.stack);
+      } catch (statusErr) {
+        console.log(`Status handling error: ${statusErr.message}`);
+      }
+      return; // stop further processing for statuses
     }
-});
 
-// ============ MESSAGES.UPDATE HANDLER ============
-dave.ev.on('messages.update', async (updates) => {
-    try {
-        for (const update of updates) {
-            try {
-                // Check if it's a valid update with required data
-                if (!update.key || !update.key.remoteJid) continue;
-
-                // Skip status updates
-                if (update.key.remoteJid === 'status@broadcast') continue;
-
-                // Get the message object
-                const message = update.update?.message || update.message;
-                if (!message) continue;
-
-                // Create a proper message object for processing
-                const mek = {
-                    key: update.key,
-                    message: message
-                };
-
-                // Pass to dave.js for anti-delete handling
-                const m = smsg(dave, mek, store);
-                require("./dave")(dave, m, { messages: [mek], type: 'notify' }, store);
-
-            } catch (updateErr) {
-                console.log(`Single update error: ${updateErr.message}`);
-            }
-        }
-    } catch (err) {
-        console.error(`Messages update handler error: ${err.message}`);
+    // ✅ Auto-read regular messages
+    if (global.AUTO_READ && !fromMe) {
+      await dave.readMessages([mek.key]).catch(() => {});
     }
+
+    // ✅ Auto-react to regular messages (use doReact if defined)
+    if (!fromMe && (global.AREACT || (global.areact && global.areact[chatId]))) {
+      const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
+      if (typeof doReact === 'function') {
+        await doReact(dave, chatId, mek, emoji);
+      } else {
+        await dave.sendMessage(chatId, { react: { text: emoji, key: mek.key } }).catch(() => {});
+      }
+    }
+
+    // Safe skip for bot message IDs
+    if (mek.key.id && mek.key.id.startsWith('dave') && mek.key.id.length === 16) return;
+    if (mek.key.id && mek.key.id.startsWith('BAE5')) return;
+
+    // Skip if bot is private
+    if (!dave.public && !fromMe && chatUpdate.type === 'notify') return;
+
+    // Main handler call
+    const m = smsg(dave, mek, store);
+    require("./dave")(dave, m, chatUpdate, store);
+
+  } catch (err) {
+    console.error(`Message handler error: ${err.message}`);
+  }
 });
     // Anti-call handler
     const antiCallNotified = new Set()
