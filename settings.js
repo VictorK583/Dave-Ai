@@ -4,7 +4,7 @@ const path = require('path');
 const chalk = require('chalk');
 if (fs.existsSync('.env')) require('dotenv').config({ path: __dirname + '/.env' });
 
-// ==================== SETTINGS FILE ==================== //
+// ==================== SETTINGS FILES ==================== //
 const settingsPath = path.join(__dirname, 'library/database/settings.json');
 
 // ==================== LOAD SETTINGS ==================== //
@@ -14,19 +14,50 @@ function loadSettings() {
 
     if (!fs.existsSync(settingsPath)) {
       const defaultSettings = {
-        botname: process.env.BOT_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄',
-        ownername: process.env.OWNER_NAME || 'GIFTED DAVE',
-        owner: process.env.OWNER_NUMBER || '254104260236',
-        packname: process.env.PACK_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄',
-        author: process.env.AUTHOR || '𝘿𝙖𝙫𝙚𝘼𝙄',
-        antidelete: { enabled: true },
+        // Bot Info
+        botname: '𝘿𝙖𝙫𝙚𝘼𝙄',
+        ownername: 'GIFTED DAVE',
+        owner: '254104260236',
+
+        // Features
         autoread: { enabled: false },
-        autotyping: { enabled: false },
         autorecord: { enabled: false },
-        autoviewstatus: process.env.AUTOVIEWSTATUS !== 'false',
-        autoreactstatus: process.env.AUTOREACTSTATUS === 'true',
-        welcome: process.env.WELCOME === 'true',
-        anticall: process.env.ANTI_CALL === 'true'
+        autotyping: { enabled: false },
+        autoviewstatus: true,
+        autoreactstatus: false,
+        welcome: false,
+        anticall: false,
+        antidelete: { enabled: true },
+        autobio: false,
+        statusUpdateTime: 0,
+        onlygroup: false,
+        onlypc: false,
+
+        // Sticker Info
+        packname: '𝘿𝙖𝙫𝙚𝘼𝙄',
+        author: '𝘿𝙖𝙫𝙚𝘼𝙄',
+
+        // Auto Reactions
+        areact: {
+          enabled: false,
+          chats: {},
+          emojis: ['💜', '💖', '💗', '💞', '💕', '❤️', '🔥', '😎', '💯', '🤖'],
+          mode: 'random'
+        },
+
+        // Group Settings
+        antilinkgc: { enabled: false },
+        antilink: { enabled: false },
+
+        // Security Features
+        antitag: {},
+        antibadword: {},
+        antipromote: { enabled: false, mode: 'revert' },
+        antidemote: { enabled: false, mode: 'revert' },
+        antibot: {},
+
+        // Auto Like
+        autolike: { enabled: false }
       };
 
       const dir = path.dirname(settingsPath);
@@ -35,6 +66,19 @@ function loadSettings() {
       settings = defaultSettings;
     } else {
       settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+
+      // Ensure structures
+      settings.areact = settings.areact || { enabled: false, chats: {}, emojis: [], mode: 'random' };
+      settings.antipromote = settings.antipromote || { enabled: false, mode: 'revert' };
+      settings.antidemote = settings.antidemote || { enabled: false, mode: 'revert' };
+      settings.antidelete = settings.antidelete || { enabled: true };
+      settings.autolike = settings.autolike || { enabled: false };
+      settings.antilinkgc = settings.antilinkgc || { enabled: false };
+      settings.antilink = settings.antilink || { enabled: false };
+      settings.autobio = settings.autobio || false;
+      settings.statusUpdateTime = settings.statusUpdateTime || 0;
+      settings.onlygroup = settings.onlygroup || false;
+      settings.onlypc = settings.onlypc || false;
     }
 
     return settings;
@@ -44,6 +88,7 @@ function loadSettings() {
   }
 }
 
+// ==================== SAVE SETTINGS ==================== //
 function saveSettings(settings) {
   try {
     const dir = path.dirname(settingsPath);
@@ -54,24 +99,82 @@ function saveSettings(settings) {
   }
 }
 
-// ==================== GLOBAL SETTINGS ==================== //
+// ==================== LOAD SETTINGS INIT ==================== //
 const settings = loadSettings();
 
+// ==================== BOT INFO ==================== //
+global.SESSION_ID = '.';
+global.botname = settings.botname;
+global.ownername = settings.ownername;
+global.owner = '254104260236';
+global.creator = `${global.owner}@s.whatsapp.net`;
+global.error = ['6666'];
+
+// ==================== LINKS & SOCIALS ==================== //
+global.websitex = 'https://whatsapp.com/channel/0029VbApvFQ2Jl84lhONkc3k';
+global.wagc = 'https://chat.whatsapp.com/CaPeB0sVRTrL3aG6asYeAC';
+global.socialm = 'IG: @_gifted_dave';
+global.location = 'Kenya';
+global.themeemoji = '🪀';
+global.wm = '𝘿𝙖𝙫𝙚𝘼𝙄';
+global.botscript = global.websitex;
+
+// ==================== STICKER INFO ==================== //
+global.packname = settings.packname;
+global.author = settings.author;
+global.caption = '𝘿𝙖𝙫𝙚𝘼𝙄';
+global.footer = '𝘿𝙖𝙫𝙚𝘼𝙄';
+
+// ==================== FEATURES ==================== //
+global.AUTOVIEWSTATUS = settings.autoviewstatus;
+global.AUTOREACTSTATUS = settings.autoreactstatus;
+global.AUTO_READ = settings.autoread.enabled;
+global.antidelete = settings.antidelete.enabled;
+global.AREACT = settings.areact.enabled;
+global.areact = settings.areact.chats;
+global.welcome = settings.welcome;
+global.anticall = settings.anticall;
+
+// ==================== BOT CONFIG ==================== //
+global.xprefix = '.'; // ✅ Default prefix — now managed via plugin
+global.premium = [global.owner];
+global.botversion = '1.0.0';
+global.typebot = 'Plugin × Case';
+global.session = 'davesession';
+global.updateZipUrl = 'https://github.com/gifteddevsmd/Dave-Ai/archive/refs/heads/main.zip';
+
+// ==================== IMAGES ==================== //
+global.thumb = 'https://files.catbox.moe/cp8oat.jpg';
+global.menuImage = global.thumb;
+
+// ==================== STATUS FLAGS ==================== //
+global.statusview = global.AUTOVIEWSTATUS;
+global.antilinkgc = settings.antilinkgc.enabled;
+global.autoTyping = settings.autotyping.enabled;
+global.autoRecord = settings.autorecord.enabled;
+global.autoai = false;
+global.autoreact = false;
+global.autostatusview = true;
+
+// ==================== MESSAGES ==================== //
+global.mess = {
+  success: '✅ Done.',
+  admin: 'Admin only.',
+  premium: 'Premium user only.',
+  botAdmin: 'Make me admin first.',
+  owner: 'Owner only.',
+  OnlyGrup: 'Group only.',
+  private: 'Private chat only.',
+  wait: 'Processing...',
+  error: 'Error occurred.'
+};
+
+// ==================== GLOBAL EXPORTS ==================== //
 global.settings = settings;
 global.loadSettings = loadSettings;
 global.saveSettings = saveSettings;
 
-// ==================== BASIC GLOBALS ==================== //
-global.botname = settings.botname;
-global.ownername = settings.ownername;
-global.owner = settings.owner;
-global.creator = `${global.owner}@s.whatsapp.net`;
-global.SESSION_ID = process.env.SESSION_ID || '.';
-
-// ✅ Keep only this simple fallback for prefix
-global.xprefix = '.';
-
-// ==================== WATCHER ==================== //
+// ==================== FILE WATCHER ==================== //
 let file = require.resolve(__filename);
 fs.watchFile(file, () => {
   fs.unwatchFile(file);
@@ -79,3 +182,9 @@ fs.watchFile(file, () => {
   delete require.cache[file];
   require(file);
 });
+
+// ==================== EXPORT FUNCTIONS ==================== //
+module.exports = {
+  loadSettings,
+  saveSettings
+};
