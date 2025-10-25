@@ -1,0 +1,40 @@
+{
+  "botname": "𝘿𝙖𝙫𝙚𝘼𝙄",
+  "ownername": "GIFTED DAVE",
+  "owner": "254104260236",
+  "xprefix": ".",
+  "packname": "𝘿𝙖𝙫𝙚𝘼𝙄",
+  "author": "𝘿𝙖𝙫𝙚𝘼𝙄",
+  "autoread": {
+    "enabled": false
+  },
+  "autorecord": {
+    "enabled": false
+  },
+  "autotyping": {
+    "enabled": false
+  },
+  "autoviewstatus": true,
+  "autoreactstatus": false,
+  "welcome": false,
+  "anticall": false,
+  "antidelete": {
+    "enabled": true
+  },
+  "areact": {
+    "enabled": false,
+    "chats": {}
+  },
+  "antilinkgc": {
+    "enabled": false
+  },
+  "antilink": {},
+  "antitag": {},
+  "antibadword": {},
+  "antipromote": {},
+  "antidemote": {},
+  "antibot": {},
+  "autolike": {
+    "enabled": false
+  }
+}
