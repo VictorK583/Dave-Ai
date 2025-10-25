@@ -4,11 +4,80 @@ const path = require('path');
 const chalk = require('chalk');
 if (fs.existsSync('.env')) require('dotenv').config({ path: __dirname + '/.env' });
 
+// ==================== SETTINGS FILE ==================== //
+const settingsPath = path.join(__dirname, 'library/database/settings.json');
+
+// Load settings from JSON file
+function loadSettings() {
+  try {
+    if (!fs.existsSync(settingsPath)) {
+      const defaultSettings = {
+        // Bot Info
+        botname: process.env.BOT_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄',
+        ownername: process.env.OWNER_NAME || 'GIFTED DAVE',
+        owner: process.env.OWNER_NUMBER || '254104260236',
+        xprefix: process.env.PREFIX || '.',
+        
+        // Features
+        autoread: { enabled: false },
+        autorecord: { enabled: false },
+        autotyping: { enabled: false },
+        autoviewstatus: process.env.AUTOVIEWSTATUS !== 'false',
+        autoreactstatus: process.env.AUTOREACTSTATUS === 'true',
+        welcome: process.env.WELCOME === 'true',
+        anticall: process.env.ANTI_CALL === 'true',
+        antidelete: { enabled: true },
+        
+        // Sticker Info
+        packname: process.env.PACK_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄',
+        author: process.env.AUTHOR || '𝘿𝙖𝙫𝙚𝘼𝙄',
+        
+        // Auto Reactions
+        areact: { enabled: false, chats: {} },
+        
+        // Group Settings
+        antilinkgc: { enabled: false },
+        
+        // Security Features
+        antitag: {},
+        antibadword: {},
+        antidemote: {},
+        antipromote: {},
+        antibot: {}
+      };
+      
+      const dir = path.dirname(settingsPath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
+      return defaultSettings;
+    }
+    
+    return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    return {};
+  }
+}
+
+// Save settings to JSON file
+function saveSettings(settings) {
+  try {
+    const dir = path.dirname(settingsPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+  } catch (error) {
+    console.error('Error saving settings:', error);
+  }
+}
+
+// Load initial settings
+const settings = loadSettings();
+
 // ==================== BOT INFO ==================== //
 global.SESSION_ID = process.env.SESSION_ID || '.';
-global.botname = process.env.BOT_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄';
-global.ownername = process.env.OWNER_NAME || 'GIFTED DAVE';
-global.owner = process.env.OWNER_NUMBER || '254104260236';
+global.botname = settings.botname;
+global.ownername = settings.ownername;
+global.owner = settings.owner;
 global.creator = `${global.owner}@s.whatsapp.net`;
 global.error = ['6666'];
 
@@ -22,63 +91,35 @@ global.wm = '𝘿𝙖𝙫𝙚𝘼𝙄';
 global.botscript = global.websitex;
 
 // ==================== STICKER INFO ==================== //
-global.packname = process.env.PACK_NAME || '𝘿𝙖𝙫𝙚𝘼𝙄';
-global.author = process.env.AUTHOR || '𝘿𝙖𝙫𝙚𝘼𝙄';
+global.packname = settings.packname;
+global.author = settings.author;
 global.caption = '𝘿𝙖𝙫𝙚𝘼𝙄';
 global.footer = '𝘿𝙖𝙫𝙚𝘼𝙄';
 
 // ==================== AUTO STATUS FEATURES ==================== //
-global.AUTOVIEWSTATUS = process.env.AUTOVIEWSTATUS !== 'false';  // Default: true
-global.AUTOREACTSTATUS = process.env.AUTOREACTSTATUS === 'true'; // Default: false
+global.AUTOVIEWSTATUS = settings.autoviewstatus;
+global.AUTOREACTSTATUS = settings.autoreactstatus;
 
 // ==================== AUTO READ FEATURE ==================== //
-global.AUTO_READ = process.env.AUTO_READ === 'true' || false;
+global.AUTO_READ = settings.autoread.enabled;
 
 // ==================== BOT SETTINGS ==================== //
-global.xprefix = process.env.PREFIX || '.';
+global.xprefix = settings.xprefix; // Using xprefix as you specified
 global.premium = [global.owner];
 global.hituet = 0;
 
-global.welcome = process.env.WELCOME === 'true';
-global.anticall = process.env.ANTI_CALL === 'true';
+global.welcome = settings.welcome;
+global.anticall = settings.anticall;
 global.adminevent = true;
 global.groupevent = true;
 global.connect = true;
 
 // ==================== ANTI-DELETE SETTINGS ==================== //
-// Path to JSON storage
-const antiDelPath = path.join(__dirname, 'library/database/antidelete.json');
-
-// Load anti-delete settings
-function loadAntiDel() {
-  try {
-    if (fs.existsSync(antiDelPath)) {
-      return JSON.parse(fs.readFileSync(antiDelPath, 'utf8'));
-    }
-  } catch (e) {
-    console.error('Error loading anti-delete settings:', e);
-  }
-  return { enabled: true }; // default ON
-}
-
-// Save anti-delete settings
-function saveAntiDel(settings) {
-  try {
-    const dir = path.dirname(antiDelPath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(antiDelPath, JSON.stringify(settings, null, 2));
-  } catch (e) {
-    console.error('Error saving anti-delete settings:', e);
-  }
-}
-
-// Global variable for anti-delete toggle
-global.antiDelSettings = loadAntiDel();
-global.antidelete = global.antiDelSettings.enabled;
+global.antidelete = settings.antidelete.enabled;
 
 // ==================== AUTO REACTIONS ==================== //
-global.AREACT = false;     
-global.areact = {};        
+global.AREACT = settings.areact.enabled;
+global.areact = settings.areact.chats;
 
 // ==================== BOT CONFIG ==================== //
 global.botversion = '1.0.0';
@@ -92,9 +133,9 @@ global.menuImage = global.thumb;
 
 // ==================== LEGACY / OTHER TOGGLES ==================== //
 global.statusview = global.AUTOVIEWSTATUS;
-global.antilinkgc = false;
-global.autoTyping = false;
-global.autoRecord = false;
+global.antilinkgc = settings.antilinkgc.enabled;
+global.autoTyping = settings.autotyping.enabled;
+global.autoRecord = settings.autorecord.enabled;
 global.autoai = false;
 global.autoreact = false;
 global.autostatusview = true;
@@ -112,6 +153,11 @@ global.mess = {
   error: 'Error occurred.'
 };
 
+// ==================== GLOBAL SETTINGS ACCESS ==================== //
+global.settings = settings;
+global.loadSettings = loadSettings;
+global.saveSettings = saveSettings;
+
 // ==================== FILE WATCHER ==================== //
 let file = require.resolve(__filename);
 fs.watchFile(file, () => {
@@ -123,6 +169,6 @@ fs.watchFile(file, () => {
 
 // ==================== EXPORT FUNCTIONS ==================== //
 module.exports = { 
-  loadAntiDel: loadAntiDel, 
-  saveAntiDel: saveAntiDel 
+  loadSettings, 
+  saveSettings 
 };
