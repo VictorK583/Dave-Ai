@@ -5,6 +5,7 @@
   "xprefix": ".",
   "packname": "𝘿𝙖𝙫𝙚𝘼𝙄",
   "author": "𝘿𝙖𝙫𝙚𝘼𝙄",
+
   "autoread": {
     "enabled": false
   },
@@ -16,24 +17,38 @@
   },
   "autoviewstatus": true,
   "autoreactstatus": false,
+
   "welcome": false,
   "anticall": false,
+
   "antidelete": {
     "enabled": true
   },
+
   "areact": {
     "enabled": false,
-    "chats": {}
+    "chats": {},
+    "emojis": ["😂", "🔥", "😎", "👍", "💀", "❤️", "🤖", "🥵", "🙌", "💯"],
+    "mode": "random"
   },
+
   "antilinkgc": {
     "enabled": false
   },
   "antilink": {},
   "antitag": {},
   "antibadword": {},
-  "antipromote": {},
-  "antidemote": {},
+
+  "antipromote": {
+    "enabled": false,
+    "mode": "revert"
+  },
+  "antidemote": {
+    "enabled": false,
+    "mode": "revert"
+  },
   "antibot": {},
+
   "autolike": {
     "enabled": false
   }
