@@ -23,7 +23,6 @@ let daveplug = async (m, { dave, daveshown, args, reply }) => {
 
         global.saveSettings(settings)
         global.settings = settings
-        global.AREACT = settings.areact.enabled
 
         reply(`Auto react has been turned ${settings.areact.enabled ? 'ON' : 'OFF'}`)
     } catch (err) {
