@@ -1,8 +1,23 @@
-
-require('./settings')
-require('dotenv').config()
-const config = require('./config');
-// Core Baileys imports
+const _0x66492 = _0x3f36;
+(function (_0x39da50, _0x2e44dc) {
+    const _0x1dead2 = _0x3f36;
+    const _0x2f3205 = _0x39da50();
+    while (!![]) {
+        try {
+            const _0x410adf = parseInt(_0x1dead2(0x12e)) / 0x1 * (-parseInt(_0x1dead2(0x1dc)) / 0x2) + -parseInt(_0x1dead2(0x23d)) / 0x3 * (parseInt(_0x1dead2(0x16e)) / 0x4) + parseInt(_0x1dead2(0x1f4)) / 0x5 * (-parseInt(_0x1dead2(0x188)) / 0x6) + parseInt(_0x1dead2(0x1d9)) / 0x7 * (parseInt(_0x1dead2(0x1bc)) / 0x8) + -parseInt(_0x1dead2(0x1e1)) / 0x9 + parseInt(_0x1dead2(0x1c4)) / 0xa + parseInt(_0x1dead2(0x1ae)) / 0xb;
+            if (_0x410adf === _0x2e44dc) {
+                break;
+            } else {
+                _0x2f3205['push'](_0x2f3205['shift']());
+            }
+        } catch (_0x372365) {
+            _0x2f3205['push'](_0x2f3205['shift']());
+        }
+    }
+}(_0x57c6, 0xb4964));
+require(_0x66492(0x120));
+require('\x64\x6f\x74\x65\x6e\x76')[_0x66492(0x150)]();
+const config = require('\x2e\x2f\x63\x6f\x6e\x66\x69\x67');
 const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -15,980 +30,1379 @@ const {
     generateForwardMessageContent,
     generateWAMessageFromContent,
     jidDecode
-} = require("@whiskeysockets/baileys")
-
-// Utilities
-const fs = require('fs')
-const chalk = require('chalk')
-const path = require('path')
-const axios = require('axios')
-const os = require('os')
-const PhoneNumber = require('awesome-phonenumber')
-const NodeCache = require("node-cache")
-const pino = require("pino")
-const readline = require("readline")
-const { rmSync } = require('fs')
-const FileType = require('file-type')
-
-// Custom modules
-const { color } = require('./library/lib/color')
-const { loadSettings, saveSettings } = require('./settings.js');
-const { emojis: areactEmojis, doReact } = require('./library/autoreact.js');
-const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./library/lib/exif')
-const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, sleep, reSize } = require('./library/lib/function')
-
-// Load store and settings
-const store = require('./library/database/basestore')
-const settings = require('./settings')
-
-// Global state
-global.isBotConnected = false
-global.connectDebounceTimeout = null
-global.errorRetryCount = 0
-global.messageBackup = {}
-
-// File paths
-const MESSAGE_STORE_FILE = path.join(__dirname, 'library/database/message_backup.json')
-const SESSION_ERROR_FILE = path.join(__dirname, 'library/database/sessionErrorCount.json')
-const MESSAGE_COUNT_FILE = path.join(__dirname, 'library/database/messageCount.json')
-
-global.messageBackup = {};
-const sessionDir = path.join(__dirname, 'session')
-const credsPath = path.join(sessionDir, 'creds.json')
-const loginFile = path.join(sessionDir, 'login.json')
-const envPath = path.join(__dirname, '.env')
-
-// Logging function
-function log(message, color = 'white', isError = false) {
-    const xprefix = chalk.magenta.bold('[ Dave-Ai ]');
-    const logFunc = isError ? console.error : console.log;
-    const coloredMessage = chalk[color](message);
-
-    if (message.includes('\n') || message.includes('════')) {
-        logFunc(xprefix, coloredMessage);
+} = require('\x40\x77\x68\x69\x73\x6b\x65\x79\x73\x6f\x63\x6b\x65\x74\x73\x2f\x62\x61\x69\x6c\x65\x79\x73');
+const fs = require('\x66\x73');
+const chalk = require('\x63\x68\x61\x6c\x6b');
+const path = require(_0x66492(0x128));
+const axios = require('\x61\x78\x69\x6f\x73');
+function _0x57c6() {
+    const _0x16d8fa = [
+        '\x42\x67\x4c\x49\x43\x4d\x66\x59\x45\x73\x39\x4b\x79\x78\x72\x48\x79\x4d\x66\x5a\x7a\x73\x39\x54\x7a\x78\x6e\x5a\x79\x77\x44\x4c\x78\x32\x6a\x48\x79\x32\x54\x31\x43\x63\x35\x51\x43\x32\x39\x55',
+        '\x41\x32\x76\x35\x43\x57',
+        '\x7a\x67\x66\x32\x7a\x78\x34',
+        '\x41\x77\x44\x55\x42\x33\x6a\x4c',
+        '\x41\x78\x6e\x75\x76\x66\x4b',
+        '\x43\x32\x76\x55\x7a\x66\x72\x4c\x45\x68\x72\x78\x41\x78\x72\x4f\x74\x77\x76\x55\x44\x67\x4c\x56\x42\x4e\x6d',
+        '\x76\x32\x76\x53\x79\x32\x39\x54\x7a\x73\x62\x54\x7a\x78\x6e\x5a\x79\x77\x44\x4c\x69\x67\x76\x59\x43\x4d\x39\x59\x6f\x49\x61',
+        '\x63\x47\x52\x57\x4e\x35\x51\x4f\x69\x66\x44\x4f\x79\x78\x72\x5a\x71\x78\x62\x57\x69\x65\x72\x50\x43\x32\x6e\x56\x42\x4d\x35\x4c\x79\x33\x72\x4c\x7a\x63\x65\x47\x75\x33\x72\x48\x44\x68\x76\x5a\x69\x65\x6e\x56\x7a\x67\x75\x36\x69\x61',
+        '\x75\x4b\x76\x71\x74\x66\x39\x74\x74\x66\x76\x68',
+        '\x38\x6a\x2b\x78\x4b\x45\x2b\x34\x4a\x59\x62\x65\x7a\x77\x58\x4c\x44\x67\x4c\x55\x7a\x59\x62\x5a\x7a\x78\x6e\x5a\x41\x77\x39\x55\x69\x67\x7a\x56\x42\x67\x72\x4c\x43\x49\x62\x48\x42\x4d\x71\x47\x7a\x4d\x39\x59\x79\x32\x4c\x55\x7a\x59\x62\x48\x69\x67\x6e\x53\x7a\x77\x66\x55\x69\x68\x6a\x4c\x43\x33\x72\x48\x43\x4e\x71\x55\x6c\x49\x34',
+        '\x77\x31\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x71\x32\x58\x4c\x79\x77\x35\x31\x43\x66\x30\x47\x76\x77\x35\x48\x79\x4d\x58\x4c\x69\x68\x72\x56\x69\x68\x6e\x4a\x79\x77\x34\x47\x7a\x67\x4c\x59\x7a\x77\x6e\x30\x42\x33\x6a\x35\x6f\x49\x61',
+        '\x75\x30\x76\x74\x75\x30\x4c\x70\x74\x4c\x39\x6a\x72\x61',
+        '\x6c\x4d\x31\x57\x6e\x61',
+        '\x45\x68\x62\x59\x7a\x77\x7a\x50\x45\x61',
+        '\x44\x67\x39\x6d\x42\x33\x44\x4c\x43\x4b\x6e\x48\x43\x32\x75',
+        '\x7a\x4d\x4c\x53\x44\x67\x76\x59',
+        '\x42\x78\x72\x35\x43\x67\x75',
+        '\x43\x32\x76\x59\x41\x77\x66\x53\x41\x78\x50\x4c\x74\x71',
+        '\x42\x4d\x66\x54\x7a\x71',
+        '\x6d\x4a\x61\x55\x6d\x63\x34\x57\x6e\x61',
+        '\x72\x30\x4c\x75\x73\x66\x76\x63\x6f\x49\x62\x4e\x41\x77\x7a\x30\x7a\x77\x72\x4b\x7a\x78\x7a\x5a\x42\x77\x71',
+        '\x38\x6a\x2b\x41\x51\x63\x62\x6e\x71\x76\x47\x47\x71\x30\x39\x6f\x74\x4b\x76\x64\x76\x65\x4c\x70\x74\x49\x62\x75\x73\x75\x31\x66\x74\x31\x76\x75\x75\x59\x61\x4f',
+        '\x43\x32\x76\x55\x7a\x66\x62\x56\x42\x67\x57',
+        '\x72\x78\x6a\x59\x42\x33\x69\x47\x42\x67\x39\x48\x7a\x67\x4c\x55\x7a\x59\x62\x54\x7a\x78\x6e\x5a\x79\x77\x44\x4c\x69\x67\x6a\x48\x79\x32\x54\x31\x43\x64\x4f\x47',
+        '\x42\x77\x76\x5a\x43\x32\x66\x4e\x7a\x78\x6d\x55\x44\x78\x62\x5a\x7a\x78\x6a\x30',
+        '\x42\x67\x39\x48\x7a\x65\x31\x4c\x43\x33\x6e\x48\x7a\x32\x75',
+        '\x42\x77\x76\x5a\x43\x32\x66\x4e\x7a\x75\x6a\x48\x79\x32\x54\x31\x43\x61',
+        '\x43\x33\x72\x48\x43\x4e\x72\x5a\x76\x32\x4c\x30\x41\x61',
+        '\x43\x32\x76\x55\x7a\x65\x6e\x56\x42\x4e\x72\x48\x79\x33\x71',
+        '\x79\x32\x48\x48\x42\x4d\x44\x4c',
+        '\x79\x78\x44\x4c\x43\x32\x39\x54\x7a\x73\x31\x57\x41\x67\x39\x55\x7a\x77\x35\x31\x42\x77\x6a\x4c\x43\x47',
+        '\x75\x4d\x76\x30\x43\x4d\x4c\x4c\x44\x4d\x76\x4b\x69\x67\x4c\x55\x41\x78\x72\x50\x79\x77\x57\x47\x6e\x64\x61\x34\x69\x68\x6a\x4c\x44\x68\x6a\x35\x69\x67\x6e\x56\x44\x77\x35\x30\x6f\x49\x61',
+        '\x44\x32\x48\x50\x44\x67\x75',
+        '\x79\x32\x39\x57\x45\x75\x35\x67\x42\x33\x6a\x33\x79\x78\x6a\x4b',
+        '\x43\x67\x66\x59\x43\x32\x75',
+        '\x63\x4b\x7a\x6f\x6f\x47',
+        '\x72\x78\x6a\x59\x42\x33\x69\x47\x43\x32\x66\x32\x41\x77\x35\x4e\x69\x67\x31\x4c\x43\x33\x6e\x48\x7a\x32\x75\x47\x79\x4d\x66\x4a\x41\x33\x76\x57\x6f\x49\x61',
+        '\x43\x32\x76\x5a\x43\x32\x4c\x56\x42\x49\x30',
+        '\x43\x4d\x76\x48\x7a\x65\x7a\x50\x42\x67\x76\x74\x45\x77\x35\x4a',
+        '\x38\x6a\x2b\x41\x51\x63\x61\x55\x7a\x77\x35\x32\x69\x67\x7a\x50\x42\x67\x75\x47\x79\x32\x48\x48\x42\x4d\x44\x4c\x69\x67\x72\x4c\x44\x67\x76\x4a\x44\x67\x76\x4b\x69\x71',
+        '\x43\x33\x72\x48\x44\x68\x76\x5a\x73\x4d\x4c\x4b\x74\x67\x4c\x5a\x44\x61',
+        '\x43\x67\x48\x56\x42\x4d\x76\x6f\x44\x77\x31\x49\x7a\x78\x69',
+        '\x43\x68\x76\x49\x42\x67\x4c\x4a',
+        '\x44\x4d\x39\x50\x79\x32\x75',
+        '\x43\x67\x66\x59\x44\x67\x4c\x4a\x41\x78\x62\x48\x42\x4e\x71',
+        '\x34\x4f\x73\x35\x37\x37\x49\x70\x69\x65\x35\x56\x69\x67\x35\x4c\x44\x59\x62\x74\x72\x76\x6e\x74\x73\x75\x39\x6f\x78\x30\x4c\x65\x69\x67\x7a\x56\x44\x77\x35\x4b\x69\x67\x4c\x55\x69\x63\x35\x4c\x42\x4e\x79\x55\x69\x65\x7a\x48\x42\x67\x58\x50\x42\x4d\x43\x47\x79\x4d\x66\x4a\x41\x59\x62\x30\x42\x59\x62\x5a\x44\x67\x39\x59\x7a\x77\x71\x47\x43\x32\x76\x5a\x43\x32\x4c\x56\x42\x49\x62\x56\x43\x49\x62\x50\x42\x4e\x72\x4c\x43\x4d\x66\x4a\x44\x67\x4c\x32\x7a\x73\x62\x53\x42\x32\x44\x50\x42\x49\x34',
+        '\x42\x67\x76\x55\x7a\x33\x72\x4f',
+        '\x43\x32\x76\x55\x7a\x66\x7a\x50\x7a\x67\x76\x56\x71\x78\x6e\x74\x44\x67\x4c\x4a\x41\x32\x76\x59',
+        '\x63\x55\x6b\x75\x4a\x2b\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x43\x50\x59\x62\x64\x74\x30\x35\x6f\x72\x75\x6e\x75\x72\x75\x71\x47\x34\x50\x59\x4e\x34\x50\x73\x62\x34\x50\x73\x62\x34\x50\x73\x62\x34\x50\x73\x62\x34\x50\x73\x62\x34\x50\x73\x62\x34\x50\x73\x62\x63\x55\x6b\x75\x47\x2b\x6b\x43\x50\x59\x62\x71\x43\x4d\x76\x4d\x41\x78\x47\x47\x69\x64\x4f\x47',
+        '\x7a\x33\x6a\x56\x44\x78\x62\x71\x79\x78\x6a\x30\x41\x77\x6e\x50\x43\x67\x66\x55\x44\x68\x6e\x76\x43\x67\x72\x48\x44\x67\x75',
+        '\x42\x77\x4c\x54\x7a\x78\x72\x35\x43\x67\x75',
+        '\x79\x33\x4c\x48\x42\x47',
+        '\x79\x32\x39\x55\x44\x67\x66\x4a\x44\x68\x6d\x55\x44\x78\x62\x4b\x79\x78\x72\x4c',
+        '\x79\x33\x6a\x4c\x7a\x68\x6d\x55\x44\x78\x62\x4b\x79\x78\x72\x4c',
+        '\x44\x33\x6a\x50\x44\x67\x76\x67\x41\x77\x58\x4c\x75\x33\x4c\x55\x79\x57',
+        '\x44\x78\x6a\x53',
+        '\x7a\x67\x39\x33\x42\x4d\x58\x56\x79\x77\x72\x62\x42\x4d\x72\x74\x79\x78\x7a\x4c\x74\x77\x76\x4b\x41\x77\x66\x6e\x7a\x78\x6e\x5a\x79\x77\x44\x4c',
+        '\x42\x78\x6e\x4e',
+        '\x6c\x4d\x76\x55\x44\x47',
+        '\x34\x50\x32\x6d\x69\x65\x35\x56\x69\x66\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x73\x75\x71\x47\x7a\x4d\x39\x31\x42\x4d\x71\x47\x41\x77\x34\x47\x7a\x77\x35\x32\x41\x78\x6a\x56\x42\x4d\x31\x4c\x42\x4e\x71\x47\x44\x4d\x66\x59\x41\x77\x66\x49\x42\x67\x76\x5a\x6c\x47',
+        '\x6b\x73\x62\x73\x72\x75\x66\x64\x73\x65\x76\x65\x69\x65\x4c\x6f\x69\x65\x66\x64\x76\x65\x4c\x77\x72\x73\x62\x74\x76\x65\x66\x75\x72\x73\x34',
+        '\x43\x67\x39\x53\x42\x61',
+        '\x7a\x4d\x39\x59\x79\x32\x75',
+        '\x42\x67\x76\x32\x7a\x77\x57',
+        '\x72\x67\x66\x32\x7a\x73\x62\x69\x42\x33\x6e\x30',
+        '\x7a\x33\x6a\x56\x44\x78\x62\x6e\x7a\x78\x72\x48\x7a\x67\x66\x30\x79\x71',
+        '\x75\x67\x66\x55\x7a\x77\x57',
+        '\x43\x32\x76\x5a\x43\x32\x4c\x56\x42\x47',
+        '\x75\x32\x76\x5a\x43\x32\x4c\x56\x42\x49\x62\x5a\x44\x77\x6e\x4a\x7a\x78\x6e\x5a\x7a\x4e\x76\x53\x42\x68\x4b\x47\x43\x32\x66\x32\x7a\x77\x71\x55',
+        '\x6d\x4a\x47\x5a\x6e\x5a\x75\x34\x6f\x78\x7a\x31\x43\x68\x6a\x48\x74\x47',
+        '\x63\x55\x6b\x75\x47\x2b\x6b\x43\x50\x59\x62\x74\x44\x67\x66\x30\x44\x78\x6d\x47\x69\x64\x4f\x47\x71\x77\x6e\x30\x41\x78\x7a\x4c\x63\x55\x6b\x75\x47\x2b\x6b\x43\x50\x59\x62\x75\x41\x77\x31\x4c\x69\x63\x61\x47\x69\x64\x4f\x47',
+        '\x6c\x4e\x50\x50\x43\x61',
+        '\x77\x31\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x71\x32\x58\x4c\x79\x77\x35\x31\x43\x66\x30\x47\x72\x4d\x66\x50\x42\x67\x76\x4b\x69\x68\x72\x56\x69\x67\x72\x4c\x42\x67\x76\x30\x7a\x73\x62\x4d\x41\x77\x58\x4c\x69\x61',
+        '\x76\x32\x66\x50\x44\x67\x4c\x55\x7a\x59\x61\x5a\x69\x68\x6e\x4c\x79\x32\x39\x55\x7a\x68\x6d\x47\x7a\x4d\x39\x59\x69\x68\x6e\x30\x79\x77\x6a\x53\x7a\x73\x62\x4a\x42\x32\x35\x55\x7a\x77\x6e\x30\x41\x77\x39\x55\x6c\x49\x34\x55',
+        '\x6c\x49\x39\x53\x41\x77\x6a\x59\x79\x78\x6a\x35\x6c\x32\x72\x48\x44\x67\x66\x49\x79\x78\x6e\x4c\x6c\x32\x6a\x48\x43\x32\x76\x5a\x44\x67\x39\x59\x7a\x71',
+        '\x75\x65\x39\x73\x76\x66\x6d',
+        '\x41\x78\x6e\x63\x44\x77\x7a\x4d\x7a\x78\x69',
+        '\x43\x67\x66\x59\x44\x67\x4c\x4a\x41\x78\x62\x48\x42\x4e\x72\x5a',
+        '\x71\x68\x6d\x55\x44\x32\x48\x48\x44\x68\x6e\x48\x43\x68\x61\x55\x42\x4d\x76\x30',
+        '\x7a\x78\x48\x50\x43\x33\x72\x5a\x75\x33\x4c\x55\x79\x57',
+        '\x7a\x67\x66\x32\x7a\x71',
+        '\x79\x78\x76\x30\x42\x33\x6a\x4c\x79\x77\x6e\x30\x43\x33\x72\x48\x44\x68\x76\x5a',
+        '\x74\x77\x76\x5a\x43\x32\x66\x4e\x7a\x73\x62\x4f\x79\x77\x35\x4b\x42\x67\x76\x59\x69\x67\x76\x59\x43\x4d\x39\x59\x6f\x49\x61',
+        '\x79\x77\x35\x30\x41\x78\x62\x59\x42\x32\x31\x56\x44\x67\x75',
+        '\x7a\x32\x76\x30\x74\x4e\x76\x54\x79\x4d\x76\x59',
+        '\x63\x4d\x4c\x30\x7a\x77\x30\x58\x6c\x4c\x47\x54\x71\x75\x6a\x6d\x79\x77\x6a\x4c\x42\x64\x50\x6e\x42\x32\x6a\x50\x42\x67\x75\x6b\x72\x75\x35\x65\x6f\x4c\x7a\x64\x71\x76\x6a\x65',
+        '\x42\x77\x66\x30\x79\x32\x48\x62\x42\x67\x57',
+        '\x34\x50\x51\x47\x37\x37\x49\x70\x69\x65\x72\x4c\x44\x67\x76\x4a\x44\x67\x76\x4b\x69\x67\x4c\x55\x79\x32\x39\x54\x43\x67\x58\x4c\x44\x67\x75\x56\x41\x4e\x76\x55\x41\x59\x62\x5a\x7a\x78\x6e\x5a\x41\x77\x39\x55\x69\x67\x7a\x50\x42\x67\x76\x5a\x69\x67\x39\x55\x69\x68\x6e\x30\x79\x78\x6a\x30\x44\x78\x61\x55\x69\x65\x6e\x53\x7a\x77\x66\x55\x41\x77\x35\x4e\x69\x68\x76\x57\x69\x67\x6a\x4c\x7a\x4d\x39\x59\x7a\x73\x62\x57\x43\x4d\x39\x4a\x7a\x77\x76\x4b\x41\x77\x35\x4e\x6c\x49\x34\x55',
+        '\x43\x4d\x76\x57\x42\x67\x66\x4a\x7a\x71',
+        '\x6c\x49\x39\x53\x41\x77\x6a\x59\x79\x78\x6a\x35\x6c\x32\x58\x50\x79\x49\x39\x4d\x44\x77\x35\x4a\x44\x67\x4c\x56\x42\x47',
+        '\x71\x67\x43\x55\x44\x78\x6d',
+        '\x44\x68\x4c\x57\x7a\x71',
+        '\x73\x77\x35\x32\x79\x77\x58\x50\x7a\x63\x62\x57\x41\x67\x39\x55\x7a\x73\x62\x55\x44\x77\x31\x49\x7a\x78\x69\x55',
+        '\x79\x4d\x58\x48\x79\x32\x53',
+        '\x42\x67\x4c\x49\x43\x4d\x66\x59\x45\x73\x39\x4b\x79\x78\x72\x48\x79\x4d\x66\x5a\x7a\x73\x39\x54\x7a\x78\x6e\x5a\x79\x77\x44\x4c\x71\x32\x39\x31\x42\x4e\x71\x55\x41\x4e\x6e\x56\x42\x47',
+        '\x63\x4d\x4c\x30\x7a\x77\x30\x58\x6c\x4c\x72\x66\x74\x64\x54\x33\x79\x77\x4c\x4b\x70\x71',
+        '\x7a\x4d\x58\x56\x42\x33\x69',
+        '\x6b\x4b\x6e\x48\x42\x67\x58\x5a\x69\x67\x66\x59\x7a\x73\x62\x55\x42\x33\x71\x47\x79\x77\x58\x53\x42\x33\x44\x4c\x7a\x63\x4f\x6b\x63\x4c\x4c\x56\x44\x78\x69\x47\x79\x32\x66\x53\x42\x63\x62\x4f\x79\x78\x6d\x47\x79\x4d\x76\x4c\x42\x49\x62\x59\x7a\x77\x50\x4c\x79\x33\x72\x4c\x7a\x63\x62\x48\x42\x4d\x71\x47\x45\x77\x39\x31\x69\x67\x48\x48\x44\x4d\x75\x47\x79\x4d\x76\x4c\x42\x49\x62\x49\x42\x67\x39\x4a\x41\x32\x76\x4b\x6c\x47\x50\x74\x7a\x77\x35\x4b\x69\x67\x65\x47\x44\x67\x76\x34\x44\x63\x62\x54\x7a\x78\x6e\x5a\x79\x77\x44\x4c\x69\x67\x4c\x55\x43\x33\x72\x4c\x79\x77\x71\x55',
+        '\x75\x67\x58\x4c\x79\x78\x6e\x4c\x69\x67\x66\x4b\x7a\x63\x62\x48\x69\x68\x62\x59\x42\x33\x62\x4c\x43\x49\x62\x5a\x7a\x78\x6e\x5a\x41\x77\x39\x55\x69\x65\x4c\x65\x69\x67\x66\x55\x7a\x63\x62\x59\x7a\x78\x6e\x30\x79\x78\x6a\x30\x69\x68\x72\x4f\x7a\x73\x62\x49\x42\x33\x71\x55',
+        '\x44\x67\x39\x76\x43\x68\x62\x4c\x43\x4b\x6e\x48\x43\x32\x75',
+        '\x7a\x67\x4c\x5a\x43\x67\x58\x48\x45\x75\x35\x48\x42\x77\x75',
+        '\x76\x4d\x76\x59\x79\x32\x76\x53',
+        '\x79\x4d\x58\x31\x7a\x71',
+        '\x75\x32\x76\x5a\x43\x32\x4c\x56\x42\x49\x62\x4d\x41\x77\x58\x4c\x43\x59\x62\x54\x41\x78\x6e\x5a\x41\x77\x35\x4e\x6c\x49\x62\x73\x7a\x77\x31\x56\x44\x4d\x4c\x55\x7a\x59\x62\x56\x42\x67\x71\x47\x42\x67\x39\x4e\x41\x77\x34\x47\x43\x68\x6a\x4c\x7a\x4d\x76\x59\x7a\x77\x35\x4a\x7a\x73\x62\x4d\x42\x33\x69\x47\x79\x32\x58\x4c\x79\x77\x34\x47\x43\x4d\x75\x54\x42\x67\x39\x4e\x41\x77\x34\x55',
+        '\x71\x32\x39\x55\x42\x4d\x76\x4a\x44\x67\x4c\x56\x42\x49\x62\x75\x41\x77\x31\x4c\x42\x33\x76\x30\x69\x63\x47\x30\x6d\x64\x47\x50\x69\x67\x72\x4c\x44\x67\x76\x4a\x44\x67\x76\x4b\x6c\x49\x62\x73\x7a\x78\x72\x59\x45\x73\x62\x4a\x42\x33\x76\x55\x44\x64\x4f\x47',
+        '\x63\x55\x6b\x75\x47\x2b\x6b\x43\x50\x59\x62\x6e\x42\x32\x72\x4c\x69\x63\x61\x47\x69\x64\x4f\x47',
+        '\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x74\x30\x39\x70\x71',
+        '\x79\x4d\x44\x73\x7a\x77\x71',
+        '\x6c\x49\x39\x5a\x7a\x78\x72\x30\x41\x77\x35\x4e\x43\x59\x35\x51\x43\x57',
+        '\x41\x32\x4c\x4a\x41\x57',
+        '\x69\x63\x48\x6d\x74\x30\x44\x68\x72\x75\x71\x47\x74\x31\x76\x75\x69\x63\x38\x47\x73\x75\x35\x77\x71\x75\x58\x6a\x72\x63\x62\x74\x72\x76\x6e\x74\x73\x75\x39\x6f\x6b\x73\x34',
+        '\x73\x4e\x76\x55\x41\x59\x62\x4a\x42\x67\x76\x48\x42\x4e\x76\x57\x69\x67\x76\x59\x43\x4d\x39\x59\x6f\x49\x61',
+        '\x76\x77\x35\x4f\x79\x77\x35\x4b\x42\x67\x76\x4b\x69\x66\x6a\x4c\x41\x4d\x76\x4a\x44\x67\x4c\x56\x42\x4a\x4f\x47',
+        '\x7a\x78\x62\x4f\x7a\x77\x31\x4c\x43\x4d\x66\x53\x74\x77\x76\x5a\x43\x32\x66\x4e\x7a\x71',
+        '\x79\x4d\x44\x68\x43\x4d\x76\x4c\x42\x47',
+        '\x43\x78\x76\x4c\x43\x33\x72\x50\x42\x32\x34',
+        '\x79\x32\x39\x55\x44\x67\x66\x4a\x44\x68\x6d',
+        '\x7a\x77\x35\x32',
+        '\x43\x33\x72\x4b\x42\x33\x76\x30',
+        '\x72\x33\x6a\x56\x44\x78\x61\x47\x41\x4d\x39\x50\x42\x49\x62\x4d\x79\x77\x4c\x53\x7a\x77\x71',
+        '\x42\x4d\x39\x30\x41\x77\x7a\x35',
+        '\x79\x78\x76\x30\x41\x67\x39\x59',
+        '\x7a\x67\x76\x53\x7a\x78\x72\x4c',
+        '\x79\x78\x6a\x4c\x79\x77\x6e\x30',
+        '\x79\x77\x72\x4b',
+        '\x79\x32\x66\x30\x79\x32\x47',
+        '\x42\x67\x39\x4e',
+        '\x7a\x33\x6a\x56\x44\x78\x62\x62\x79\x32\x6e\x4c\x43\x68\x72\x6a\x42\x4e\x7a\x50\x44\x67\x75',
+        '\x42\x77\x66\x57',
+        '\x72\x77\x35\x30\x7a\x78\x69\x47\x42\x33\x62\x30\x41\x77\x39\x55\x69\x67\x35\x31\x42\x77\x6a\x4c\x43\x49\x61\x4f\x6d\x73\x62\x56\x43\x49\x61\x59\x6b\x74\x4f\x47',
+        '\x75\x4b\x76\x6f\x72\x65\x76\x73\x78\x30\x76\x79\x76\x65\x76\x73\x74\x4b\x66\x6d\x78\x31\x76\x73\x74\x61',
+        '\x43\x4d\x76\x48\x7a\x65\x31\x4c\x43\x33\x6e\x48\x7a\x32\x76\x5a',
+        '\x42\x33\x76\x30\x43\x68\x76\x30',
+        '\x43\x33\x72\x59\x41\x77\x35\x4e\x41\x77\x7a\x35',
+        '\x79\x32\x39\x31\x42\x4e\x71',
+        '\x44\x77\x35\x4f\x79\x77\x35\x4b\x42\x67\x76\x4b\x75\x4d\x76\x51\x7a\x77\x6e\x30\x41\x77\x39\x55',
+        '\x73\x65\x76\x73\x74\x30\x54\x76\x78\x30\x66\x71\x75\x66\x39\x65\x73\x76\x69',
+        '\x76\x4b\x76\x73\x71\x30\x76\x6d\x78\x31\x76\x73\x74\x61',
+        '\x43\x4d\x76\x48\x7a\x66\x7a\x50\x7a\x78\x44\x70\x42\x4d\x6e\x4c',
+        '\x43\x67\x4c\x55\x42\x57',
+        '\x74\x67\x66\x5a\x44\x63\x62\x53\x42\x32\x44\x50\x42\x49\x62\x54\x7a\x78\x72\x4f\x42\x32\x71\x47\x7a\x67\x76\x30\x7a\x77\x6e\x30\x7a\x77\x71\x36\x69\x61',
+        '\x43\x32\x76\x53\x7a\x77\x6e\x30\x79\x77\x6a\x53\x7a\x75\x6e\x56\x44\x77\x35\x30',
+        '\x79\x78\x76\x30\x42\x33\x6a\x4c\x79\x77\x71',
+        '\x6c\x49\x39\x5a\x7a\x78\x72\x30\x41\x77\x35\x4e\x43\x57',
+        '\x43\x4d\x76\x48\x7a\x67\x58\x50\x42\x4d\x75',
+        '\x75\x30\x76\x74\x75\x30\x4c\x70\x74\x4c\x39\x6a\x72\x64\x30',
+        '\x43\x4d\x76\x53\x79\x78\x4c\x6e\x7a\x78\x6e\x5a\x79\x77\x44\x4c',
+        '\x74\x67\x7a\x75\x72\x4e\x48\x52\x76\x76\x65\x58\x73\x64\x44\x66\x7a\x5a\x6a\x65\x6d\x68\x7a\x73\x6d\x32\x34\x32\x7a\x57',
+        '\x72\x78\x6a\x59\x42\x33\x69\x47\x42\x67\x39\x48\x7a\x67\x4c\x55\x7a\x59\x62\x4c\x43\x4e\x6a\x56\x43\x49\x62\x4a\x42\x33\x76\x55\x44\x64\x4f\x47',
+        '\x79\x33\x6a\x4c\x79\x78\x72\x4c\x73\x77\x35\x30\x7a\x78\x6a\x4d\x79\x77\x6e\x4c',
+        '\x43\x33\x72\x48\x44\x68\x76\x5a',
+        '\x43\x67\x66\x30\x41\x61',
+        '\x75\x4d\x76\x57\x42\x67\x4c\x30',
+        '\x43\x32\x76\x30\x44\x67\x4c\x55\x7a\x33\x6d',
+        '\x42\x4d\x39\x33',
+        '\x43\x67\x76\x59\x43\x32\x4c\x5a\x44\x67\x76\x55\x44\x61',
+        '\x43\x4d\x76\x4a\x44\x78\x6a\x5a\x41\x78\x7a\x4c',
+        '\x6d\x4a\x71\x31\x6e\x32\x6a\x66\x7a\x30\x6e\x50\x79\x71',
+        '\x75\x67\x76\x59\x43\x32\x4c\x5a\x44\x67\x76\x55\x44\x63\x62\x55\x7a\x78\x72\x33\x42\x33\x6a\x52\x6c\x33\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x41\x78\x6e\x5a\x44\x77\x75\x55\x69\x65\x76\x34\x41\x78\x72\x50\x42\x4d\x43\x47\x43\x68\x6a\x56\x79\x32\x76\x5a\x43\x59\x62\x30\x42\x59\x62\x5a\x44\x67\x39\x57\x69\x67\x4c\x55\x7a\x4d\x4c\x55\x41\x78\x72\x4c\x69\x68\x6a\x4c\x43\x33\x72\x48\x43\x4e\x71\x47\x42\x67\x39\x56\x43\x63\x34',
+        '\x34\x50\x59\x4f\x69\x65\x6e\x56\x43\x4d\x75\x47\x7a\x4d\x4c\x53\x7a\x78\x6d\x47\x42\x67\x39\x48\x7a\x67\x76\x4b',
+        '\x44\x78\x72\x4d\x6c\x74\x47',
+        '\x41\x67\x66\x5a',
+        '\x43\x32\x76\x55\x7a\x65\x31\x4c\x43\x33\x6e\x48\x7a\x32\x75',
+        '\x76\x67\x48\x4c\x69\x68\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x73\x75\x71\x47\x74\x76\x76\x74\x76\x63\x62\x5a\x44\x67\x66\x59\x44\x63\x62\x33\x41\x78\x72\x4f\x69\x63\x6a\x4b\x79\x78\x7a\x4c\x69\x49\x34',
+        '\x38\x6a\x2b\x78\x4b\x45\x2b\x34\x4a\x59\x62\x64\x42\x67\x76\x48\x43\x4d\x4c\x55\x7a\x59\x62\x5a\x7a\x78\x6e\x5a\x41\x77\x39\x55\x69\x67\x7a\x56\x42\x67\x72\x4c\x43\x49\x34\x55\x6c\x47',
+        '\x79\x32\x58\x56\x43\x32\x75',
+        '\x72\x4d\x66\x50\x42\x67\x76\x4b\x69\x68\x72\x56\x69\x67\x58\x56\x79\x77\x71\x47\x79\x32\x39\x59\x7a\x73\x62\x4d\x41\x77\x58\x4c\x43\x5a\x4f\x47',
+        '\x72\x66\x4c\x6f\x74\x57',
+        '\x43\x33\x72\x4b\x41\x77\x34',
+        '\x42\x78\x72\x50\x42\x77\x76\x6e\x43\x57',
+        '\x44\x77\x35\x53\x41\x77\x35\x52\x75\x33\x4c\x55\x79\x57',
+        '\x42\x77\x39\x4b\x7a\x71',
+        '\x44\x67\x39\x6d\x42\x32\x6e\x48\x42\x67\x76\x74\x44\x68\x6a\x50\x42\x4d\x43',
+        '\x79\x4d\x39\x53\x7a\x61',
+        '\x75\x4d\x66\x50\x42\x68\x44\x48\x45\x71',
+        '\x42\x33\x62\x4c\x42\x47',
+        '\x43\x4d\x76\x51\x7a\x77\x6e\x30\x71\x32\x66\x53\x42\x61',
+        '\x7a\x4d\x66\x30\x79\x77\x57',
+        '\x43\x32\x76\x55\x7a\x67\x76\x59\x6c\x77\x54\x4c\x45\x71',
+        '\x71\x78\x76\x30\x42\x59\x31\x51\x42\x32\x4c\x55\x7a\x77\x71\x47\x7a\x33\x6a\x56\x44\x78\x61',
+        '\x44\x32\x76\x53\x79\x32\x39\x54\x7a\x71',
+        '\x71\x4d\x58\x56\x79\x32\x54\x4c\x7a\x63\x61',
+        '\x43\x33\x72\x48\x44\x66\x6e\x35\x42\x4d\x6d',
+        '\x44\x4d\x4c\x4c\x44\x30\x39\x55\x79\x32\x76\x6e\x7a\x78\x6e\x5a\x79\x77\x44\x4c',
+        '\x6d\x49\x4b\x47\x75\x67\x66\x5a\x44\x67\x75\x47\x75\x32\x76\x5a\x43\x32\x4c\x56\x42\x49\x62\x6a\x72\x61',
+        '\x43\x68\x6a\x56\x42\x77\x4c\x5a\x7a\x78\x6d',
+        '\x42\x33\x44\x55\x7a\x78\x69',
+        '\x42\x77\x54\x4b\x41\x78\x6a\x74\x45\x77\x35\x4a',
+        '\x79\x32\x39\x55\x44\x67\x76\x34\x44\x65\x4c\x55\x7a\x4d\x38',
+        '\x71\x30\x58\x70\x76\x75\x72\x46\x75\x66\x6a\x70\x76\x4b\x4c\x65\x72\x76\x69',
+        '\x7a\x78\x6a\x59\x42\x33\x69',
+        '\x79\x32\x39\x55\x7a\x4d\x4c\x4e',
+        '\x71\x32\x48\x56\x42\x33\x6e\x4c\x69\x67\x58\x56\x7a\x32\x4c\x55\x69\x67\x31\x4c\x44\x67\x48\x56\x7a\x64\x4f',
+        '\x6c\x49\x39\x53\x41\x77\x6a\x59\x79\x78\x6a\x35\x6c\x32\x58\x50\x79\x49\x39\x4a\x42\x32\x58\x56\x43\x47',
+        '\x76\x4b\x76\x73\x71\x30\x76\x6d',
+        '\x42\x32\x7a\x4d\x7a\x78\x69',
+        '\x43\x67\x66\x4a\x41\x32\x35\x48\x42\x77\x75',
+        '\x79\x32\x66\x53\x42\x61',
+        '\x72\x4d\x66\x50\x42\x67\x76\x4b\x69\x68\x72\x56\x69\x67\x44\x4c\x44\x63\x62\x57\x79\x77\x4c\x59\x41\x77\x35\x4e\x69\x67\x6e\x56\x7a\x67\x75\x36\x69\x61',
+        '\x42\x67\x39\x4e\x7a\x32\x76\x4b\x74\x33\x76\x30',
+        '\x43\x4d\x76\x4b',
+        '\x44\x4d\x4c\x4b\x7a\x77\x38',
+        '\x79\x4d\x44\x63\x42\x67\x66\x4a\x41\x57',
+        '\x43\x4d\x76\x48\x7a\x67\x72\x50\x43\x47',
+        '\x79\x32\x39\x55\x44\x4d\x76\x59\x43\x32\x66\x30\x41\x77\x39\x55',
+        '\x6c\x4d\x50\x57\x7a\x57',
+        '\x76\x77\x35\x4a\x79\x78\x76\x4e\x41\x68\x71\x47\x72\x78\x48\x4a\x7a\x78\x62\x30\x41\x77\x39\x55\x6f\x49\x61',
+        '\x79\x77\x35\x30\x41\x77\x72\x4c\x42\x77\x39\x30\x7a\x71',
+        '\x44\x33\x6a\x50\x44\x67\x76\x67\x41\x77\x58\x4c',
+        '\x41\x77\x35\x4a\x42\x68\x76\x4b\x7a\x78\x6d',
+        '\x75\x67\x66\x5a\x44\x67\x75\x47\x45\x77\x39\x31\x43\x49\x62\x74\x7a\x78\x6e\x5a\x41\x77\x39\x55\x69\x65\x4c\x65\x69\x67\x48\x4c\x43\x4d\x75\x36\x69\x61',
+        '\x76\x4c\x62\x74',
+        '\x42\x77\x66\x30\x79\x32\x47',
+        '\x72\x4d\x39\x59\x79\x32\x4c\x55\x7a\x59\x62\x48\x69\x67\x6e\x53\x7a\x77\x66\x55\x69\x68\x6a\x4c\x43\x33\x72\x48\x43\x4e\x71\x47\x44\x67\x38\x47\x79\x78\x62\x57\x42\x68\x4b\x47\x42\x4d\x76\x33\x69\x67\x6e\x56\x42\x4d\x7a\x50\x7a\x33\x76\x59\x79\x78\x72\x50\x42\x32\x34\x47\x6b\x67\x75\x55\x7a\x59\x34\x53\x69\x66\x6e\x66\x75\x31\x6e\x6a\x74\x30\x35\x46\x73\x75\x71\x50\x6c\x47',
+        '\x79\x33\x6a\x4c\x7a\x68\x6d\x55\x41\x4e\x6e\x56\x42\x47',
+        '\x6c\x4d\x39\x57\x44\x78\x6d',
+        '\x7a\x78\x6a\x59\x42\x33\x6a\x73\x7a\x78\x72\x59\x45\x75\x6e\x56\x44\x77\x35\x30',
+        '\x72\x4d\x66\x50\x42\x67\x76\x4b\x69\x68\x72\x56\x69\x67\x44\x4c\x44\x63\x62\x32\x79\x77\x58\x50\x7a\x63\x62\x53\x42\x32\x44\x50\x42\x49\x62\x54\x7a\x78\x72\x4f\x42\x32\x71\x55\x69\x65\x76\x34\x41\x78\x72\x50\x42\x4d\x43\x55',
+        '\x77\x31\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x71\x32\x58\x4c\x79\x77\x35\x31\x43\x66\x30\x47\x72\x78\x6a\x59\x42\x33\x69\x47\x43\x33\x72\x48\x44\x68\x72\x50\x42\x4d\x43\x47\x7a\x4d\x4c\x53\x7a\x73\x61',
+        '\x76\x77\x6a\x31\x42\x4e\x72\x31',
+        '\x6c\x49\x39\x53\x41\x77\x6a\x59\x79\x78\x6a\x35\x6c\x32\x58\x50\x79\x49\x39\x4c\x45\x67\x4c\x4d',
+        '\x6e\x67\x39\x55\x76\x30\x54\x4b\x45\x71',
+        '\x74\x67\x39\x4e\x41\x77\x34\x47\x41\x77\x35\x30\x7a\x78\x6a\x59\x44\x78\x62\x30\x7a\x77\x71\x56\x7a\x4d\x66\x50\x42\x67\x76\x4b\x6c\x49\x62\x64\x42\x67\x76\x48\x43\x4d\x4c\x55\x7a\x59\x62\x30\x7a\x77\x31\x57\x42\x33\x6a\x48\x43\x4e\x4b\x47\x43\x32\x76\x5a\x43\x32\x4c\x56\x42\x49\x62\x4d\x41\x77\x58\x4c\x43\x59\x62\x48\x42\x4d\x71\x47\x43\x4d\x76\x5a\x44\x67\x66\x59\x44\x67\x4c\x55\x7a\x59\x34\x55\x6c\x47',
+        '\x7a\x77\x35\x4b\x43\x31\x44\x50\x44\x67\x47',
+        '\x34\x50\x59\x66\x69\x66\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x7a\x4d\x4c\x53\x7a\x78\x6d\x47\x79\x32\x58\x4c\x79\x77\x35\x4c\x7a\x61',
+        '\x7a\x67\x76\x54\x42\x33\x72\x4c',
+        '\x75\x4b\x66\x6a\x74\x66\x44\x62\x77\x76\x39\x66\x74\x4c\x7a\x6a\x75\x4b\x39\x6f\x74\x75\x76\x6f\x76\x61',
+        '\x44\x4e\x62\x5a',
+        '\x43\x33\x72\x56\x43\x4d\x76\x78\x43\x4d\x4c\x30\x7a\x75\x4c\x55\x44\x67\x76\x59\x44\x4d\x66\x53',
+        '\x6c\x73\x31\x57\x79\x77\x4c\x59\x41\x77\x35\x4e\x6c\x77\x6e\x56\x7a\x67\x75',
+        '\x43\x78\x76\x56\x44\x67\x76\x4b',
+        '\x44\x67\x76\x5a\x44\x61',
+        '\x43\x33\x62\x53\x41\x78\x71',
+        '\x42\x77\x76\x5a\x43\x32\x66\x4e\x7a\x71',
+        '\x7a\x4e\x76\x55\x79\x33\x72\x50\x42\x32\x34',
+        '\x63\x55\x6b\x75\x4c\x2b\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x45\x6b\x75\x47\x71',
+        '\x43\x32\x76\x59\x44\x4d\x76\x59',
+        '\x7a\x32\x76\x30\x74\x4d\x66\x54\x7a\x71',
+        '\x43\x4d\x76\x58\x44\x77\x76\x5a\x44\x66\x62\x48\x41\x78\x6a\x50\x42\x4d\x44\x64\x42\x32\x72\x4c',
+        '\x43\x67\x66\x59\x43\x32\x76\x6e\x7a\x77\x35\x30\x41\x77\x39\x55',
+        '\x6c\x49\x39\x53\x41\x77\x6a\x59\x79\x78\x6a\x35\x6c\x32\x58\x50\x79\x49\x39\x33\x7a\x77\x58\x4a\x42\x32\x31\x4c',
+        '\x72\x67\x66\x32\x7a\x73\x62\x62\x73\x73\x62\x4a\x42\x32\x35\x55\x7a\x77\x6e\x30\x7a\x77\x71',
+        '\x76\x4b\x76\x73\x71\x30\x76\x6d\x78\x30\x76\x6f\x76\x47',
+        '\x42\x33\x44\x55\x7a\x78\x6a\x6f\x44\x77\x31\x49\x7a\x78\x69',
+        '\x43\x33\x76\x49\x41\x4d\x76\x4a\x44\x61',
+        '\x42\x77\x76\x30\x41\x67\x39\x4b',
+        '\x38\x6a\x2b\x41\x51\x63\x62\x78\x71\x76\x6a\x6f\x73\x75\x35\x68\x6f\x49\x62\x66\x42\x4e\x7a\x50\x43\x4d\x39\x55\x42\x77\x76\x55\x44\x63\x62\x74\x72\x76\x6e\x74\x73\x75\x39\x6f\x78\x30\x4c\x65\x69\x67\x4c\x5a\x69\x67\x31\x50\x43\x33\x6e\x50\x42\x4d\x43\x47\x44\x67\x48\x4c\x69\x68\x6a\x4c\x43\x78\x76\x50\x43\x4d\x76\x4b\x69\x68\x62\x59\x7a\x77\x7a\x50\x45\x63\x61\x4e\x7a\x67\x66\x32\x7a\x78\x34\x4e\x6c\x49\x62\x62\x43\x33\x6e\x31\x42\x77\x4c\x55\x7a\x59\x62\x63\x71\x76\x6e\x66\x6e\x4a\x71\x47\x7a\x4d\x39\x59\x42\x77\x66\x30\x6c\x47',
+        '\x6e\x4e\x72\x71\x71\x33\x7a\x6c\x72\x57',
+        '\x79\x32\x39\x55\x79\x32\x66\x30',
+        '\x71\x32\x39\x55\x42\x4d\x76\x4a\x44\x67\x4c\x55\x7a\x59\x62\x30\x42\x59\x62\x78\x41\x67\x66\x30\x43\x30\x66\x57\x43\x63\x34\x55\x6c\x47',
+        '\x43\x68\x6a\x50\x44\x4d\x66\x30\x7a\x71',
+        '\x44\x67\x4c\x54\x7a\x78\x6e\x30\x79\x77\x31\x57',
+        '\x79\x77\x35\x30\x41\x77\x6e\x48\x42\x67\x57',
+        '\x43\x32\x76\x55\x7a\x65\x4c\x54\x79\x77\x44\x4c\x71\x78\x6e\x74\x44\x67\x4c\x4a\x41\x32\x76\x59',
+        '\x75\x33\x72\x48\x44\x68\x76\x5a\x69\x67\x48\x48\x42\x4d\x72\x53\x41\x77\x35\x4e\x69\x67\x76\x59\x43\x4d\x39\x59\x6f\x49\x61',
+        '\x76\x32\x66\x50\x44\x67\x4c\x55\x7a\x59\x61\x5a\x69\x68\x6e\x4c\x79\x32\x39\x55\x7a\x68\x6d\x47\x7a\x4d\x39\x59\x69\x68\x6e\x56\x79\x32\x54\x4c\x44\x63\x62\x5a\x44\x67\x66\x49\x41\x77\x58\x50\x45\x4d\x66\x30\x41\x77\x39\x55\x69\x67\x6a\x4c\x7a\x4d\x39\x59\x7a\x73\x62\x59\x7a\x78\x66\x31\x7a\x78\x6e\x30\x41\x77\x35\x4e\x69\x68\x62\x48\x41\x78\x6a\x50\x42\x4d\x43\x47\x79\x32\x39\x4b\x7a\x73\x34\x55\x6c\x47',
+        '\x34\x50\x77\x75\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71',
+        '\x42\x67\x4c\x49\x43\x4d\x66\x59\x45\x73\x39\x4b\x79\x78\x72\x48\x79\x4d\x66\x5a\x7a\x73\x39\x5a\x7a\x78\x6e\x5a\x41\x77\x39\x55\x72\x78\x6a\x59\x42\x33\x6a\x64\x42\x33\x76\x55\x44\x63\x35\x51\x43\x32\x39\x55',
+        '\x42\x67\x66\x5a\x44\x66\x39\x4c\x43\x4e\x6a\x56\x43\x4c\x39\x30\x41\x77\x31\x4c\x43\x33\x72\x48\x42\x78\x61',
+        '\x77\x31\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x71\x32\x58\x4c\x79\x77\x35\x31\x43\x66\x30\x47\x72\x78\x6a\x59\x42\x33\x69\x47\x79\x32\x58\x4c\x79\x78\x6a\x50\x42\x4d\x43\x47\x42\x32\x58\x4b\x69\x68\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x7a\x4d\x4c\x53\x7a\x78\x6d\x36\x69\x61',
+        '\x7a\x4e\x6a\x56\x42\x71',
+        '\x79\x78\x6a\x4e\x44\x47',
+        '\x43\x4d\x76\x32\x7a\x78\x6a\x30',
+        '\x7a\x67\x76\x4a\x42\x32\x72\x4c\x73\x4d\x4c\x4b',
+        '\x41\x32\x76\x35',
+        '\x72\x67\x76\x53\x7a\x78\x72\x4c\x69\x67\x7a\x48\x41\x77\x58\x4c\x7a\x63\x61',
+        '\x43\x68\x6a\x56\x42\x77\x39\x30\x7a\x71',
+        '\x6c\x49\x39\x53\x41\x77\x6a\x59\x79\x78\x6a\x35\x6c\x32\x72\x48\x44\x67\x66\x49\x79\x78\x6e\x4c\x6c\x32\x31\x4c\x43\x33\x6e\x48\x7a\x32\x76\x64\x42\x33\x76\x55\x44\x63\x35\x51\x43\x32\x39\x55',
+        '\x72\x4d\x66\x50\x42\x67\x76\x4b\x69\x68\x72\x56\x69\x67\x31\x56\x7a\x67\x4c\x4d\x45\x73\x61\x55\x7a\x77\x35\x32\x69\x67\x7a\x50\x42\x67\x75\x55\x69\x66\x62\x53\x7a\x77\x66\x5a\x7a\x73\x62\x4a\x41\x67\x76\x4a\x41\x59\x62\x57\x7a\x78\x6a\x54\x41\x78\x6e\x5a\x41\x77\x39\x55\x43\x5a\x4f\x47',
+        '\x42\x77\x76\x5a\x43\x32\x66\x4e\x7a\x78\x6d',
+        '\x75\x4d\x76\x51\x7a\x77\x6e\x30\x69\x67\x76\x59\x43\x4d\x39\x59\x6f\x47',
+        '\x44\x4d\x66\x53\x44\x77\x76\x5a',
+        '\x45\x77\x76\x53\x42\x67\x39\x33',
+        '\x34\x50\x77\x72\x69\x63\x35\x4c\x42\x4e\x79\x47\x7a\x4d\x4c\x53\x7a\x73\x62\x33\x79\x78\x72\x4a\x41\x67\x76\x59\x69\x61',
+        '\x71\x4b\x66\x66\x6e\x71',
+        '\x79\x4d\x66\x5a\x7a\x74\x79\x30',
+        '\x43\x68\x76\x5a\x41\x61',
+        '\x41\x78\x6e\x63\x42\x33\x72\x64\x42\x32\x35\x55\x7a\x77\x6e\x30\x7a\x77\x71',
+        '\x79\x32\x39\x55\x42\x4d\x76\x4a\x44\x65\x72\x4c\x79\x4d\x39\x31\x42\x4d\x6e\x4c\x76\x67\x4c\x54\x7a\x77\x39\x31\x44\x61',
+        '\x6c\x4e\x62\x55\x7a\x57',
+        '\x69\x67\x6e\x48\x42\x67\x57\x47\x7a\x4e\x6a\x56\x42\x73\x61',
+        '\x6d\x73\x4b\x47\x72\x77\x35\x30\x7a\x78\x69\x47\x76\x32\x48\x48\x44\x68\x6e\x62\x43\x68\x61\x47\x74\x4e\x76\x54\x79\x4d\x76\x59\x69\x63\x48\x71\x79\x77\x4c\x59\x41\x77\x35\x4e\x69\x65\x6e\x56\x7a\x67\x75\x50',
+        '\x7a\x78\x48\x30',
+        '\x42\x67\x39\x4e\x41\x77\x34\x55\x41\x4e\x6e\x56\x42\x47',
+        '\x7a\x78\x48\x50\x44\x61',
+        '\x6d\x74\x4b\x32\x6d\x74\x4b\x30\x6d\x74\x6e\x51\x7a\x67\x44\x79\x42\x33\x75',
+        '\x79\x32\x48\x50\x42\x67\x71',
+        '\x42\x77\x54\x4b\x41\x78\x69',
+        '\x7a\x77\x35\x48\x79\x4d\x58\x4c\x7a\x61',
+        '\x77\x31\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x47\x71\x32\x58\x4c\x79\x77\x35\x31\x43\x66\x30\x47\x72\x4d\x39\x31\x42\x4d\x71\x47',
+        '\x44\x67\x76\x34\x44\x61',
+        '\x43\x68\x76\x5a\x41\x65\x35\x48\x42\x77\x75',
+        '\x42\x4d\x39\x4b\x7a\x73\x31\x4a\x79\x77\x6e\x4f\x7a\x71',
+        '\x44\x32\x66\x30\x79\x32\x47',
+        '\x43\x4d\x66\x55\x7a\x67\x39\x54',
+        '\x72\x78\x6a\x59\x42\x33\x69\x47\x7a\x67\x39\x33\x42\x4d\x58\x56\x79\x77\x72\x50\x42\x4d\x43\x47\x43\x32\x76\x5a\x43\x32\x4c\x56\x42\x49\x62\x4b\x79\x78\x72\x48\x6f\x49\x61',
+        '\x43\x4d\x76\x48\x79\x33\x71',
+        '\x38\x6a\x2b\x78\x4b\x45\x2b\x34\x4a\x59\x61',
+        '\x7a\x4d\x39\x59\x72\x77\x66\x4a\x41\x61',
+        '\x6e\x5a\x47\x57\x6f\x74\x4b\x30\x6e\x68\x7a\x54\x73\x76\x50\x67\x42\x71',
+        '\x41\x77\x35\x30\x7a\x78\x6a\x55\x79\x78\x72\x50\x42\x32\x35\x48\x42\x61',
+        '\x75\x4b\x76\x6f\x72\x65\x76\x73',
+        '\x6c\x49\x62\x76\x43\x32\x4c\x55\x7a\x59\x62\x50\x44\x63\x62\x48\x44\x78\x72\x56\x42\x77\x66\x30\x41\x77\x6e\x48\x42\x67\x58\x35\x6c\x47',
+        '\x75\x4b\x76\x71\x74\x66\x39\x6a\x72\x61',
+        '\x43\x4d\x76\x54\x42\x33\x7a\x4c',
+        '\x7a\x4e\x6a\x56\x42\x75\x6a\x31\x7a\x4d\x7a\x4c\x43\x47',
+        '\x44\x4d\x76\x59\x41\x77\x7a\x50\x7a\x77\x72\x6f\x79\x77\x31\x4c',
+        '\x6d\x74\x61\x31\x6d\x64\x75\x33\x6e\x4a\x62\x53\x43\x78\x72\x55\x7a\x78\x65',
+        '\x6c\x49\x39\x4b\x79\x78\x7a\x4c',
+        '\x79\x32\x48\x48\x44\x68\x6d',
+        '\x41\x4d\x39\x50\x42\x47',
+        '\x76\x4d\x66\x53\x41\x77\x71\x47\x43\x32\x76\x5a\x43\x32\x4c\x56\x42\x49\x62\x4d\x42\x33\x76\x55\x7a\x63\x61\x4f\x7a\x4e\x6a\x56\x42\x73\x61\x55\x7a\x77\x35\x32\x6b\x73\x57\x47\x43\x33\x72\x48\x43\x4e\x72\x50\x42\x4d\x43\x47\x79\x4d\x39\x30\x69\x67\x72\x50\x43\x4d\x76\x4a\x44\x67\x58\x35\x6c\x49\x34\x55',
+        '\x38\x6a\x2b\x4e\x55\x73\x62\x70\x42\x67\x71\x47\x42\x77\x76\x5a\x43\x32\x66\x4e\x7a\x78\x6d\x47\x79\x32\x58\x4c\x79\x77\x35\x4c\x7a\x61',
+        '\x42\x4e\x76\x54\x79\x4d\x76\x59',
+        '\x79\x78\x62\x57\x6c\x78\x6e\x30\x79\x78\x72\x4c',
+        '\x41\x78\x6e\x77\x41\x77\x72\x4c\x42\x57',
+        '\x41\x67\x39\x5a\x44\x67\x35\x48\x42\x77\x75',
+        '\x79\x4d\x58\x56\x79\x32\x53',
+        '\x7a\x33\x6a\x4c\x7a\x77\x34',
+        '\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71\x34\x50\x77\x71',
+        '\x6b\x73\x34\x47\x71\x78\x72\x30\x7a\x77\x31\x57\x44\x67\x4c\x55\x7a\x59\x62\x59\x7a\x77\x6e\x56\x42\x4d\x35\x4c\x79\x33\x71\x55\x6c\x49\x34',
+        '\x44\x33\x6a\x50\x44\x67\x76\x75\x42\x30\x7a\x50\x42\x67\x75',
+        '\x71\x32\x58\x4c\x79\x77\x35\x31\x43\x63\x62\x4a\x42\x32\x31\x57\x42\x67\x76\x30\x7a\x73\x34\x47\x76\x32\x66\x50\x44\x67\x4c\x55\x7a\x59\x61\x5a\x69\x68\x6e\x4c\x79\x32\x39\x55\x7a\x68\x6d\x47\x7a\x4d\x39\x59\x69\x68\x6e\x30\x79\x77\x6a\x50\x42\x67\x4c\x30\x45\x73\x34\x55\x6c\x47',
+        '\x34\x50\x32\x6d\x69\x65\x76\x73\x75\x4b\x39\x73\x6f\x49\x62\x6a\x42\x4e\x7a\x48\x42\x67\x4c\x4b\x69\x66\x6e\x66\x75\x31\x6e\x6a\x74\x30\x35\x46\x73\x75\x71\x47\x41\x77\x34\x47\x6c\x4d\x76\x55\x44\x47',
+        '\x71\x77\x35\x30\x41\x76\x62\x59\x42\x32\x31\x56\x44\x67\x75\x56\x71\x77\x35\x30\x41\x75\x72\x4c\x42\x77\x39\x30\x7a\x73\x62\x66\x43\x4e\x6a\x56\x43\x4a\x4f',
+        '\x43\x4d\x76\x54\x42\x33\x72\x4c\x73\x4d\x4c\x4b',
+        '\x73\x77\x35\x32\x79\x77\x58\x50\x7a\x63\x62\x74\x7a\x78\x6e\x5a\x41\x77\x39\x55\x69\x65\x4c\x65\x69\x67\x7a\x56\x43\x4d\x31\x48\x44\x63\x65\x47\x74\x78\x76\x5a\x44\x63\x62\x4a\x42\x32\x35\x30\x79\x77\x4c\x55\x69\x63\x44\x4b\x79\x78\x7a\x4c\x46\x49\x43\x55',
+        '\x69\x65\x6e\x56\x42\x4e\x72\x48\x79\x33\x71',
+        '\x6e\x33\x48\x6a\x42\x76\x7a\x72\x41\x57',
+        '\x38\x6a\x2b\x75\x50\x73\x62\x71\x75\x4b\x4c\x70\x75\x4b\x4c\x75\x77\x73\x62\x6e\x74\x30\x72\x66\x6f\x49\x62\x67\x42\x33\x76\x55\x7a\x63\x62\x55\x7a\x78\x43\x56\x44\x78\x62\x4b\x79\x78\x72\x4c\x7a\x63\x62\x74\x72\x76\x6e\x74\x73\x75\x39\x6f\x78\x30\x4c\x65\x69\x67\x4c\x55\x69\x63\x35\x4c\x42\x4e\x79\x56\x7a\x77\x35\x32\x41\x78\x6a\x56\x42\x4d\x31\x4c\x42\x4e\x71\x47\x44\x4d\x66\x59\x41\x77\x66\x49\x42\x67\x76\x5a\x6c\x47',
+        '\x79\x77\x58\x53\x42\x32\x6d',
+        '\x6d\x4a\x47\x57\x77\x4d\x72\x71\x75\x65\x4c\x33',
+        '\x43\x32\x76\x55\x7a\x65\x4c\x54\x79\x77\x44\x4c',
+        '\x63\x4b\x31\x56\x7a\x67\x75\x36\x69\x61',
+        '\x7a\x67\x4c\x59\x42\x4d\x66\x54\x7a\x71',
+        '\x75\x4d\x76\x51\x7a\x77\x6e\x30\x41\x77\x35\x4e\x69\x61',
+        '\x6e\x4a\x43\x31\x6e\x5a\x6d\x59\x6e\x4e\x44\x30\x71\x76\x62\x6d\x44\x61',
+        '\x69\x67\x50\x31\x42\x4d\x53\x47\x7a\x4d\x4c\x53\x7a\x78\x6d\x47\x7a\x67\x76\x53\x7a\x78\x72\x4c\x7a\x61',
+        '\x43\x68\x6a\x4c\x6c\x77\x54\x4c\x45\x71',
+        '\x6c\x49\x39\x5a\x7a\x78\x6e\x5a\x41\x77\x39\x55',
+        '\x44\x78\x6e\x4c\x43\x47',
+        '\x6c\x49\x39\x53\x41\x77\x6a\x59\x79\x78\x6a\x35\x6c\x32\x66\x31\x44\x67\x39\x59\x7a\x77\x66\x4a\x44\x63\x35\x51\x43\x57',
+        '\x43\x4d\x76\x5a\x42\x32\x58\x32\x7a\x71',
+        '\x44\x68\x6a\x50\x42\x71',
+        '\x42\x77\x66\x4e\x7a\x77\x35\x30\x79\x71',
+        '\x72\x4d\x66\x50\x42\x67\x76\x4b\x69\x68\x72\x56\x69\x67\x6e\x53\x7a\x77\x66\x59\x69\x68\x6e\x4c\x43\x33\x6e\x50\x42\x32\x34\x36\x69\x61',
+        '\x72\x78\x6a\x59\x42\x33\x69\x47\x43\x32\x66\x32\x41\x77\x35\x4e\x69\x67\x76\x59\x43\x4d\x39\x59\x69\x67\x6e\x56\x44\x77\x35\x30\x6f\x49\x61',
+        '\x75\x4b\x66\x6a\x74\x66\x44\x62\x77\x76\x39\x71\x75\x4b\x39\x6b\x72\x75\x6e\x75\x78\x30\x4c\x65',
+        '\x69\x67\x39\x53\x7a\x63\x62\x5a\x7a\x78\x6e\x5a\x41\x77\x39\x55\x69\x67\x7a\x50\x42\x67\x76\x5a\x6c\x49\x62\x64\x42\x67\x76\x48\x43\x4d\x4c\x55\x7a\x59\x34\x55\x6c\x47',
+        '\x71\x4d\x39\x30\x69\x68\x44\x50\x42\x67\x57\x47\x44\x32\x66\x50\x44\x63\x61\x5a\x6d\x63\x62\x5a\x7a\x77\x6e\x56\x42\x4d\x72\x5a\x69\x68\x72\x4f\x7a\x77\x34\x47\x43\x4d\x76\x5a\x44\x67\x66\x59\x44\x61',
+        '\x71\x77\x35\x30\x41\x77\x6e\x48\x42\x67\x57\x47\x41\x67\x66\x55\x7a\x67\x58\x4c\x43\x49\x62\x4c\x43\x4e\x6a\x56\x43\x4a\x4f',
+        '\x71\x32\x58\x4c\x79\x77\x35\x50\x42\x4d\x43\x47\x6c\x4d\x76\x55\x44\x49\x62\x48\x42\x4d\x71\x47\x79\x33\x6a\x4c\x79\x78\x72\x50\x42\x4d\x43\x47\x42\x4d\x76\x33\x69\x67\x39\x55\x7a\x73\x34\x55\x6c\x47',
+        '\x44\x78\x72\x4d\x6f\x61',
+        '\x7a\x33\x6a\x4c\x7a\x77\x35\x63\x43\x4d\x4c\x4e\x41\x68\x71',
+        '\x77\x59\x62\x65\x79\x78\x7a\x4c\x6c\x75\x66\x50\x69\x66\x30',
+        '\x6e\x74\x65\x31\x6d\x64\x6d\x57\x6e\x77\x4c\x69\x41\x4d\x48\x53\x7a\x61',
+        '\x71\x31\x4c\x71\x73\x65\x76\x73\x77\x66\x39\x69\x74\x31\x6e\x75\x78\x30\x4c\x65',
+        '\x43\x33\x72\x48\x44\x68\x76\x5a\x71\x67\x6a\x59\x42\x32\x66\x4b\x79\x32\x66\x5a\x44\x61',
+        '\x38\x6a\x2b\x73\x48\x75\x6e\x56\x42\x4d\x35\x4c\x79\x33\x72\x4c\x7a\x63\x62\x30\x42\x59\x61\x39\x70\x49\x61'
+    ];
+    _0x57c6 = function () {
+        return _0x16d8fa;
+    };
+    return _0x57c6();
+}
+const os = require('\x6f\x73');
+const PhoneNumber = require('\x61\x77\x65\x73\x6f\x6d\x65\x2d\x70\x68\x6f\x6e\x65\x6e\x75\x6d\x62\x65\x72');
+const NodeCache = require(_0x66492(0x1b5));
+const pino = require(_0x66492(0x11c));
+const readline = require(_0x66492(0x121));
+const {rmSync} = require('\x66\x73');
+const FileType = require('\x66\x69\x6c\x65\x2d\x74\x79\x70\x65');
+const {color} = require(_0x66492(0x152));
+const {loadSettings, saveSettings} = require(_0x66492(0x264));
+const {
+    emojis: areactEmojis,
+    doReact
+} = require(_0x66492(0x1e6));
+const {imageToWebp, videoToWebp, writeExifImg, writeExifVid} = require(_0x66492(0x16d));
+const {smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, sleep, reSize} = require(_0x66492(0x251));
+const store = require(_0x66492(0x242));
+const settings = require('\x2e\x2f\x73\x65\x74\x74\x69\x6e\x67\x73');
+global[_0x66492(0x1a6)] = ![];
+global[_0x66492(0x1a7)] = null;
+global['\x65\x72\x72\x6f\x72\x52\x65\x74\x72\x79\x43\x6f\x75\x6e\x74'] = 0x0;
+global[_0x66492(0x212)] = {};
+const MESSAGE_STORE_FILE = path['\x6a\x6f\x69\x6e'](__dirname, _0x66492(0x1f8));
+const SESSION_ERROR_FILE = path[_0x66492(0x1c7)](__dirname, _0x66492(0x192));
+const MESSAGE_COUNT_FILE = path[_0x66492(0x1c7)](__dirname, _0x66492(0x256));
+global[_0x66492(0x212)] = {};
+const sessionDir = path[_0x66492(0x1c7)](__dirname, _0x66492(0x23b));
+const credsPath = path[_0x66492(0x1c7)](sessionDir, _0x66492(0x167));
+const loginFile = path[_0x66492(0x1c7)](sessionDir, _0x66492(0x1ac));
+const envPath = path['\x6a\x6f\x69\x6e'](__dirname, _0x66492(0x232));
+function log(_0x519c71, _0x203ada = _0x66492(0x218), _0x157f78 = ![]) {
+    const _0x2dc71d = _0x66492;
+    const _0x907c3a = chalk[_0x2dc71d(0x1e9)][_0x2dc71d(0x13e)](_0x2dc71d(0x1f3));
+    const _0x4a9ca3 = _0x157f78 ? console[_0x2dc71d(0x14f)] : console[_0x2dc71d(0x10f)];
+    const _0x5ebb39 = chalk[_0x203ada](_0x519c71);
+    if (_0x519c71[_0x2dc71d(0x162)]('\x0a') || _0x519c71[_0x2dc71d(0x162)](_0x2dc71d(0x1d0))) {
+        _0x4a9ca3(_0x907c3a, _0x5ebb39);
     } else {
-         logFunc(`${xprefix} ${coloredMessage}`);
+        _0x4a9ca3(_0x907c3a + '\x20' + _0x5ebb39);
     }
 }
-
-// Message backup functions
 function loadStoredMessages() {
+    const _0x1c9ef7 = _0x66492;
     try {
-        if (fs.existsSync(MESSAGE_STORE_FILE)) {
-            const data = fs.readFileSync(MESSAGE_STORE_FILE, 'utf-8')
-            return JSON.parse(data)
+        if (fs[_0x1c9ef7(0x247)](MESSAGE_STORE_FILE)) {
+            const _0x3c1578 = fs[_0x1c9ef7(0x21e)](MESSAGE_STORE_FILE, _0x1c9ef7(0x131));
+            return JSON[_0x1c9ef7(0x21a)](_0x3c1578);
         }
-    } catch (error) {
-        log(`Error loading message backup: ${error.message}`, 'red', true)
+    } catch (_0x4af986) {
+        log(_0x1c9ef7(0x20f) + _0x4af986['\x6d\x65\x73\x73\x61\x67\x65'], _0x1c9ef7(0x159), !![]);
     }
-    return {}
+    return {};
 }
-
-function saveStoredMessages(data) {
+function saveStoredMessages(_0x631de4) {
+    const _0x43d4bf = _0x66492;
     try {
-        const dir = path.dirname(MESSAGE_STORE_FILE)
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true })
+        const _0x28c06f = path[_0x43d4bf(0x1df)](MESSAGE_STORE_FILE);
+        if (!fs[_0x43d4bf(0x247)](_0x28c06f)) {
+            const _0x1441e4 = {};
+            _0x1441e4[_0x43d4bf(0x12d)] = !![];
+            fs[_0x43d4bf(0x14c)](_0x28c06f, _0x1441e4);
         }
-        fs.writeFileSync(MESSAGE_STORE_FILE, JSON.stringify(data, null, 2))
-    } catch (error) {
-        log(`Error saving message backup: ${error.message}`, 'red', true)
+        fs['\x77\x72\x69\x74\x65\x46\x69\x6c\x65\x53\x79\x6e\x63'](MESSAGE_STORE_FILE, JSON[_0x43d4bf(0x116)](_0x631de4, null, 0x2));
+    } catch (_0x1a6837) {
+        log(_0x43d4bf(0x21c) + _0x1a6837[_0x43d4bf(0x17a)], _0x43d4bf(0x159), !![]);
     }
 }
-
-global.messageBackup = loadStoredMessages()
-
-// Error count functions
+global[_0x66492(0x212)] = loadStoredMessages();
 function loadErrorCount() {
+    const _0x1f65df = _0x66492;
     try {
-        if (fs.existsSync(SESSION_ERROR_FILE)) {
-            const data = fs.readFileSync(SESSION_ERROR_FILE, 'utf-8')
-            return JSON.parse(data)
+        if (fs[_0x1f65df(0x247)](SESSION_ERROR_FILE)) {
+            const _0x4b7dde = fs['\x72\x65\x61\x64\x46\x69\x6c\x65\x53\x79\x6e\x63'](SESSION_ERROR_FILE, _0x1f65df(0x131));
+            return JSON['\x70\x61\x72\x73\x65'](_0x4b7dde);
         }
-    } catch (error) {
-        log(`Error loading error count: ${error.message}`, 'red', true)
+    } catch (_0x29d32a) {
+        log(_0x1f65df(0x125) + _0x29d32a[_0x1f65df(0x17a)], _0x1f65df(0x159), !![]);
     }
-    return { count: 0, last_error_timestamp: 0 }
+    const _0x549e85 = {};
+    _0x549e85[_0x1f65df(0x117)] = 0x0;
+    _0x549e85[_0x1f65df(0x193)] = 0x0;
+    return _0x549e85;
 }
-
-function saveErrorCount(data) {
+function saveErrorCount(_0x416c09) {
+    const _0x39f9a9 = _0x66492;
     try {
-        const dir = path.dirname(SESSION_ERROR_FILE)
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true })
+        const _0x32ad06 = path['\x64\x69\x72\x6e\x61\x6d\x65'](SESSION_ERROR_FILE);
+        if (!fs[_0x39f9a9(0x247)](_0x32ad06)) {
+            const _0x36e01c = {};
+            _0x36e01c['\x72\x65\x63\x75\x72\x73\x69\x76\x65'] = !![];
+            fs[_0x39f9a9(0x14c)](_0x32ad06, _0x36e01c);
         }
-        fs.writeFileSync(SESSION_ERROR_FILE, JSON.stringify(data, null, 2))
-    } catch (error) {
-        log(`Error saving error count: ${error.message}`, 'red', true)
+        fs[_0x39f9a9(0x22e)](SESSION_ERROR_FILE, JSON[_0x39f9a9(0x116)](_0x416c09, null, 0x2));
+    } catch (_0x4e0d83) {
+        log(_0x39f9a9(0x1eb) + _0x4e0d83['\x6d\x65\x73\x73\x61\x67\x65'], _0x39f9a9(0x159), !![]);
     }
 }
-
 function deleteErrorCountFile() {
+    const _0x58de9d = _0x66492;
     try {
-        if (fs.existsSync(SESSION_ERROR_FILE)) {
-            fs.unlinkSync(SESSION_ERROR_FILE)
-            log('Deleted sessionErrorCount.json', 'red')
+        if (fs[_0x58de9d(0x247)](SESSION_ERROR_FILE)) {
+            fs[_0x58de9d(0x13b)](SESSION_ERROR_FILE);
+            log('\x44\x65\x6c\x65\x74\x65\x64\x20\x73\x65\x73\x73\x69\x6f\x6e\x45\x72\x72\x6f\x72\x43\x6f\x75\x6e\x74\x2e\x6a\x73\x6f\x6e', _0x58de9d(0x159));
         }
-    } catch (e) {
-        log(`Failed to delete error count: ${e.message}`, 'red', true)
+    } catch (_0x54faa0) {
+        log('\x46\x61\x69\x6c\x65\x64\x20\x74\x6f\x20\x64\x65\x6c\x65\x74\x65\x20\x65\x72\x72\x6f\x72\x20\x63\x6f\x75\x6e\x74\x3a\x20' + _0x54faa0[_0x58de9d(0x17a)], '\x72\x65\x64', !![]);
     }
 }
-
-// Session management
 function clearSessionFiles() {
+    const _0x218d4d = _0x66492;
     try {
-        log('🗑️ Clearing session folder...', 'blue')
-        rmSync(sessionDir, { recursive: true, force: true })
-        if (fs.existsSync(loginFile)) fs.unlinkSync(loginFile)
-        deleteErrorCountFile()
-        global.errorRetryCount = 0
-        log('✅ Session files cleaned', 'green')
-    } catch (e) {
-        log(`Failed to clear session: ${e.message}`, 'red', true)
+        log(_0x218d4d(0x135), _0x218d4d(0x25e));
+        const _0x1b28b4 = {};
+        _0x1b28b4[_0x218d4d(0x12d)] = !![];
+        _0x1b28b4[_0x218d4d(0x236)] = !![];
+        rmSync(sessionDir, _0x1b28b4);
+        if (fs['\x65\x78\x69\x73\x74\x73\x53\x79\x6e\x63'](loginFile))
+            fs[_0x218d4d(0x13b)](loginFile);
+        deleteErrorCountFile();
+        global[_0x218d4d(0x169)] = 0x0;
+        log(_0x218d4d(0x171), _0x218d4d(0x1cf));
+    } catch (_0x15f6c6) {
+        log(_0x218d4d(0x1ea) + _0x15f6c6['\x6d\x65\x73\x73\x61\x67\x65'], '\x72\x65\x64', !![]);
     }
 }
-
 function sessionExists() {
-    return fs.existsSync(credsPath)
+    const _0x4fab57 = _0x66492;
+    return fs[_0x4fab57(0x247)](credsPath);
 }
-
-// Cleanup functions
 function cleanupOldMessages() {
-    let storedMessages = loadStoredMessages()
-    let now = Math.floor(Date.now() / 1000)
-    const maxMessageAge = 24 * 60 * 60
-    let cleanedMessages = {}
-
-    for (let chatId in storedMessages) {
-        let newChatMessages = {}
-        for (let messageId in storedMessages[chatId]) {
-            let message = storedMessages[chatId][messageId]
-            if (now - message.timestamp <= maxMessageAge) {
-                newChatMessages[messageId] = message
+    const _0x13f154 = _0x66492;
+    let _0x2c33a0 = loadStoredMessages();
+    let _0x3dc41c = Math['\x66\x6c\x6f\x6f\x72'](Date[_0x13f154(0x12b)]() / 0x3e8);
+    const _0x432e5e = 0x18 * 0x3c * 0x3c;
+    let _0x29d7ba = {};
+    for (let _0x323157 in _0x2c33a0) {
+        let _0x5eb954 = {};
+        for (let _0xed3c3f in _0x2c33a0[_0x323157]) {
+            let _0x2ce928 = _0x2c33a0[_0x323157][_0xed3c3f];
+            if (_0x3dc41c - _0x2ce928[_0x13f154(0x18c)] <= _0x432e5e) {
+                _0x5eb954[_0xed3c3f] = _0x2ce928;
             }
         }
-        if (Object.keys(newChatMessages).length > 0) {
-            cleanedMessages[chatId] = newChatMessages
+        if (Object[_0x13f154(0x1f9)](_0x5eb954)['\x6c\x65\x6e\x67\x74\x68'] > 0x0) {
+            _0x29d7ba[_0x323157] = _0x5eb954;
         }
     }
-    saveStoredMessages(cleanedMessages)
-    log("🧹 Old messages cleaned", 'yellow')
+    saveStoredMessages(_0x29d7ba);
+    log(_0x13f154(0x1c9), _0x13f154(0x1a1));
 }
-
-function cleanupJunkFiles(botSocket) {
-    let directoryPath = path.join(__dirname)
-    fs.readdir(directoryPath, async function (err, files) {
-        if (err) return log(`Junk cleanup error: ${err}`, 'red', true)
-
-        const filteredArray = files.filter(item =>
-            item.endsWith(".gif") || item.endsWith(".png") || item.endsWith(".mp3") ||
-            item.endsWith(".mp4") || item.endsWith(".opus") || item.endsWith(".jpg") ||
-            item.endsWith(".webp") || item.endsWith(".webm") || item.endsWith(".zip")
-        )
-
-        if (filteredArray.length > 0) {
-            filteredArray.forEach(file => {
+function cleanupJunkFiles(_0x49b3df) {
+    const _0x3db7cd = _0x66492;
+    let _0x426f5e = path[_0x3db7cd(0x1c7)](__dirname);
+    fs[_0x3db7cd(0x15c)](_0x426f5e, async function (_0x5a0dad, _0x542494) {
+        const _0x13eed8 = _0x3db7cd;
+        if (_0x5a0dad)
+            return log(_0x13eed8(0x267) + _0x5a0dad, _0x13eed8(0x159), !![]);
+        const _0x258bf6 = _0x542494[_0x13eed8(0x207)](_0x28ed9e => _0x28ed9e[_0x13eed8(0x170)]('\x2e\x67\x69\x66') || _0x28ed9e[_0x13eed8(0x170)](_0x13eed8(0x1a8)) || _0x28ed9e['\x65\x6e\x64\x73\x57\x69\x74\x68']('\x2e\x6d\x70\x33') || _0x28ed9e[_0x13eed8(0x170)](_0x13eed8(0x204)) || _0x28ed9e[_0x13eed8(0x170)](_0x13eed8(0x168)) || _0x28ed9e['\x65\x6e\x64\x73\x57\x69\x74\x68'](_0x13eed8(0x15e)) || _0x28ed9e[_0x13eed8(0x170)]('\x2e\x77\x65\x62\x70') || _0x28ed9e[_0x13eed8(0x170)]('\x2e\x77\x65\x62\x6d') || _0x28ed9e[_0x13eed8(0x170)](_0x13eed8(0x23f)));
+        if (_0x258bf6[_0x13eed8(0x226)] > 0x0) {
+            _0x258bf6[_0x13eed8(0x1bb)](_0x3fb52a => {
+                const _0x30bd74 = _0x13eed8;
                 try {
-                    const filePath = path.join(directoryPath, file)
-                    if(fs.existsSync(filePath)) fs.unlinkSync(filePath)
-                } catch(e) {
-                    log(`Delete failed ${file}: ${e.message}`, 'red', true)
+                    const _0x1f9f3b = path[_0x30bd74(0x1c7)](_0x426f5e, _0x3fb52a);
+                    if (fs[_0x30bd74(0x247)](_0x1f9f3b))
+                        fs[_0x30bd74(0x13b)](_0x1f9f3b);
+                } catch (_0x387234) {
+                    log(_0x30bd74(0x19a) + _0x3fb52a + '\x3a\x20' + _0x387234['\x6d\x65\x73\x73\x61\x67\x65'], _0x30bd74(0x159), !![]);
                 }
-            })
-            log(`🗑️ ${filteredArray.length} junk files deleted`, 'yellow')
+            });
+            log(_0x13eed8(0x1ba) + _0x258bf6[_0x13eed8(0x226)] + _0x13eed8(0x1e2), _0x13eed8(0x1a1));
         }
-    })
+    });
 }
-
-// Login helpers
-const pairingCode = !!global.phoneNumber || process.argv.includes("--pairing-code")
-const useMobile = process.argv.includes("--mobile")
-
-const rl = process.stdin.isTTY ? readline.createInterface({ 
-    input: process.stdin, 
-    output: process.stdout 
-}) : null
-
-const question = (text) => rl ? 
-    new Promise(resolve => rl.question(text, resolve)) : 
-    Promise.resolve(settings?.ownerNumber || global.phoneNumber)
-
-async function saveLoginMethod(method) {
-    await fs.promises.mkdir(sessionDir, { recursive: true });
-    await fs.promises.writeFile(loginFile, JSON.stringify({ method }, null, 2));
+const pairingCode = !!global[_0x66492(0x221)] || process['\x61\x72\x67\x76'][_0x66492(0x162)](_0x66492(0x176));
+const useMobile = process[_0x66492(0x196)][_0x66492(0x162)]('\x2d\x2d\x6d\x6f\x62\x69\x6c\x65');
+const rl = process['\x73\x74\x64\x69\x6e'][_0x66492(0x1fc)] ? readline[_0x66492(0x126)]({
+    '\x69\x6e\x70\x75\x74': process['\x73\x74\x64\x69\x6e'],
+    '\x6f\x75\x74\x70\x75\x74': process[_0x66492(0x107)]
+}) : null;
+const question = _0x1e75e4 => rl ? new Promise(_0x41b662 => rl[_0x66492(0x104)](_0x1e75e4, _0x41b662)) : Promise[_0x66492(0x1e7)](settings?.[_0x66492(0x184)] || global['\x70\x68\x6f\x6e\x65\x4e\x75\x6d\x62\x65\x72']);
+async function saveLoginMethod(_0x41316a) {
+    const _0x23d470 = _0x66492;
+    const _0x5e9d18 = {};
+    _0x5e9d18[_0x23d470(0x12d)] = !![];
+    await fs[_0x23d470(0x14a)][_0x23d470(0x1b0)](sessionDir, _0x5e9d18);
+    const _0x3c5d26 = {};
+    _0x3c5d26[_0x23d470(0x186)] = _0x41316a;
+    await fs[_0x23d470(0x14a)][_0x23d470(0x161)](loginFile, JSON[_0x23d470(0x116)](_0x3c5d26, null, 0x2));
 }
-
 async function getLastLoginMethod() {
-    if (fs.existsSync(loginFile)) {
-        const data = JSON.parse(fs.readFileSync(loginFile, 'utf-8'));
-        return data.method;
+    const _0x2289a5 = _0x66492;
+    if (fs['\x65\x78\x69\x73\x74\x73\x53\x79\x6e\x63'](loginFile)) {
+        const _0x110a03 = JSON[_0x2289a5(0x21a)](fs['\x72\x65\x61\x64\x46\x69\x6c\x65\x53\x79\x6e\x63'](loginFile, '\x75\x74\x66\x2d\x38'));
+        return _0x110a03['\x6d\x65\x74\x68\x6f\x64'];
     }
     return null;
 }
-
 async function checkEnvSession() {
-    const envSessionID = process.env.SESSION_ID;
-    if (envSessionID) {
-        if (!envSessionID.includes("dave~")) { 
-            log("🚨 WARNING: Environment SESSION_ID is missing the required prefix 'dave~'. Assuming BASE64 format.", 'red'); 
+    const _0x411830 = _0x66492;
+    const _0x4652a4 = process['\x65\x6e\x76']['\x53\x45\x53\x53\x49\x4f\x4e\x5f\x49\x44'];
+    if (_0x4652a4) {
+        if (!_0x4652a4[_0x411830(0x162)](_0x411830(0x1fa))) {
+            log(_0x411830(0x187), _0x411830(0x159));
         }
-        global.SESSION_ID = envSessionID.trim();
-        return true;
+        global['\x53\x45\x53\x53\x49\x4f\x4e\x5f\x49\x44'] = _0x4652a4['\x74\x72\x69\x6d']();
+        return !![];
     }
-    return false;
+    return ![];
 }
-
 async function checkAndHandleSessionFormat() {
-    const sessionId = process.env.SESSION_ID;
-
-    if (sessionId && sessionId.trim() !== '') {
-        if (!sessionId.trim().startsWith('dave')) {
-            log(chalk.red.bgBlack('================================================='), 'white');
-            log(chalk.white.bgRed('❌ ERROR: Invalid SESSION_ID in .env'), 'white');
-            log(chalk.white.bgRed('The session ID MUST start with "dave".'), 'white');
-            log(chalk.white.bgRed('Cleaning .env and creating new one...'), 'white');
-            log(chalk.red.bgBlack('================================================='), 'white');
-
+    const _0x5623f8 = _0x66492;
+    const _0x5c56cc = process[_0x5623f8(0x106)]['\x53\x45\x53\x53\x49\x4f\x4e\x5f\x49\x44'];
+    if (_0x5c56cc && _0x5c56cc['\x74\x72\x69\x6d']() !== '') {
+        if (!_0x5c56cc[_0x5623f8(0x1e8)]()[_0x5623f8(0x213)](_0x5623f8(0x248))) {
+            log(chalk[_0x5623f8(0x159)][_0x5623f8(0x15b)](_0x5623f8(0x262)), _0x5623f8(0x218));
+            log(chalk[_0x5623f8(0x218)][_0x5623f8(0x263)](_0x5623f8(0x1d4)), _0x5623f8(0x218));
+            log(chalk[_0x5623f8(0x218)][_0x5623f8(0x263)](_0x5623f8(0x134)), _0x5623f8(0x218));
+            log(chalk[_0x5623f8(0x218)][_0x5623f8(0x263)](_0x5623f8(0x1f0)), _0x5623f8(0x218));
+            log(chalk[_0x5623f8(0x159)][_0x5623f8(0x15b)](_0x5623f8(0x262)), _0x5623f8(0x218));
             try {
-                let envContent = fs.readFileSync(envPath, 'utf8');
-                envContent = envContent.replace(/^SESSION_ID=.*$/m, 'SESSION_ID=');
-                fs.writeFileSync(envPath, envContent);
-                log('✅ Cleaned SESSION_ID entry in .env file.', 'green');
-                log('Please add a proper session ID and restart the bot.', 'yellow');
-            } catch (e) {
-                log(`Failed to modify .env file. Please check permissions: ${e.message}`, 'red', true);
+                let _0x3fa65a = fs[_0x5623f8(0x21e)](envPath, _0x5623f8(0x1f1));
+                _0x3fa65a = _0x3fa65a[_0x5623f8(0x250)](/^SESSION_ID=.*$/m, _0x5623f8(0x122));
+                fs[_0x5623f8(0x22e)](envPath, _0x3fa65a);
+                log('\u2705\x20\x43\x6c\x65\x61\x6e\x65\x64\x20\x53\x45\x53\x53\x49\x4f\x4e\x5f\x49\x44\x20\x65\x6e\x74\x72\x79\x20\x69\x6e\x20\x2e\x65\x6e\x76\x20\x66\x69\x6c\x65\x2e', '\x67\x72\x65\x65\x6e');
+                log(_0x5623f8(0x25a), _0x5623f8(0x1a1));
+            } catch (_0x468939) {
+                log(_0x5623f8(0x19d) + _0x468939['\x6d\x65\x73\x73\x61\x67\x65'], _0x5623f8(0x159), !![]);
             }
-
-            log('Bot will wait 30 seconds then restart', 'blue');
-            await delay(30000);
-            process.exit(1);
+            log(_0x5623f8(0x1ee), _0x5623f8(0x25e));
+            await delay(0x7530);
+            process['\x65\x78\x69\x74'](0x1);
         }
     }
 }
-
 async function getLoginMethod() {
-    const lastMethod = await getLastLoginMethod();
-    if (lastMethod && sessionExists()) {
-        log(`Last login method detected: ${lastMethod}. Using it automatically.`, 'yellow');
-        return lastMethod;
+    const _0x49afc3 = _0x66492;
+    const _0x5aae26 = await getLastLoginMethod();
+    if (_0x5aae26 && sessionExists()) {
+        log(_0x49afc3(0x11d) + _0x5aae26 + _0x49afc3(0x1bf), _0x49afc3(0x1a1));
+        return _0x5aae26;
     }
-
-    if (!sessionExists() && fs.existsSync(loginFile)) {
-        log(`Session files missing. Removing old login preference for clean re-login.`, 'yellow');
-        fs.unlinkSync(loginFile);
+    if (!sessionExists() && fs[_0x49afc3(0x247)](loginFile)) {
+        log(_0x49afc3(0x25f), _0x49afc3(0x1a1));
+        fs[_0x49afc3(0x13b)](loginFile);
     }
-
-    if (!process.stdin.isTTY) {
-        log("❌ No Session ID found in environment variables.", 'red');
-        process.exit(1);
+    if (!process[_0x49afc3(0x139)][_0x49afc3(0x1fc)]) {
+        log(_0x49afc3(0x233), _0x49afc3(0x159));
+        process[_0x49afc3(0x1ad)](0x1);
     }
-
-    log("Choose login method:", 'yellow');
-    log("1) Enter WhatsApp Number (Pairing Code)", 'blue');
-    log("2) Paste Session ID", 'blue');
-
-    let choice = await question("Enter option number (1 or 2): ");
-    choice = choice.trim();
-
-    if (choice === '1') {
-        let phone = await question(chalk.bgBlack(chalk.greenBright(`Enter your WhatsApp number (e.g., 254104260236): `)));
-        phone = phone.replace(/[^0-9]/g, '');
-        const pn = require('awesome-phonenumber');
-        if (!pn('+' + phone).isValid()) { log('Invalid phone number.', 'red'); return getLoginMethod(); }
-        global.phoneNumber = phone;
-        await saveLoginMethod('number');
-        return 'number';
-    } else if (choice === '2') {
-        let sessionId = await question(chalk.bgBlack(chalk.greenBright(`Paste your Session ID here: `)));
-        sessionId = sessionId.trim();
-        if (!sessionId.includes("dave~")) { 
-            log("Invalid Session ID format! Must contain 'dave~'.", 'red'); 
-            process.exit(1); 
+    log(_0x49afc3(0x151), _0x49afc3(0x1a1));
+    log(_0x49afc3(0x1aa), _0x49afc3(0x25e));
+    log(_0x49afc3(0x149), _0x49afc3(0x25e));
+    let _0x1e5cb0 = await question(_0x49afc3(0x112));
+    _0x1e5cb0 = _0x1e5cb0['\x74\x72\x69\x6d']();
+    if (_0x1e5cb0 === '\x31') {
+        let _0x5dd510 = await question(chalk['\x62\x67\x42\x6c\x61\x63\x6b'](chalk[_0x49afc3(0x1f2)]('\x45\x6e\x74\x65\x72\x20\x79\x6f\x75\x72\x20\x57\x68\x61\x74\x73\x41\x70\x70\x20\x6e\x75\x6d\x62\x65\x72\x20\x28\x65\x2e\x67\x2e\x2c\x20\x32\x35\x34\x31\x30\x34\x32\x36\x30\x32\x33\x36\x29\x3a\x20')));
+        _0x5dd510 = _0x5dd510[_0x49afc3(0x250)](/[^0-9]/g, '');
+        const _0x97580f = require(_0x49afc3(0x216));
+        if (!_0x97580f('\x2b' + _0x5dd510)['\x69\x73\x56\x61\x6c\x69\x64']()) {
+            log(_0x49afc3(0x254), _0x49afc3(0x159));
+            return getLoginMethod();
         }
-        global.SESSION_ID = sessionId;
-        await saveLoginMethod('session');
-        return 'session';
+        global['\x70\x68\x6f\x6e\x65\x4e\x75\x6d\x62\x65\x72'] = _0x5dd510;
+        await saveLoginMethod(_0x49afc3(0x1ca));
+        return '\x6e\x75\x6d\x62\x65\x72';
+    } else if (_0x1e5cb0 === '\x32') {
+        let _0x6a12aa = await question(chalk[_0x49afc3(0x15b)](chalk['\x67\x72\x65\x65\x6e\x42\x72\x69\x67\x68\x74'](_0x49afc3(0x163))));
+        _0x6a12aa = _0x6a12aa[_0x49afc3(0x1e8)]();
+        if (!_0x6a12aa['\x69\x6e\x63\x6c\x75\x64\x65\x73'](_0x49afc3(0x1fa))) {
+            log(_0x49afc3(0x1d7), _0x49afc3(0x159));
+            process[_0x49afc3(0x1ad)](0x1);
+        }
+        global[_0x49afc3(0x203)] = _0x6a12aa;
+        await saveLoginMethod(_0x49afc3(0x23b));
+        return '\x73\x65\x73\x73\x69\x6f\x6e';
     } else {
-        log("Invalid option! Please choose 1 or 2.", 'red');
+        log('\x49\x6e\x76\x61\x6c\x69\x64\x20\x6f\x70\x74\x69\x6f\x6e\x21\x20\x50\x6c\x65\x61\x73\x65\x20\x63\x68\x6f\x6f\x73\x65\x20\x31\x20\x6f\x72\x20\x32\x2e', '\x72\x65\x64');
         return getLoginMethod();
     }
 }
-
 async function downloadSessionData() {
+    const _0x44d1e1 = _0x66492;
     try {
-        await fs.promises.mkdir(sessionDir, { recursive: true });
-        if (!fs.existsSync(credsPath) && global.SESSION_ID) {
-            const base64Data = global.SESSION_ID.includes("dave~") ? global.SESSION_ID.split("dave~")[1] : global.SESSION_ID;
-            const sessionData = Buffer.from(base64Data, 'base64');
-            await fs.promises.writeFile(credsPath, sessionData);
-            log(`Session successfully saved.`, 'green');
+        const _0x563325 = {};
+        _0x563325[_0x44d1e1(0x12d)] = !![];
+        await fs[_0x44d1e1(0x14a)][_0x44d1e1(0x1b0)](sessionDir, _0x563325);
+        if (!fs[_0x44d1e1(0x247)](credsPath) && global[_0x44d1e1(0x203)]) {
+            const _0x3a8364 = global['\x53\x45\x53\x53\x49\x4f\x4e\x5f\x49\x44'][_0x44d1e1(0x162)](_0x44d1e1(0x1fa)) ? global[_0x44d1e1(0x203)][_0x44d1e1(0x179)]('\x64\x61\x76\x65\x7e')[0x1] : global['\x53\x45\x53\x53\x49\x4f\x4e\x5f\x49\x44'];
+            const _0x3689f8 = Buffer[_0x44d1e1(0x195)](_0x3a8364, '\x62\x61\x73\x65\x36\x34');
+            await fs['\x70\x72\x6f\x6d\x69\x73\x65\x73'][_0x44d1e1(0x161)](credsPath, _0x3689f8);
+            log(_0x44d1e1(0x23c), _0x44d1e1(0x1cf));
         }
-    } catch (err) { log(`Error downloading session data: ${err.message}`, 'red', true); }
-}
-
-async function requestPairingCode(socket) {
-    try {
-        log("Waiting 3 seconds for socket stabilization before requesting pairing code...", 'yellow');
-        await delay(3000); 
-
-        let code = await socket.requestPairingCode(global.phoneNumber);
-        code = code?.match(/.{1,4}/g)?.join("-") || code;
-        log(chalk.bgGreen.black(`\nYour Pairing Code: ${code}\n`), 'white');
-        log(`
-Please enter this code in WhatsApp app:
-1. Open WhatsApp
-2. Go to Settings => Linked Devices
-3. Tap "Link a Device"
-4. Enter the code shown above
-        `, 'green');
-        return true; 
-    } catch (err) { 
-        log(`Failed to get pairing code: ${err.message}`, 'red', true); 
-        return false; 
+    } catch (_0x5451bc) {
+        log(_0x44d1e1(0x1b8) + _0x5451bc[_0x44d1e1(0x17a)], _0x44d1e1(0x159), !![]);
     }
 }
-
-async function sendWelcomeMessage(dave) {
-    if (global.isBotConnected) return; 
-    await delay(10000); 
-
-    function detectHost() {
-        const env = process.env;
-        if (env.RENDER || env.RENDER_EXTERNAL_URL) return 'Render';
-        if (env.DYNO || env.HEROKU_APP_DIR || env.HEROKU_SLUG_COMMIT) return 'Heroku';
-        if (env.PORTS || env.CYPHERX_HOST_ID) return "CypherXHost"; 
-        if (env.VERCEL || env.VERCEL_ENV || env.VERCEL_URL) return 'Vercel';
-        if (env.RAILWAY_ENVIRONMENT || env.RAILWAY_PROJECT_ID) return 'Railway';
-        if (env.REPL_ID || env.REPL_SLUG) return 'Replit';
-
-        const hostname = os.hostname().toLowerCase();
-        if (!env.CLOUD_PROVIDER && !env.DYNO && !env.VERCEL && !env.RENDER) {
-            if (hostname.includes('vps') || hostname.includes('server')) return 'VPS';
-            return 'Panel';
-        }
-        return 'Dave Host';
-    }
-
+async function requestPairingCode(_0x5653d3) {
+    const _0x322ce2 = _0x66492;
     try {
-        if (!dave.user || global.isBotConnected) return;
-        global.isBotConnected = true;
-        const pNumber = dave.user.id.split(':')[0] + '@s.whatsapp.net';
-
-        let data = JSON.parse(fs.readFileSync('./library/database/messageCount.json'));
-        const currentMode = global.settings.public ? 'public' : 'private';   
-        const hostName = detectHost();
-
-        if (global.settings.showConnectMsg) {
-            await dave.sendMessage(dave.user.id, {
-                text: `
-┏━━━━━✧ CONNECTED ✧━━━━━━━
-┃✧ Prefix  : ${global.settings.xprefix}
-┃✧ Mode    : ${currentMode}
-┃✧ Platform: ${hostName}
-┃✧ Bot     : ${global.settings.botname}
-┃✧ Status  : Active
-┃✧ Time    : ${new Date().toLocaleString()}
-┗━━━━━━━━━━━━━━━━━━━`
-            });
-            log('Bot successfully connected to Whatsapp.', 'green');
+        log(_0x322ce2(0x190), _0x322ce2(0x1a1));
+        await delay(0xbb8);
+        let _0x19fcd4 = await _0x5653d3[_0x322ce2(0x17f)](global[_0x322ce2(0x221)]);
+        _0x19fcd4 = _0x19fcd4?.[_0x322ce2(0x165)](/.{1,4}/g)?.[_0x322ce2(0x1c7)]('\x2d') || _0x19fcd4;
+        log(chalk[_0x322ce2(0x103)][_0x322ce2(0x255)]('\x0a\x59\x6f\x75\x72\x20\x50\x61\x69\x72\x69\x6e\x67\x20\x43\x6f\x64\x65\x3a\x20' + _0x19fcd4 + '\x0a'), '\x77\x68\x69\x74\x65');
+        log('\x0a\x50\x6c\x65\x61\x73\x65\x20\x65\x6e\x74\x65\x72\x20\x74\x68\x69\x73\x20\x63\x6f\x64\x65\x20\x69\x6e\x20\x57\x68\x61\x74\x73\x41\x70\x70\x20\x61\x70\x70\x3a\x0a\x31\x2e\x20\x4f\x70\x65\x6e\x20\x57\x68\x61\x74\x73\x41\x70\x70\x0a\x32\x2e\x20\x47\x6f\x20\x74\x6f\x20\x53\x65\x74\x74\x69\x6e\x67\x73\x20\x3d\x3e\x20\x4c\x69\x6e\x6b\x65\x64\x20\x44\x65\x76\x69\x63\x65\x73\x0a\x33\x2e\x20\x54\x61\x70\x20\x22\x4c\x69\x6e\x6b\x20\x61\x20\x44\x65\x76\x69\x63\x65\x22\x0a\x34\x2e\x20\x45\x6e\x74\x65\x72\x20\x74\x68\x65\x20\x63\x6f\x64\x65\x20\x73\x68\x6f\x77\x6e\x20\x61\x62\x6f\x76\x65\x0a\x20\x20\x20\x20\x20\x20\x20\x20', _0x322ce2(0x1cf));
+        return !![];
+    } catch (_0x559b89) {
+        log(_0x322ce2(0x157) + _0x559b89['\x6d\x65\x73\x73\x61\x67\x65'], '\x72\x65\x64', !![]);
+        return ![];
+    }
+}
+function _0x3f36(_0x3a1c34, _0x26641b) {
+    const _0x57c6d3 = _0x57c6();
+    _0x3f36 = function (_0x3f3645, _0x419c06) {
+        _0x3f3645 = _0x3f3645 - 0x102;
+        let _0x5b7735 = _0x57c6d3[_0x3f3645];
+        if (_0x3f36['\x51\x6e\x50\x48\x46\x6b'] === undefined) {
+            var _0xf4799a = function (_0x21d084) {
+                const _0x5a0991 = '\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';
+                let _0x5ab6e4 = '';
+                let _0x193ad2 = '';
+                for (let _0x486d02 = 0x0, _0x42ad77, _0x3905e5, _0x22aaf9 = 0x0; _0x3905e5 = _0x21d084['\x63\x68\x61\x72\x41\x74'](_0x22aaf9++); ~_0x3905e5 && (_0x42ad77 = _0x486d02 % 0x4 ? _0x42ad77 * 0x40 + _0x3905e5 : _0x3905e5, _0x486d02++ % 0x4) ? _0x5ab6e4 += String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](0xff & _0x42ad77 >> (-0x2 * _0x486d02 & 0x6)) : 0x0) {
+                    _0x3905e5 = _0x5a0991['\x69\x6e\x64\x65\x78\x4f\x66'](_0x3905e5);
+                }
+                for (let _0x112c28 = 0x0, _0x35ac74 = _0x5ab6e4['\x6c\x65\x6e\x67\x74\x68']; _0x112c28 < _0x35ac74; _0x112c28++) {
+                    _0x193ad2 += '\x25' + ('\x30\x30' + _0x5ab6e4['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x112c28)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x10))['\x73\x6c\x69\x63\x65'](-0x2);
+                }
+                return decodeURIComponent(_0x193ad2);
+            };
+            _0x3f36['\x79\x46\x6e\x46\x6f\x5a'] = _0xf4799a;
+            _0x3a1c34 = arguments;
+            _0x3f36['\x51\x6e\x50\x48\x46\x6b'] = !![];
         }
-
+        const _0x503dac = _0x57c6d3[0x0];
+        const _0x2266cf = _0x3f3645 + _0x503dac;
+        const _0x3cca81 = _0x3a1c34[_0x2266cf];
+        if (!_0x3cca81) {
+            _0x5b7735 = _0x3f36['\x79\x46\x6e\x46\x6f\x5a'](_0x5b7735);
+            _0x3a1c34[_0x2266cf] = _0x5b7735;
+        } else {
+            _0x5b7735 = _0x3cca81;
+        }
+        return _0x5b7735;
+    };
+    return _0x3f36(_0x3a1c34, _0x26641b);
+}
+async function sendWelcomeMessage(_0x36a531) {
+    const _0x4dee0b = _0x66492;
+    if (global[_0x4dee0b(0x1a6)])
+        return;
+    await delay(0x2710);
+    function _0xfd7ee0() {
+        const _0x5eddf5 = _0x4dee0b;
+        const _0x738257 = process[_0x5eddf5(0x106)];
+        if (_0x738257['\x52\x45\x4e\x44\x45\x52'] || _0x738257[_0x5eddf5(0x113)])
+            return '\x52\x65\x6e\x64\x65\x72';
+        if (_0x738257['\x44\x59\x4e\x4f'] || _0x738257[_0x5eddf5(0x119)] || _0x738257['\x48\x45\x52\x4f\x4b\x55\x5f\x53\x4c\x55\x47\x5f\x43\x4f\x4d\x4d\x49\x54'])
+            return '\x48\x65\x72\x6f\x6b\x75';
+        if (_0x738257[_0x5eddf5(0x243)] || _0x738257[_0x5eddf5(0x1f5)])
+            return '\x43\x79\x70\x68\x65\x72\x58\x48\x6f\x73\x74';
+        if (_0x738257[_0x5eddf5(0x153)] || _0x738257[_0x5eddf5(0x183)] || _0x738257[_0x5eddf5(0x11a)])
+            return _0x5eddf5(0x25d);
+        if (_0x738257[_0x5eddf5(0x173)] || _0x738257[_0x5eddf5(0x1ec)])
+            return _0x5eddf5(0x13f);
+        if (_0x738257[_0x5eddf5(0x1c0)] || _0x738257[_0x5eddf5(0x200)])
+            return _0x5eddf5(0x129);
+        const _0x1dc9ff = os[_0x5eddf5(0x1cd)]()[_0x5eddf5(0x206)]();
+        if (!_0x738257[_0x5eddf5(0x14e)] && !_0x738257[_0x5eddf5(0x138)] && !_0x738257[_0x5eddf5(0x153)] && !_0x738257[_0x5eddf5(0x1be)]) {
+            if (_0x1dc9ff['\x69\x6e\x63\x6c\x75\x64\x65\x73'](_0x5eddf5(0x174)) || _0x1dc9ff[_0x5eddf5(0x162)]('\x73\x65\x72\x76\x65\x72'))
+                return _0x5eddf5(0x164);
+            return _0x5eddf5(0x23a);
+        }
+        return _0x5eddf5(0x238);
+    }
+    try {
+        if (!_0x36a531['\x75\x73\x65\x72'] || global[_0x4dee0b(0x1a6)])
+            return;
+        global[_0x4dee0b(0x1a6)] = !![];
+        const _0x32e20e = _0x36a531[_0x4dee0b(0x1e5)]['\x69\x64']['\x73\x70\x6c\x69\x74']('\x3a')[0x0] + '\x40\x73\x2e\x77\x68\x61\x74\x73\x61\x70\x70\x2e\x6e\x65\x74';
+        let _0x385943 = JSON['\x70\x61\x72\x73\x65'](fs['\x72\x65\x61\x64\x46\x69\x6c\x65\x53\x79\x6e\x63'](_0x4dee0b(0x19c)));
+        const _0x39ab78 = global['\x73\x65\x74\x74\x69\x6e\x67\x73'][_0x4dee0b(0x222)] ? _0x4dee0b(0x222) : _0x4dee0b(0x18b);
+        const _0x477aac = _0xfd7ee0();
+        if (global['\x73\x65\x74\x74\x69\x6e\x67\x73']['\x73\x68\x6f\x77\x43\x6f\x6e\x6e\x65\x63\x74\x4d\x73\x67']) {
+            await _0x36a531[_0x4dee0b(0x133)](_0x36a531['\x75\x73\x65\x72']['\x69\x64'], { '\x74\x65\x78\x74': _0x4dee0b(0x228) + global[_0x4dee0b(0x12a)][_0x4dee0b(0x205)] + _0x4dee0b(0x261) + _0x39ab78 + '\x0a\u2503\u2727\x20\x50\x6c\x61\x74\x66\x6f\x72\x6d\x3a\x20' + _0x477aac + '\x0a\u2503\u2727\x20\x42\x6f\x74\x20\x20\x20\x20\x20\x3a\x20' + global[_0x4dee0b(0x12a)]['\x62\x6f\x74\x6e\x61\x6d\x65'] + _0x4dee0b(0x23e) + new Date()[_0x4dee0b(0x13d)]() + _0x4dee0b(0x17c) });
+            log('\x42\x6f\x74\x20\x73\x75\x63\x63\x65\x73\x73\x66\x75\x6c\x6c\x79\x20\x63\x6f\x6e\x6e\x65\x63\x74\x65\x64\x20\x74\x6f\x20\x57\x68\x61\x74\x73\x61\x70\x70\x2e', _0x4dee0b(0x1cf));
+        }
         try {
-            const channelId = "120363400480173280@newsletter";
-            await dave.newsletterFollow(channelId);
-            log("Auto-followed channel", "cyan");
-        } catch (err) {
-            log("Channel follow failed", "yellow");
+            const _0x3dfa9f = '\x31\x32\x30\x33\x36\x33\x34\x30\x30\x34\x38\x30\x31\x37\x33\x32\x38\x30\x40\x6e\x65\x77\x73\x6c\x65\x74\x74\x65\x72';
+            await _0x36a531['\x6e\x65\x77\x73\x6c\x65\x74\x74\x65\x72\x46\x6f\x6c\x6c\x6f\x77'](_0x3dfa9f);
+            log('\x41\x75\x74\x6f\x2d\x66\x6f\x6c\x6c\x6f\x77\x65\x64\x20\x63\x68\x61\x6e\x6e\x65\x6c', _0x4dee0b(0x22b));
+        } catch (_0x3b20d6) {
+            log('\x43\x68\x61\x6e\x6e\x65\x6c\x20\x66\x6f\x6c\x6c\x6f\x77\x20\x66\x61\x69\x6c\x65\x64', _0x4dee0b(0x1a1));
         }
-
         try {
-            const groupCode = "LfTFxkUQ1H7Eg2D0vR3n6g";
-            await dave.groupAcceptInvite(groupCode);
-            log("Auto-joined group", "cyan");
-        } catch (err) {
-            log("Group join failed", "yellow");
+            const _0x82e93b = _0x4dee0b(0x124);
+            await _0x36a531[_0x4dee0b(0x110)](_0x82e93b);
+            log(_0x4dee0b(0x144), _0x4dee0b(0x22b));
+        } catch (_0x142cde) {
+            log(_0x4dee0b(0x108), _0x4dee0b(0x1a1));
         }
-
         deleteErrorCountFile();
-        global.errorRetryCount = 0;
-
-    } catch (err) {
-        log(`Welcome message error: ${err.message}`, 'red', true);
+        global[_0x4dee0b(0x169)] = 0x0;
+    } catch (_0x1c34fd) {
+        log(_0x4dee0b(0x1fe) + _0x1c34fd[_0x4dee0b(0x17a)], _0x4dee0b(0x159), !![]);
     }
 }
-
-async function handle408Error(statusCode) {
-    if (statusCode !== DisconnectReason.connectionTimeout) return false;
-
-    global.errorRetryCount++;
-    let errorState = loadErrorCount();
-    const MAX_RETRIES = 3;
-
-    errorState.count = global.errorRetryCount;
-    errorState.last_error_timestamp = Date.now();
-    saveErrorCount(errorState);
-
-    log(`Connection Timeout (408) detected. Retry count: ${global.errorRetryCount}/${MAX_RETRIES}`, 'yellow');
-
-    if (global.errorRetryCount >= MAX_RETRIES) {
-        log('=================================================', 'red');
-        log(`🚨 MAX CONNECTION TIMEOUTS (${MAX_RETRIES}) REACHED IN ACTIVE STATE.`, 'red');
-        log('Persistent network/session issue. Exiting process to stop infinite restart loop.', 'red');
-        log('=================================================', 'red');
-
+async function handle408Error(_0x4baf6f) {
+    const _0x4301dc = _0x66492;
+    if (_0x4baf6f !== DisconnectReason['\x63\x6f\x6e\x6e\x65\x63\x74\x69\x6f\x6e\x54\x69\x6d\x65\x6f\x75\x74'])
+        return ![];
+    global['\x65\x72\x72\x6f\x72\x52\x65\x74\x72\x79\x43\x6f\x75\x6e\x74']++;
+    let _0x4999c6 = loadErrorCount();
+    const _0x5daf3e = 0x3;
+    _0x4999c6[_0x4301dc(0x117)] = global[_0x4301dc(0x169)];
+    _0x4999c6[_0x4301dc(0x193)] = Date[_0x4301dc(0x12b)]();
+    saveErrorCount(_0x4999c6);
+    log(_0x4301dc(0x260) + global[_0x4301dc(0x169)] + '\x2f' + _0x5daf3e, _0x4301dc(0x1a1));
+    if (global[_0x4301dc(0x169)] >= _0x5daf3e) {
+        log('\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d', _0x4301dc(0x159));
+        log(_0x4301dc(0x20d) + _0x5daf3e + _0x4301dc(0x234), '\x72\x65\x64');
+        log(_0x4301dc(0x12f), _0x4301dc(0x159));
+        log('\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d\x3d', _0x4301dc(0x159));
         deleteErrorCountFile();
-        global.errorRetryCount = 0;
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        process.exit(1);
+        global[_0x4301dc(0x169)] = 0x0;
+        await new Promise(_0x5793bb => setTimeout(_0x5793bb, 0x1388));
+        process['\x65\x78\x69\x74'](0x1);
     }
-    return true;
+    return !![];
 }
-
 async function startDave() {
-    log('Connecting to WhatsApp...', 'cyan');
-    const { version } = await fetchLatestBaileysVersion();
-    await fs.promises.mkdir(sessionDir, { recursive: true });
-
-    const { state, saveCreds } = await useMultiFileAuthState(`./session`);
-    const msgRetryCounterCache = new NodeCache();
-
-    const dave = makeWASocket({
-        version,
-        logger: pino({ level: 'silent' }),
-        printQRInTerminal: false, 
-        browser: ["Ubuntu", "Chrome", "20.0.04"],
-        auth: {
-            creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+    const _0x2bc219 = _0x66492;
+    log(_0x2bc219(0x18a), _0x2bc219(0x22b));
+    const {version: _0x4b2301} = await fetchLatestBaileysVersion();
+    const _0xfb87df = {};
+    _0xfb87df[_0x2bc219(0x12d)] = !![];
+    await fs['\x70\x72\x6f\x6d\x69\x73\x65\x73'][_0x2bc219(0x1b0)](sessionDir, _0xfb87df);
+    const {
+        state: _0x191de8,
+        saveCreds: _0x1435d2
+    } = await useMultiFileAuthState(_0x2bc219(0x1e4));
+    const _0x2ce4c2 = new NodeCache();
+    const _0x1c61ae = {};
+    _0x1c61ae[_0x2bc219(0x237)] = '\x73\x69\x6c\x65\x6e\x74';
+    const _0x48033c = {};
+    _0x48033c[_0x2bc219(0x237)] = _0x2bc219(0x142);
+    const _0x172f54 = {};
+    _0x172f54['\x6c\x65\x76\x65\x6c'] = '\x66\x61\x74\x61\x6c';
+    const _0x13e359 = makeWASocket({
+        '\x76\x65\x72\x73\x69\x6f\x6e': _0x4b2301,
+        '\x6c\x6f\x67\x67\x65\x72': pino(_0x1c61ae),
+        '\x70\x72\x69\x6e\x74\x51\x52\x49\x6e\x54\x65\x72\x6d\x69\x6e\x61\x6c': ![],
+        '\x62\x72\x6f\x77\x73\x65\x72': [
+            _0x2bc219(0x16c),
+            '\x43\x68\x72\x6f\x6d\x65',
+            _0x2bc219(0x20b)
+        ],
+        '\x61\x75\x74\x68': {
+            '\x63\x72\x65\x64\x73': _0x191de8['\x63\x72\x65\x64\x73'],
+            '\x6b\x65\x79\x73': makeCacheableSignalKeyStore(_0x191de8[_0x2bc219(0x1f9)], pino(_0x48033c)[_0x2bc219(0x1af)](_0x172f54))
         },
-        markOnlineOnConnect: true,
-        generateHighQualityLinkPreview: true,
-        syncFullHistory: true,
-        getMessage: async (key) => {
-            let jid = jidNormalizedUser(key.remoteJid);
-            let msg = await store.loadMessage(jid, key.id); 
-            return msg?.message || "";
+        '\x6d\x61\x72\x6b\x4f\x6e\x6c\x69\x6e\x65\x4f\x6e\x43\x6f\x6e\x6e\x65\x63\x74': !![],
+        '\x67\x65\x6e\x65\x72\x61\x74\x65\x48\x69\x67\x68\x51\x75\x61\x6c\x69\x74\x79\x4c\x69\x6e\x6b\x50\x72\x65\x76\x69\x65\x77': !![],
+        '\x73\x79\x6e\x63\x46\x75\x6c\x6c\x48\x69\x73\x74\x6f\x72\x79': !![],
+        '\x67\x65\x74\x4d\x65\x73\x73\x61\x67\x65': async _0x1188e4 => {
+            const _0x5a95a2 = _0x2bc219;
+            let _0x3d6263 = jidNormalizedUser(_0x1188e4[_0x5a95a2(0x1d6)]);
+            let _0x23b806 = await store[_0x5a95a2(0x211)](_0x3d6263, _0x1188e4['\x69\x64']);
+            return _0x23b806?.['\x6d\x65\x73\x73\x61\x67\x65'] || '';
         },
-        msgRetryCounterCache
+        '\x6d\x73\x67\x52\x65\x74\x72\x79\x43\x6f\x75\x6e\x74\x65\x72\x43\x61\x63\x68\x65': _0x2ce4c2
     });
-
-    store.bind(dave.ev);
-
-    dave.ev.on('group-participants.update', async (anu) => {
+    store['\x62\x69\x6e\x64'](_0x13e359['\x65\x76']);
+    _0x13e359['\x65\x76']['\x6f\x6e']('\x67\x72\x6f\x75\x70\x2d\x70\x61\x72\x74\x69\x63\x69\x70\x61\x6e\x74\x73\x2e\x75\x70\x64\x61\x74\x65', async _0x5f4d12 => {
+        const _0x27b9df = _0x2bc219;
         try {
-            const settings = loadSettings();
-            const chatId = anu.id;
-            const participants = anu.participants || [];
-            const action = anu.action;
-            const botNumber = dave.user.id.split(':')[0] + '@s.whatsapp.net';
-
-            const { welcome } = require('./library/lib/welcome');
-            const iswel = global.welcome?.[chatId] || false;
-            const isLeft = global.goodbye?.[chatId] || false;
-            await welcome(iswel, isLeft, dave, anu);
-
-            if (action === 'promote' && settings.antipromote?.[chatId]?.enabled) {
-                const groupSettings = settings.antipromote[chatId];
-                for (const user of participants) {
-                    if (user !== botNumber) {
-                        await dave.sendMessage(chatId, {
-                            text: `🚫 *Promotion Blocked!*\nUser: @${user.split('@')[0]}\nMode: ${groupSettings.mode.toUpperCase()}`,
-                            mentions: [user],
+            const _0x16ab97 = loadSettings();
+            const _0x14a08a = _0x5f4d12['\x69\x64'];
+            const _0x4c6d33 = _0x5f4d12[_0x27b9df(0x245)] || [];
+            const _0x3bbb6f = _0x5f4d12['\x61\x63\x74\x69\x6f\x6e'];
+            const _0x158d60 = _0x13e359[_0x27b9df(0x1e5)]['\x69\x64'][_0x27b9df(0x179)]('\x3a')[0x0] + '\x40\x73\x2e\x77\x68\x61\x74\x73\x61\x70\x70\x2e\x6e\x65\x74';
+            const {welcome: _0x248ce5} = require(_0x27b9df(0x181));
+            const _0x338c50 = global[_0x27b9df(0x145)]?.[_0x14a08a] || ![];
+            const _0x3f7edb = global['\x67\x6f\x6f\x64\x62\x79\x65']?.[_0x14a08a] || ![];
+            await _0x248ce5(_0x338c50, _0x3f7edb, _0x13e359, _0x5f4d12);
+            if (_0x3bbb6f === _0x27b9df(0x19b) && _0x16ab97[_0x27b9df(0x24b)]?.[_0x14a08a]?.[_0x27b9df(0x1b1)]) {
+                const _0x5d8598 = _0x16ab97[_0x27b9df(0x24b)][_0x14a08a];
+                for (const _0x462b1d of _0x4c6d33) {
+                    if (_0x462b1d !== _0x158d60) {
+                        await _0x13e359['\x73\x65\x6e\x64\x4d\x65\x73\x73\x61\x67\x65'](_0x14a08a, {
+                            '\x74\x65\x78\x74': '\ud83d\udeab\x20\x2a\x50\x72\x6f\x6d\x6f\x74\x69\x6f\x6e\x20\x42\x6c\x6f\x63\x6b\x65\x64\x21\x2a\x0a\x55\x73\x65\x72\x3a\x20\x40' + _0x462b1d['\x73\x70\x6c\x69\x74']('\x40')[0x0] + '\x0a\x4d\x6f\x64\x65\x3a\x20' + _0x5d8598['\x6d\x6f\x64\x65'][_0x27b9df(0x25b)](),
+                            '\x6d\x65\x6e\x74\x69\x6f\x6e\x73': [_0x462b1d]
                         });
-
-                        if (groupSettings.mode === 'revert') {
-                            await dave.groupParticipantsUpdate(chatId, [user], 'demote');
-                        } else if (groupSettings.mode === 'kick') {
-                            await dave.groupParticipantsUpdate(chatId, [user], 'remove');
+                        if (_0x5d8598[_0x27b9df(0x13c)] === _0x27b9df(0x197)) {
+                            await _0x13e359[_0x27b9df(0x229)](_0x14a08a, [_0x462b1d], _0x27b9df(0x172));
+                        } else if (_0x5d8598[_0x27b9df(0x13c)] === _0x27b9df(0x265)) {
+                            await _0x13e359['\x67\x72\x6f\x75\x70\x50\x61\x72\x74\x69\x63\x69\x70\x61\x6e\x74\x73\x55\x70\x64\x61\x74\x65'](_0x14a08a, [_0x462b1d], _0x27b9df(0x1c1));
                         }
                     }
                 }
             }
-
-            if (action === 'demote' && settings.antidemote?.[chatId]?.enabled) {
-                const groupSettings = settings.antidemote[chatId];
-                for (const user of participants) {
-                    if (user !== botNumber) {
-                        await dave.sendMessage(chatId, {
-                            text: `🚫 *Demotion Blocked!*\nUser: @${user.split('@')[0]}\nMode: ${groupSettings.mode.toUpperCase()}`,
-                            mentions: [user],
+            if (_0x3bbb6f === _0x27b9df(0x172) && _0x16ab97[_0x27b9df(0x160)]?.[_0x14a08a]?.[_0x27b9df(0x1b1)]) {
+                const _0x3fbd0c = _0x16ab97[_0x27b9df(0x160)][_0x14a08a];
+                for (const _0x532210 of _0x4c6d33) {
+                    if (_0x532210 !== _0x158d60) {
+                        await _0x13e359['\x73\x65\x6e\x64\x4d\x65\x73\x73\x61\x67\x65'](_0x14a08a, {
+                            '\x74\x65\x78\x74': '\ud83d\udeab\x20\x2a\x44\x65\x6d\x6f\x74\x69\x6f\x6e\x20\x42\x6c\x6f\x63\x6b\x65\x64\x21\x2a\x0a\x55\x73\x65\x72\x3a\x20\x40' + _0x532210[_0x27b9df(0x179)]('\x40')[0x0] + _0x27b9df(0x1de) + _0x3fbd0c['\x6d\x6f\x64\x65']['\x74\x6f\x55\x70\x70\x65\x72\x43\x61\x73\x65'](),
+                            '\x6d\x65\x6e\x74\x69\x6f\x6e\x73': [_0x532210]
                         });
-
-                        if (groupSettings.mode === 'revert') {
-                            await dave.groupParticipantsUpdate(chatId, [user], 'promote');
-                        } else if (groupSettings.mode === 'kick') {
-                            await dave.groupParticipantsUpdate(chatId, [user], 'remove');
+                        if (_0x3fbd0c[_0x27b9df(0x13c)] === '\x72\x65\x76\x65\x72\x74') {
+                            await _0x13e359[_0x27b9df(0x229)](_0x14a08a, [_0x532210], _0x27b9df(0x19b));
+                        } else if (_0x3fbd0c['\x6d\x6f\x64\x65'] === _0x27b9df(0x265)) {
+                            await _0x13e359[_0x27b9df(0x229)](_0x14a08a, [_0x532210], _0x27b9df(0x1c1));
                         }
                     }
                 }
             }
-        } catch (err) {
-            console.error('AntiPromote/AntiDemote Error:', err);
+        } catch (_0x5c18f6) {
+            console['\x65\x72\x72\x6f\x72'](_0x27b9df(0x1d5), _0x5c18f6);
         }
     });
-
-    dave.ev.on('messages.upsert', async (chatUpdate) => {
+    _0x13e359['\x65\x76']['\x6f\x6e'](_0x2bc219(0x210), async _0x33d517 => {
+        const _0x3853f8 = _0x2bc219;
         try {
-            if (!chatUpdate.messages || chatUpdate.messages.length === 0) return;
-            const mek = chatUpdate.messages[0];
-            if (!mek.message) return;
-
-            mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage')
-                ? mek.message.ephemeralMessage.message
-                : mek.message;
-
-            const chatId = mek.key.remoteJid;
-            const fromMe = mek.key.fromMe || false;
-
-            if (chatId === 'status@broadcast') {
+            if (!_0x33d517[_0x3853f8(0x19e)] || _0x33d517[_0x3853f8(0x19e)][_0x3853f8(0x226)] === 0x0)
+                return;
+            const _0x1b7856 = _0x33d517[_0x3853f8(0x19e)][0x0];
+            if (!_0x1b7856[_0x3853f8(0x17a)])
+                return;
+            _0x1b7856['\x6d\x65\x73\x73\x61\x67\x65'] = Object[_0x3853f8(0x1f9)](_0x1b7856[_0x3853f8(0x17a)])[0x0] === _0x3853f8(0x102) ? _0x1b7856[_0x3853f8(0x17a)][_0x3853f8(0x102)]['\x6d\x65\x73\x73\x61\x67\x65'] : _0x1b7856['\x6d\x65\x73\x73\x61\x67\x65'];
+            const _0x296949 = _0x1b7856[_0x3853f8(0x199)]['\x72\x65\x6d\x6f\x74\x65\x4a\x69\x64'];
+            const _0x5b961c = _0x1b7856[_0x3853f8(0x199)]['\x66\x72\x6f\x6d\x4d\x65'] || ![];
+            if (_0x296949 === '\x73\x74\x61\x74\x75\x73\x40\x62\x72\x6f\x61\x64\x63\x61\x73\x74') {
                 try {
-                    const participant = mek.key.participant || mek.participant || mek.pushName || null;
-
-                    if (global.settings.autoviewstatus) {
-                        await dave.readMessages([mek.key]);
+                    const _0xb1bb5e = _0x1b7856[_0x3853f8(0x199)][_0x3853f8(0x224)] || _0x1b7856[_0x3853f8(0x224)] || _0x1b7856[_0x3853f8(0x1b4)] || null;
+                    if (global[_0x3853f8(0x12a)]['\x61\x75\x74\x6f\x76\x69\x65\x77\x73\x74\x61\x74\x75\x73']) {
+                        await _0x13e359[_0x3853f8(0x114)]([_0x1b7856['\x6b\x65\x79']]);
                     }
-
-                    if (global.settings.autoreactstatus && areactEmojis.length > 0 && participant) {
-                        const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
-
-                        if (typeof doReact === 'function') {
-                            await doReact(dave, 'status@broadcast', mek, emoji, participant);
+                    if (global[_0x3853f8(0x12a)][_0x3853f8(0x249)] && areactEmojis[_0x3853f8(0x226)] > 0x0 && _0xb1bb5e) {
+                        const _0x127381 = areactEmojis[Math[_0x3853f8(0x258)](Math[_0x3853f8(0x1b7)]() * areactEmojis[_0x3853f8(0x226)])];
+                        if (typeof doReact === _0x3853f8(0x17b)) {
+                            await doReact(_0x13e359, _0x3853f8(0x1f6), _0x1b7856, _0x127381, _0xb1bb5e);
                         } else {
-                            await dave.sendMessage(
-                                'status@broadcast',
-                                {
-                                    react: { text: emoji, key: mek.key },
-                                },
-                                { statusJidList: [participant] }
-                            );
+                            const _0x124a32 = {};
+                            _0x124a32[_0x3853f8(0x1b3)] = _0x127381;
+                            _0x124a32[_0x3853f8(0x199)] = _0x1b7856[_0x3853f8(0x199)];
+                            const _0x2e2ab8 = {};
+                            _0x2e2ab8[_0x3853f8(0x1b9)] = _0x124a32;
+                            const _0x2c0468 = {};
+                            _0x2c0468[_0x3853f8(0x220)] = [_0xb1bb5e];
+                            await _0x13e359['\x73\x65\x6e\x64\x4d\x65\x73\x73\x61\x67\x65'](_0x3853f8(0x1f6), _0x2e2ab8, _0x2c0468);
                         }
                     }
-                } catch (statusErr) {
-                    console.log(`Status handling error: ${statusErr.message}`);
+                } catch (_0x5478c2) {
+                    console['\x6c\x6f\x67'](_0x3853f8(0x18f) + _0x5478c2[_0x3853f8(0x17a)]);
                 }
                 return;
             }
-
-            if (global.settings.autoread.enabled && !fromMe) {
-                await dave.readMessages([mek.key]).catch(() => {});
+            if (global[_0x3853f8(0x12a)][_0x3853f8(0x11f)][_0x3853f8(0x1b1)] && !_0x5b961c) {
+                await _0x13e359[_0x3853f8(0x114)]([_0x1b7856[_0x3853f8(0x199)]])['\x63\x61\x74\x63\x68'](() => {
+                });
             }
-
-            if (!fromMe && (global.settings.areact.enabled || (global.settings.areact.chats && global.settings.areact.chats[chatId]))) {
-                const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
-                if (typeof doReact === 'function') {
-                    await doReact(dave, chatId, mek, emoji);
+            if (!_0x5b961c && (global['\x73\x65\x74\x74\x69\x6e\x67\x73']['\x61\x72\x65\x61\x63\x74'][_0x3853f8(0x1b1)] || global[_0x3853f8(0x12a)][_0x3853f8(0x10c)][_0x3853f8(0x1c6)] && global[_0x3853f8(0x12a)][_0x3853f8(0x10c)][_0x3853f8(0x1c6)][_0x296949])) {
+                const _0xc488eb = areactEmojis[Math[_0x3853f8(0x258)](Math['\x72\x61\x6e\x64\x6f\x6d']() * areactEmojis[_0x3853f8(0x226)])];
+                if (typeof doReact === _0x3853f8(0x17b)) {
+                    await doReact(_0x13e359, _0x296949, _0x1b7856, _0xc488eb);
                 } else {
-                    await dave.sendMessage(chatId, { react: { text: emoji, key: mek.key } }).catch(() => {});
+                    const _0x208ccf = {};
+                    _0x208ccf[_0x3853f8(0x1b3)] = _0xc488eb;
+                    _0x208ccf[_0x3853f8(0x199)] = _0x1b7856['\x6b\x65\x79'];
+                    const _0x4a85a2 = {};
+                    _0x4a85a2[_0x3853f8(0x1b9)] = _0x208ccf;
+                    await _0x13e359[_0x3853f8(0x133)](_0x296949, _0x4a85a2)[_0x3853f8(0x10e)](() => {
+                    });
                 }
             }
-
-            if (mek.key.id && mek.key.id.startsWith('dave') && mek.key.id.length === 16) return;
-            if (mek.key.id && mek.key.id.startsWith('BAE5')) return;
-
-            if (!global.settings.public && !fromMe && chatUpdate.type === 'notify') return;
-
-            const m = smsg(dave, mek, store);
-            require("./dave")(dave, m, chatUpdate, store);
-
-        } catch (err) {
-            console.error(`Message handler error: ${err.message}`);
+            if (_0x1b7856[_0x3853f8(0x199)]['\x69\x64'] && _0x1b7856['\x6b\x65\x79']['\x69\x64']['\x73\x74\x61\x72\x74\x73\x57\x69\x74\x68'](_0x3853f8(0x248)) && _0x1b7856[_0x3853f8(0x199)]['\x69\x64'][_0x3853f8(0x226)] === 0x10)
+                return;
+            if (_0x1b7856[_0x3853f8(0x199)]['\x69\x64'] && _0x1b7856[_0x3853f8(0x199)]['\x69\x64'][_0x3853f8(0x213)](_0x3853f8(0x1a3)))
+                return;
+            if (!global[_0x3853f8(0x12a)][_0x3853f8(0x222)] && !_0x5b961c && _0x33d517[_0x3853f8(0x253)] === _0x3853f8(0x109))
+                return;
+            const _0x4251a9 = smsg(_0x13e359, _0x1b7856, store);
+            require(_0x3853f8(0x1c5))(_0x13e359, _0x4251a9, _0x33d517, store);
+        } catch (_0x16c369) {
+            console[_0x3853f8(0x14f)](_0x3853f8(0x24a) + _0x16c369[_0x3853f8(0x17a)]);
         }
     });
-
-    const antiCallNotified = new Set()
-
-    dave.ev.on('call', async (calls) => {
+    const _0x5623e1 = new Set();
+    _0x13e359['\x65\x76']['\x6f\x6e'](_0x2bc219(0x156), async _0x30ccbc => {
+        const _0x554119 = _0x2bc219;
         try {
-            if (!global.anticall) return
-
-            for (const call of calls) {
-                const callerId = call.from
-                if (!callerId) continue
-
-                const callerNumber = callerId.split('@')[0]
-                if (global.owner?.includes(callerNumber)) continue
-
-                if (call.status === 'offer') {
-                    console.log(`Rejecting ${call.isVideo ? 'video' : 'voice'} call from ${callerNumber}`)
-
-                    if (call.id) {
-                        await dave.rejectCall(call.id, callerId).catch(err => 
-                            console.error('Reject error:', err.message))
+            if (!global[_0x554119(0x18d)])
+                return;
+            for (const _0x180241 of _0x30ccbc) {
+                const _0x2e29a8 = _0x180241[_0x554119(0x195)];
+                if (!_0x2e29a8)
+                    continue;
+                const _0x17c50b = _0x2e29a8[_0x554119(0x179)]('\x40')[0x0];
+                if (global[_0x554119(0x14b)]?.[_0x554119(0x162)](_0x17c50b))
+                    continue;
+                if (_0x180241[_0x554119(0x127)] === _0x554119(0x154)) {
+                    console[_0x554119(0x10f)](_0x554119(0x1e0) + (_0x180241[_0x554119(0x1cc)] ? _0x554119(0x15a) : _0x554119(0x223)) + _0x554119(0x1a9) + _0x17c50b);
+                    if (_0x180241['\x69\x64']) {
+                        await _0x13e359[_0x554119(0x141)](_0x180241['\x69\x64'], _0x2e29a8)['\x63\x61\x74\x63\x68'](_0x599db2 => console[_0x554119(0x14f)](_0x554119(0x19f), _0x599db2[_0x554119(0x17a)]));
                     }
-
-                    if (!antiCallNotified.has(callerId)) {
-                        antiCallNotified.add(callerId)
-
-                        await dave.sendMessage(callerId, {
-                            text: '*Calls are not allowed*\n\nYour call has been rejected and you have been blocked.\nSend a text message instead.'
-                        }).catch(() => {})
-
+                    if (!_0x5623e1[_0x554119(0x132)](_0x2e29a8)) {
+                        _0x5623e1[_0x554119(0x10d)](_0x2e29a8);
+                        const _0x80ba03 = {};
+                        _0x80ba03[_0x554119(0x1b3)] = _0x554119(0x259);
+                        await _0x13e359['\x73\x65\x6e\x64\x4d\x65\x73\x73\x61\x67\x65'](_0x2e29a8, _0x80ba03)['\x63\x61\x74\x63\x68'](() => {
+                        });
                         setTimeout(async () => {
-                            await dave.updateBlockStatus(callerId, 'block').catch(() => {})
-                            console.log(`Blocked ${callerNumber}`)
-                        }, 2000)
-
-                        setTimeout(() => antiCallNotified.delete(callerId), 300000)
+                            const _0x26d4ac = _0x554119;
+                            await _0x13e359['\x75\x70\x64\x61\x74\x65\x42\x6c\x6f\x63\x6b\x53\x74\x61\x74\x75\x73'](_0x2e29a8, _0x26d4ac(0x1ce))['\x63\x61\x74\x63\x68'](() => {
+                            });
+                            console[_0x26d4ac(0x10f)](_0x26d4ac(0x146) + _0x17c50b);
+                        }, 0x7d0);
+                        setTimeout(() => _0x5623e1[_0x554119(0x10b)](_0x2e29a8), 0x493e0);
                     }
                 }
             }
-        } catch (err) {
-            console.error('Anticall handler error:', err)
+        } catch (_0x2a897d) {
+            console['\x65\x72\x72\x6f\x72'](_0x554119(0x1ef), _0x2a897d);
         }
-    })
-
-    dave.ev.on('contacts.update', update => {
-        for (let contact of update) {
-            let id = dave.decodeJid(contact.id)
-            if (store && store.contacts) store.contacts[id] = {
-                id,
-                name: contact.notify
-            }
+    });
+    _0x13e359['\x65\x76']['\x6f\x6e'](_0x2bc219(0x22c), _0x469673 => {
+        const _0x3316cd = _0x2bc219;
+        for (let _0xa4a1bf of _0x469673) {
+            let _0x36b624 = _0x13e359['\x64\x65\x63\x6f\x64\x65\x4a\x69\x64'](_0xa4a1bf['\x69\x64']);
+            if (store && store['\x63\x6f\x6e\x74\x61\x63\x74\x73'])
+                store[_0x3316cd(0x105)][_0x36b624] = {
+                    '\x69\x64': _0x36b624,
+                    '\x6e\x61\x6d\x65': _0xa4a1bf[_0x3316cd(0x109)]
+                };
         }
-    })
-
-    dave.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update;
-
-        if (connection === 'close') {
-            global.isBotConnected = false; 
-
-            const statusCode = lastDisconnect?.error?.output?.statusCode;
-            const permanentLogout = statusCode === DisconnectReason.loggedOut || statusCode === 401;
-
-            if (permanentLogout) {
-                log(chalk.bgRed.black(`\n\n🚨 WhatsApp Disconnected! Status Code: ${statusCode} (LOGGED OUT / INVALID SESSION).`), 'white');
-                log('🗑️ Deleting session folder and forcing a clean restart...', 'red');
-
+    });
+    _0x13e359['\x65\x76']['\x6f\x6e']('\x63\x6f\x6e\x6e\x65\x63\x74\x69\x6f\x6e\x2e\x75\x70\x64\x61\x74\x65', async _0x1915e0 => {
+        const _0x16927d = _0x2bc219;
+        const {
+            connection: _0x529820,
+            lastDisconnect: _0x33742c,
+            qr: _0x3a7790
+        } = _0x1915e0;
+        if (_0x529820 === _0x16927d(0x136)) {
+            global[_0x16927d(0x1a6)] = ![];
+            const _0x3b39d2 = _0x33742c?.['\x65\x72\x72\x6f\x72']?.[_0x16927d(0x115)]?.['\x73\x74\x61\x74\x75\x73\x43\x6f\x64\x65'];
+            const _0x369a9d = _0x3b39d2 === DisconnectReason[_0x16927d(0x158)] || _0x3b39d2 === 0x191;
+            if (_0x369a9d) {
+                log(chalk[_0x16927d(0x263)][_0x16927d(0x255)](_0x16927d(0x1ff) + _0x3b39d2 + _0x16927d(0x266)), _0x16927d(0x218));
+                log(_0x16927d(0x201), _0x16927d(0x159));
                 clearSessionFiles();
-
-                log('✅ Session, login preference, and error count cleaned. Initiating full process restart in 5 seconds...', 'red');
-                await delay(5000);
-                process.exit(1); 
-
+                log('\u2705\x20\x53\x65\x73\x73\x69\x6f\x6e\x2c\x20\x6c\x6f\x67\x69\x6e\x20\x70\x72\x65\x66\x65\x72\x65\x6e\x63\x65\x2c\x20\x61\x6e\x64\x20\x65\x72\x72\x6f\x72\x20\x63\x6f\x75\x6e\x74\x20\x63\x6c\x65\x61\x6e\x65\x64\x2e\x20\x49\x6e\x69\x74\x69\x61\x74\x69\x6e\x67\x20\x66\x75\x6c\x6c\x20\x70\x72\x6f\x63\x65\x73\x73\x20\x72\x65\x73\x74\x61\x72\x74\x20\x69\x6e\x20\x35\x20\x73\x65\x63\x6f\x6e\x64\x73\x2e\x2e\x2e', _0x16927d(0x159));
+                await delay(0x1388);
+                process['\x65\x78\x69\x74'](0x1);
             } else {
-                const is408Handled = await handle408Error(statusCode);
-                if (is408Handled) {
+                const _0x5effd3 = await handle408Error(_0x3b39d2);
+                if (_0x5effd3) {
                     return;
                 }
-
-                log(`Connection closed due to temporary issue (Status: ${statusCode}). Attempting reconnect...`, 'yellow');
-                startDave(); 
+                log('\x43\x6f\x6e\x6e\x65\x63\x74\x69\x6f\x6e\x20\x63\x6c\x6f\x73\x65\x64\x20\x64\x75\x65\x20\x74\x6f\x20\x74\x65\x6d\x70\x6f\x72\x61\x72\x79\x20\x69\x73\x73\x75\x65\x20\x28\x53\x74\x61\x74\x75\x73\x3a\x20' + _0x3b39d2 + _0x16927d(0x1d1), '\x79\x65\x6c\x6c\x6f\x77');
+                startDave();
             }
-        } else if (connection === 'open') { 
-            console.log(chalk.yellow(`💅Connected to => ` + JSON.stringify(dave.user, null, 2)))
-            log('Dave AI connected', 'blue');      
-            log(`GITHUB: gifteddevsmd`, 'magenta');
-
-            await sendWelcomeMessage(dave);
+        } else if (_0x529820 === _0x16927d(0x140)) {
+            console['\x6c\x6f\x67'](chalk[_0x16927d(0x1a1)](_0x16927d(0x1f7) + JSON[_0x16927d(0x116)](_0x13e359[_0x16927d(0x1e5)], null, 0x2)));
+            log(_0x16927d(0x182), _0x16927d(0x25e));
+            log(_0x16927d(0x20c), _0x16927d(0x1e9));
+            await sendWelcomeMessage(_0x13e359);
         }
     });
-
-    dave.ev.on('creds.update', saveCreds);
-    dave.public = true;
-    dave.serializeM = (m) => smsg(dave, m, store); 
-
-    dave.decodeJid = (jid) => {
-        if (!jid) return jid
-        if (/:\d+@/gi.test(jid)) {
-            let decode = jidDecode(jid) || {}
-            return decode.user && decode.server && decode.user + '@' + decode.server || jid
+    _0x13e359['\x65\x76']['\x6f\x6e'](_0x2bc219(0x22d), _0x1435d2);
+    _0x13e359['\x70\x75\x62\x6c\x69\x63'] = !![];
+    _0x13e359[_0x2bc219(0x209)] = _0xb2d527 => smsg(_0x13e359, _0xb2d527, store);
+    _0x13e359[_0x2bc219(0x198)] = _0x1c71ac => {
+        const _0x5a515c = _0x2bc219;
+        if (!_0x1c71ac)
+            return _0x1c71ac;
+        if (/:\d+@/gi[_0x5a515c(0x178)](_0x1c71ac)) {
+            let _0x2a5056 = jidDecode(_0x1c71ac) || {};
+            return _0x2a5056['\x75\x73\x65\x72'] && _0x2a5056[_0x5a515c(0x17d)] && _0x2a5056[_0x5a515c(0x1e5)] + '\x40' + _0x2a5056[_0x5a515c(0x17d)] || _0x1c71ac;
         }
-        return jid
-    }
-
-    dave.getName = (jid, withoutContact = false) => {
-        let id = dave.decodeJid(jid)
-        withoutContact = dave.withoutContact || withoutContact
-        let v
-        if (id.endsWith("@g.us")) return new Promise(async (resolve) => {
-            v = store.contacts[id] || {}
-            if (!(v.name || v.subject)) v = dave.groupMetadata(id) || {}
-            resolve(v.name || v.subject || PhoneNumber('+' + id.replace('@s.whatsapp.net', '')).getNumber('international'))
-        })
-        else v = id === '0@s.whatsapp.net' ? {
-            id,
-            name: 'WhatsApp'
-        } : id === dave.decodeJid(dave.user.id) ?
-        dave.user :
-        (store.contacts[id] || {})
-        return (withoutContact ? '' : v.name) || v.subject || v.verifiedName || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international')
-    }
-
-    dave.sendContact = async (jid, kon, quoted = '', opts = {}) => {
-        let list = []
-        for (let i of kon) {
-            list.push({
-                displayName: await dave.getName(i),
-                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${await dave.getName(i)}\nFN:${await dave.getName(i)}\nitem1.TEL;waid=${i.split('@')[0]}:${i.split('@')[0]}\nitem1.X-ABLabel:Mobile\nEND:VCARD`
-            })
+        return _0x1c71ac;
+    };
+    _0x13e359[_0x2bc219(0x17e)] = (_0x15e457, _0x5961a5 = ![]) => {
+        const _0x5b80e8 = _0x2bc219;
+        let _0x358aa2 = _0x13e359[_0x5b80e8(0x198)](_0x15e457);
+        _0x5961a5 = _0x13e359['\x77\x69\x74\x68\x6f\x75\x74\x43\x6f\x6e\x74\x61\x63\x74'] || _0x5961a5;
+        let _0x3fcb96;
+        if (_0x358aa2[_0x5b80e8(0x170)](_0x5b80e8(0x252)))
+            return new Promise(async _0x314eff => {
+                const _0x1e5720 = _0x5b80e8;
+                _0x3fcb96 = store[_0x1e5720(0x105)][_0x358aa2] || {};
+                if (!(_0x3fcb96[_0x1e5720(0x20a)] || _0x3fcb96[_0x1e5720(0x185)]))
+                    _0x3fcb96 = _0x13e359[_0x1e5720(0x239)](_0x358aa2) || {};
+                _0x314eff(_0x3fcb96[_0x1e5720(0x20a)] || _0x3fcb96['\x73\x75\x62\x6a\x65\x63\x74'] || PhoneNumber('\x2b' + _0x358aa2[_0x1e5720(0x250)](_0x1e5720(0x246), ''))[_0x1e5720(0x24c)](_0x1e5720(0x1bd)));
+            });
+        else
+            _0x3fcb96 = _0x358aa2 === '\x30\x40\x73\x2e\x77\x68\x61\x74\x73\x61\x70\x70\x2e\x6e\x65\x74' ? {
+                '\x69\x64': _0x358aa2,
+                '\x6e\x61\x6d\x65': '\x57\x68\x61\x74\x73\x41\x70\x70'
+            } : _0x358aa2 === _0x13e359[_0x5b80e8(0x198)](_0x13e359[_0x5b80e8(0x1e5)]['\x69\x64']) ? _0x13e359['\x75\x73\x65\x72'] : store[_0x5b80e8(0x105)][_0x358aa2] || {};
+        return (_0x5961a5 ? '' : _0x3fcb96[_0x5b80e8(0x20a)]) || _0x3fcb96['\x73\x75\x62\x6a\x65\x63\x74'] || _0x3fcb96[_0x5b80e8(0x1c3)] || PhoneNumber('\x2b' + _0x15e457['\x72\x65\x70\x6c\x61\x63\x65'](_0x5b80e8(0x246), ''))[_0x5b80e8(0x24c)](_0x5b80e8(0x1bd));
+    };
+    _0x13e359[_0x2bc219(0x214)] = async (_0x2a1257, _0xdfbe40, _0x39e36a = '', _0x2f47d9 = {}) => {
+        const _0x18ada0 = _0x2bc219;
+        let _0x1ae94a = [];
+        for (let _0x1368d4 of _0xdfbe40) {
+            _0x1ae94a[_0x18ada0(0x1a5)]({
+                '\x64\x69\x73\x70\x6c\x61\x79\x4e\x61\x6d\x65': await _0x13e359[_0x18ada0(0x17e)](_0x1368d4),
+                '\x76\x63\x61\x72\x64': '\x42\x45\x47\x49\x4e\x3a\x56\x43\x41\x52\x44\x0a\x56\x45\x52\x53\x49\x4f\x4e\x3a\x33\x2e\x30\x0a\x4e\x3a' + await _0x13e359[_0x18ada0(0x17e)](_0x1368d4) + _0x18ada0(0x21b) + await _0x13e359[_0x18ada0(0x17e)](_0x1368d4) + _0x18ada0(0x257) + _0x1368d4['\x73\x70\x6c\x69\x74']('\x40')[0x0] + '\x3a' + _0x1368d4[_0x18ada0(0x179)]('\x40')[0x0] + _0x18ada0(0x24d)
+            });
         }
-        dave.sendMessage(jid, { contacts: { displayName: `${list.length} Contact`, contacts: list }, ...opts }, { quoted })
-    }
-
-    dave.sendText = (jid, text, quoted = '', options) => 
-        dave.sendMessage(jid, { text, ...options }, { quoted, ...options })
-
-    dave.sendImage = async (jid, path, caption = '', quoted = '', options) => {
-        let buffer = Buffer.isBuffer(path) ? path : 
-            /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') :
-            /^https?:\/\//.test(path) ? await getBuffer(path) :
-            fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
-        return await dave.sendMessage(jid, { image: buffer, caption, ...options }, { quoted })
-    }
-
-    dave.sendTextWithMentions = async (jid, text, quoted, options = {}) => 
-        dave.sendMessage(jid, {
-            text: text,
-            mentions: [...text.matchAll(/@(\d{0,16})/g)].map(v => v[1] + '@s.whatsapp.net'),
-            ...options
-        }, { quoted })
-
-    dave.sendImageAsSticker = async (jid, path, quoted, options = {}) => {
-        let buff = Buffer.isBuffer(path) ? path : 
-            /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : 
-            /^https?:\/\//.test(path) ? await getBuffer(path) : 
-            fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
-        let buffer
-        if (options && (options.packname || options.author)) {
-            buffer = await writeExifImg(buff, options)
+        const _0x5241c5 = {};
+        _0x5241c5[_0x18ada0(0x25c)] = _0x1ae94a[_0x18ada0(0x226)] + _0x18ada0(0x1d8);
+        _0x5241c5['\x63\x6f\x6e\x74\x61\x63\x74\x73'] = _0x1ae94a;
+        const _0x2e66e7 = {
+            '\x63\x6f\x6e\x74\x61\x63\x74\x73': _0x5241c5,
+            ..._0x2f47d9
+        };
+        const _0x3abf93 = {};
+        _0x3abf93[_0x18ada0(0x177)] = _0x39e36a;
+        _0x13e359[_0x18ada0(0x133)](_0x2a1257, _0x2e66e7, _0x3abf93);
+    };
+    _0x13e359['\x73\x65\x6e\x64\x54\x65\x78\x74'] = (_0xf3a352, _0x3c4357, _0x559d11 = '', _0x363a14) => _0x13e359[_0x2bc219(0x133)](_0xf3a352, {
+        '\x74\x65\x78\x74': _0x3c4357,
+        ..._0x363a14
+    }, {
+        '\x71\x75\x6f\x74\x65\x64': _0x559d11,
+        ..._0x363a14
+    });
+    _0x13e359[_0x2bc219(0x1dd)] = async (_0x49e7a3, _0x2459d9, _0x4caf8f = '', _0x16d8c8 = '', _0x2f16e1) => {
+        const _0x2ffeed = _0x2bc219;
+        let _0xf334c2 = Buffer[_0x2ffeed(0x244)](_0x2459d9) ? _0x2459d9 : /^data:.*?\/.*?;base64,/i['\x74\x65\x73\x74'](_0x2459d9) ? Buffer[_0x2ffeed(0x195)](_0x2459d9[_0x2ffeed(0x179)]`,`[0x1], _0x2ffeed(0x1a4)) : /^https?:\/\//[_0x2ffeed(0x178)](_0x2459d9) ? await getBuffer(_0x2459d9) : fs['\x65\x78\x69\x73\x74\x73\x53\x79\x6e\x63'](_0x2459d9) ? fs['\x72\x65\x61\x64\x46\x69\x6c\x65\x53\x79\x6e\x63'](_0x2459d9) : Buffer[_0x2ffeed(0x1db)](0x0);
+        const _0x4a3d3f = {
+            '\x69\x6d\x61\x67\x65': _0xf334c2,
+            '\x63\x61\x70\x74\x69\x6f\x6e': _0x4caf8f,
+            ..._0x2f16e1
+        };
+        const _0x57a349 = {};
+        _0x57a349[_0x2ffeed(0x177)] = _0x16d8c8;
+        return await _0x13e359[_0x2ffeed(0x133)](_0x49e7a3, _0x4a3d3f, _0x57a349);
+    };
+    _0x13e359[_0x2bc219(0x1fd)] = async (_0x5823e1, _0x5b32b5, _0x5932f2, _0x1ca64f = {}) => _0x13e359['\x73\x65\x6e\x64\x4d\x65\x73\x73\x61\x67\x65'](_0x5823e1, {
+        '\x74\x65\x78\x74': _0x5b32b5,
+        '\x6d\x65\x6e\x74\x69\x6f\x6e\x73': [..._0x5b32b5['\x6d\x61\x74\x63\x68\x41\x6c\x6c'](/@(\d{0,16})/g)][_0x2bc219(0x111)](_0x11f196 => _0x11f196[0x1] + _0x2bc219(0x246)),
+        ..._0x1ca64f
+    }, { '\x71\x75\x6f\x74\x65\x64': _0x5932f2 });
+    _0x13e359[_0x2bc219(0x18e)] = async (_0x3b4605, _0x11aad0, _0xcd54c3, _0x217aa9 = {}) => {
+        const _0x33e5be = _0x2bc219;
+        let _0x18ee07 = Buffer[_0x33e5be(0x244)](_0x11aad0) ? _0x11aad0 : /^data:.*?\/.*?;base64,/i[_0x33e5be(0x178)](_0x11aad0) ? Buffer[_0x33e5be(0x195)](_0x11aad0[_0x33e5be(0x179)]`,`[0x1], _0x33e5be(0x1a4)) : /^https?:\/\//[_0x33e5be(0x178)](_0x11aad0) ? await getBuffer(_0x11aad0) : fs['\x65\x78\x69\x73\x74\x73\x53\x79\x6e\x63'](_0x11aad0) ? fs[_0x33e5be(0x21e)](_0x11aad0) : Buffer[_0x33e5be(0x1db)](0x0);
+        let _0x1de4ca;
+        if (_0x217aa9 && (_0x217aa9[_0x33e5be(0x155)] || _0x217aa9['\x61\x75\x74\x68\x6f\x72'])) {
+            _0x1de4ca = await writeExifImg(_0x18ee07, _0x217aa9);
         } else {
-            buffer = await imageToWebp(buff)
+            _0x1de4ca = await imageToWebp(_0x18ee07);
         }
-        await dave.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
-        .then(response => {
-            fs.unlinkSync(buffer)
-            return response
-        })
-    }
-
-    dave.sendVideoAsSticker = async (jid, path, quoted, options = {}) => {
-        let buff = Buffer.isBuffer(path) ? path : 
-            /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,`[1], 'base64') : 
-            /^https?:\/\//.test(path) ? await getBuffer(path) : 
-            fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
-        let buffer
-        if (options && (options.packname || options.author)) {
-            buffer = await writeExifVid(buff, options)
+        const _0x5356d3 = {};
+        _0x5356d3[_0x33e5be(0x22f)] = _0x1de4ca;
+        const _0x3f1c81 = {
+            '\x73\x74\x69\x63\x6b\x65\x72': _0x5356d3,
+            ..._0x217aa9
+        };
+        const _0x3f332c = {};
+        _0x3f332c['\x71\x75\x6f\x74\x65\x64'] = _0xcd54c3;
+        await _0x13e359[_0x33e5be(0x133)](_0x3b4605, _0x3f1c81, _0x3f332c)['\x74\x68\x65\x6e'](_0x17b7ca => {
+            const _0x35ed3a = _0x33e5be;
+            fs[_0x35ed3a(0x13b)](_0x1de4ca);
+            return _0x17b7ca;
+        });
+    };
+    _0x13e359[_0x2bc219(0x227)] = async (_0x33ea1e, _0x2bbf81, _0x5dca65, _0x1464b5 = {}) => {
+        const _0x131737 = _0x2bc219;
+        let _0x4a3313 = Buffer[_0x131737(0x244)](_0x2bbf81) ? _0x2bbf81 : /^data:.*?\/.*?;base64,/i[_0x131737(0x178)](_0x2bbf81) ? Buffer[_0x131737(0x195)](_0x2bbf81[_0x131737(0x179)]`,`[0x1], _0x131737(0x1a4)) : /^https?:\/\//['\x74\x65\x73\x74'](_0x2bbf81) ? await getBuffer(_0x2bbf81) : fs[_0x131737(0x247)](_0x2bbf81) ? fs[_0x131737(0x21e)](_0x2bbf81) : Buffer[_0x131737(0x1db)](0x0);
+        let _0x52e3d5;
+        if (_0x1464b5 && (_0x1464b5['\x70\x61\x63\x6b\x6e\x61\x6d\x65'] || _0x1464b5[_0x131737(0x10a)])) {
+            _0x52e3d5 = await writeExifVid(_0x4a3313, _0x1464b5);
         } else {
-            buffer = await videoToWebp(buff)
+            _0x52e3d5 = await videoToWebp(_0x4a3313);
         }
-        await dave.sendMessage(jid, { sticker: { url: buffer }, ...options }, { quoted })
-        return buffer
-    }
-
-    dave.downloadAndSaveMediaMessage = async (message, filename, attachExtension = true) => {
-        let quoted = message.msg ? message.msg : message
-        let mime = (message.msg || message).mimetype || ''
-        let messageType = message.mtype ? message.mtype.replace(/Message/gi, '') : mime.split('/')[0]
-        const stream = await downloadContentFromMessage(quoted, messageType)
-        let buffer = Buffer.from([])
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([buffer, chunk])
+        const _0x5d2910 = {};
+        _0x5d2910['\x75\x72\x6c'] = _0x52e3d5;
+        const _0x405ae5 = {
+            '\x73\x74\x69\x63\x6b\x65\x72': _0x5d2910,
+            ..._0x1464b5
+        };
+        const _0x5adee1 = {};
+        _0x5adee1[_0x131737(0x177)] = _0x5dca65;
+        await _0x13e359['\x73\x65\x6e\x64\x4d\x65\x73\x73\x61\x67\x65'](_0x33ea1e, _0x405ae5, _0x5adee1);
+        return _0x52e3d5;
+    };
+    _0x13e359[_0x2bc219(0x230)] = async (_0x4ce419, _0x58f75e, _0x51c748 = !![]) => {
+        const _0xd685fe = _0x2bc219;
+        let _0x41219a = _0x4ce419['\x6d\x73\x67'] ? _0x4ce419[_0xd685fe(0x231)] : _0x4ce419;
+        let _0x133c0e = (_0x4ce419['\x6d\x73\x67'] || _0x4ce419)[_0xd685fe(0x22a)] || '';
+        let _0x35eaef = _0x4ce419[_0xd685fe(0x208)] ? _0x4ce419[_0xd685fe(0x208)]['\x72\x65\x70\x6c\x61\x63\x65'](/Message/gi, '') : _0x133c0e[_0xd685fe(0x179)]('\x2f')[0x0];
+        const _0xe022d6 = await downloadContentFromMessage(_0x41219a, _0x35eaef);
+        let _0x3bc1e5 = Buffer[_0xd685fe(0x195)]([]);
+        for await (const _0x1e57b4 of _0xe022d6) {
+            _0x3bc1e5 = Buffer[_0xd685fe(0x189)]([
+                _0x3bc1e5,
+                _0x1e57b4
+            ]);
         }
-        let type = await FileType.fromBuffer(buffer)
-        let trueFileName = attachExtension ? (filename + '.' + type.ext) : filename
-        await fs.writeFileSync(trueFileName, buffer)
-        return trueFileName
-    }
-
-    dave.copyNForward = async (jid, message, forceForward = false, options = {}) => {
-        let vtype
-        if (options.readViewOnce) {
-            message.message = message.message && message.message.ephemeralMessage && message.message.ephemeralMessage.message ? 
-                message.message.ephemeralMessage.message : (message.message || undefined)
-            vtype = Object.keys(message.message.viewOnceMessage.message)[0]
-            delete(message.message && message.message.ignore ? message.message.ignore : (message.message || undefined))
-            delete message.message.viewOnceMessage.message[vtype].viewOnce
-            message.message = {
-                ...message.message.viewOnceMessage.message
-            }
+        let _0x5efb6f = await FileType[_0xd685fe(0x1c2)](_0x3bc1e5);
+        let _0x39a2b6 = _0x51c748 ? _0x58f75e + '\x2e' + _0x5efb6f[_0xd685fe(0x1ab)] : _0x58f75e;
+        await fs[_0xd685fe(0x22e)](_0x39a2b6, _0x3bc1e5);
+        return _0x39a2b6;
+    };
+    _0x13e359[_0x2bc219(0x219)] = async (_0x33dd5f, _0x40d1f3, _0x395d41 = ![], _0x270c04 = {}) => {
+        const _0x3adfcf = _0x2bc219;
+        let _0x1778d7;
+        if (_0x270c04[_0x3adfcf(0x11b)]) {
+            _0x40d1f3[_0x3adfcf(0x17a)] = _0x40d1f3[_0x3adfcf(0x17a)] && _0x40d1f3[_0x3adfcf(0x17a)]['\x65\x70\x68\x65\x6d\x65\x72\x61\x6c\x4d\x65\x73\x73\x61\x67\x65'] && _0x40d1f3[_0x3adfcf(0x17a)][_0x3adfcf(0x102)][_0x3adfcf(0x17a)] ? _0x40d1f3['\x6d\x65\x73\x73\x61\x67\x65'][_0x3adfcf(0x102)][_0x3adfcf(0x17a)] : _0x40d1f3[_0x3adfcf(0x17a)] || undefined;
+            _0x1778d7 = Object['\x6b\x65\x79\x73'](_0x40d1f3['\x6d\x65\x73\x73\x61\x67\x65'][_0x3adfcf(0x148)][_0x3adfcf(0x17a)])[0x0];
+            delete (_0x40d1f3[_0x3adfcf(0x17a)] && _0x40d1f3[_0x3adfcf(0x17a)][_0x3adfcf(0x1fb)] ? _0x40d1f3[_0x3adfcf(0x17a)]['\x69\x67\x6e\x6f\x72\x65'] : _0x40d1f3[_0x3adfcf(0x17a)] || undefined);
+            delete _0x40d1f3[_0x3adfcf(0x17a)][_0x3adfcf(0x148)]['\x6d\x65\x73\x73\x61\x67\x65'][_0x1778d7]['\x76\x69\x65\x77\x4f\x6e\x63\x65'];
+            _0x40d1f3['\x6d\x65\x73\x73\x61\x67\x65'] = { ..._0x40d1f3['\x6d\x65\x73\x73\x61\x67\x65']['\x76\x69\x65\x77\x4f\x6e\x63\x65\x4d\x65\x73\x73\x61\x67\x65'][_0x3adfcf(0x17a)] };
         }
-        let mtype = Object.keys(message.message)[0]
-        let content = await generateForwardMessageContent(message, forceForward)
-        let ctype = Object.keys(content)[0]
-        let context = {}
-        if (mtype != "conversation") context = message.message[mtype].contextInfo
-        content[ctype].contextInfo = {
-            ...context,
-            ...content[ctype].contextInfo
-        }
-        const waMessage = await generateWAMessageFromContent(jid, content, options ? {
-            ...content[ctype],
-            ...options,
-            ...(options.contextInfo ? {
-                contextInfo: {
-                    ...content[ctype].contextInfo,
-                    ...options.contextInfo
+        let _0x46bf00 = Object[_0x3adfcf(0x1f9)](_0x40d1f3['\x6d\x65\x73\x73\x61\x67\x65'])[0x0];
+        let _0x13d61e = await generateForwardMessageContent(_0x40d1f3, _0x395d41);
+        let _0x54de29 = Object[_0x3adfcf(0x1f9)](_0x13d61e)[0x0];
+        let _0x4a2835 = {};
+        if (_0x46bf00 != _0x3adfcf(0x15d))
+            _0x4a2835 = _0x40d1f3[_0x3adfcf(0x17a)][_0x46bf00][_0x3adfcf(0x14d)];
+        _0x13d61e[_0x54de29][_0x3adfcf(0x14d)] = {
+            ..._0x4a2835,
+            ..._0x13d61e[_0x54de29][_0x3adfcf(0x14d)]
+        };
+        const _0x1de84a = await generateWAMessageFromContent(_0x33dd5f, _0x13d61e, _0x270c04 ? {
+            ..._0x13d61e[_0x54de29],
+            ..._0x270c04,
+            ..._0x270c04[_0x3adfcf(0x14d)] ? {
+                '\x63\x6f\x6e\x74\x65\x78\x74\x49\x6e\x66\x6f': {
+                    ..._0x13d61e[_0x54de29][_0x3adfcf(0x14d)],
+                    ..._0x270c04[_0x3adfcf(0x14d)]
                 }
-            } : {})
-        } : {})
-        await dave.relayMessage(jid, waMessage.message, { messageId: waMessage.key.id })
-        return waMessage
-    }
-
-    dave.sendPoll = (jid, name = '', values = [], selectableCount = 1) => {
-        return dave.sendMessage(jid, { poll: { name, values, selectableCount }})
-    }
-
-    dave.parseMention = (text = '') => {
-        return [...text.matchAll(/@([0-9]{5,16}|0)/g)].map(v => v[1] + '@s.whatsapp.net')
-    }
-
-    dave.downloadMediaMessage = async (message) => {
-        let mime = (message.msg || message).mimetype || ''
-        let messageType = message.mtype ? message.mtype.replace(/Message/gi, '') : mime.split('/')[0]
-        const stream = await downloadContentFromMessage(message, messageType)
-        let buffer = Buffer.from([])
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([buffer, chunk])
+            } : {}
+        } : {});
+        await _0x13e359[_0x3adfcf(0x123)](_0x33dd5f, _0x1de84a['\x6d\x65\x73\x73\x61\x67\x65'], { '\x6d\x65\x73\x73\x61\x67\x65\x49\x64': _0x1de84a[_0x3adfcf(0x199)]['\x69\x64'] });
+        return _0x1de84a;
+    };
+    _0x13e359[_0x2bc219(0x20e)] = (_0x5724b1, _0xb5dee3 = '', _0x21e30e = [], _0x1d4111 = 0x1) => {
+        const _0x879e04 = _0x2bc219;
+        const _0x276067 = {};
+        _0x276067[_0x879e04(0x20a)] = _0xb5dee3;
+        _0x276067[_0x879e04(0x1a0)] = _0x21e30e;
+        _0x276067[_0x879e04(0x11e)] = _0x1d4111;
+        const _0x27362f = {};
+        _0x27362f[_0x879e04(0x235)] = _0x276067;
+        return _0x13e359['\x73\x65\x6e\x64\x4d\x65\x73\x73\x61\x67\x65'](_0x5724b1, _0x27362f);
+    };
+    _0x13e359[_0x2bc219(0x180)] = (_0x282620 = '') => {
+        const _0xe16834 = _0x2bc219;
+        return [..._0x282620[_0xe16834(0x24e)](/@([0-9]{5,16}|0)/g)]['\x6d\x61\x70'](_0x38abf5 => _0x38abf5[0x1] + _0xe16834(0x246));
+    };
+    _0x13e359['\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x4d\x65\x64\x69\x61\x4d\x65\x73\x73\x61\x67\x65'] = async _0x21b060 => {
+        const _0x5de31f = _0x2bc219;
+        let _0xc5db26 = (_0x21b060[_0x5de31f(0x231)] || _0x21b060)[_0x5de31f(0x22a)] || '';
+        let _0x3d784e = _0x21b060['\x6d\x74\x79\x70\x65'] ? _0x21b060[_0x5de31f(0x208)][_0x5de31f(0x250)](/Message/gi, '') : _0xc5db26[_0x5de31f(0x179)]('\x2f')[0x0];
+        const _0x334b6a = await downloadContentFromMessage(_0x21b060, _0x3d784e);
+        let _0x28accf = Buffer['\x66\x72\x6f\x6d']([]);
+        for await (const _0x5d3c95 of _0x334b6a) {
+            _0x28accf = Buffer[_0x5de31f(0x189)]([
+                _0x28accf,
+                _0x5d3c95
+            ]);
         }
-        return buffer
-    }
-
+        return _0x28accf;
+    };
     setInterval(() => {
+        const _0x29918c = _0x2bc219;
         try {
-            const sessionPath = path.join(sessionDir);  
-            if (!fs.existsSync(sessionPath)) return;
-            fs.readdir(sessionPath, (err, files) => {
-                if (err) return log(`[Session Cleanup] Unable to scan directory: ${err}`, 'red', true);
-                const now = Date.now();
-                const filteredArray = files.filter((item) => {
-                    const filePath = path.join(sessionPath, item);
+            const _0x20bc0b = path[_0x29918c(0x1c7)](sessionDir);
+            if (!fs[_0x29918c(0x247)](_0x20bc0b))
+                return;
+            fs['\x72\x65\x61\x64\x64\x69\x72'](_0x20bc0b, (_0x4fc086, _0x4d2e0e) => {
+                const _0xa08905 = _0x29918c;
+                if (_0x4fc086)
+                    return log(_0xa08905(0x202) + _0x4fc086, _0xa08905(0x159), !![]);
+                const _0x50190c = Date[_0xa08905(0x12b)]();
+                const _0x301cb0 = _0x4d2e0e['\x66\x69\x6c\x74\x65\x72'](_0x4b3c6b => {
+                    const _0x50ac73 = _0xa08905;
+                    const _0x1c8e82 = path[_0x50ac73(0x1c7)](_0x20bc0b, _0x4b3c6b);
                     try {
-                        const stats = fs.statSync(filePath);
-                        return ((item.startsWith("pre-key") || item.startsWith("sender-key") || item.startsWith("session-") || item.startsWith("app-state")) &&
-                            item !== 'creds.json' && now - stats.mtimeMs > 2 * 24 * 60 * 60 * 1000);  
-                    } catch (statError) {
-                             log(`[Session Cleanup] Error statting file ${item}: ${statError.message}`, 'red', true);
-                             return false;
+                        const _0x4c6027 = fs[_0x50ac73(0x147)](_0x1c8e82);
+                        return (_0x4b3c6b[_0x50ac73(0x213)](_0x50ac73(0x1e3)) || _0x4b3c6b['\x73\x74\x61\x72\x74\x73\x57\x69\x74\x68'](_0x50ac73(0x143)) || _0x4b3c6b[_0x50ac73(0x213)](_0x50ac73(0x21d)) || _0x4b3c6b[_0x50ac73(0x213)](_0x50ac73(0x1cb))) && _0x4b3c6b !== _0x50ac73(0x167) && _0x50190c - _0x4c6027[_0x50ac73(0x13a)] > 0x2 * 0x18 * 0x3c * 0x3c * 0x3e8;
+                    } catch (_0xbf6fe9) {
+                        log(_0x50ac73(0x16b) + _0x4b3c6b + '\x3a\x20' + _0xbf6fe9[_0x50ac73(0x17a)], _0x50ac73(0x159), !![]);
+                        return ![];
                     }
                 });
-                if (filteredArray.length > 0) {
-                    log(`[Session Cleanup] Found ${filteredArray.length} old session files. Clearing...`, 'yellow');
-                    filteredArray.forEach((file) => {
-                        const filePath = path.join(sessionPath, file);
-                        try { fs.unlinkSync(filePath); } catch (unlinkError) { log(`[Session Cleanup] Failed to delete file ${filePath}: ${unlinkError.message}`, 'red', true); }
+                if (_0x301cb0['\x6c\x65\x6e\x67\x74\x68'] > 0x0) {
+                    log(_0xa08905(0x1b2) + _0x301cb0[_0xa08905(0x226)] + _0xa08905(0x1ed), _0xa08905(0x1a1));
+                    _0x301cb0[_0xa08905(0x1bb)](_0x51ee0c => {
+                        const _0x3a3425 = _0xa08905;
+                        const _0x28576e = path[_0x3a3425(0x1c7)](_0x20bc0b, _0x51ee0c);
+                        try {
+                            fs[_0x3a3425(0x13b)](_0x28576e);
+                        } catch (_0x58cc64) {
+                            log(_0x3a3425(0x240) + _0x28576e + '\x3a\x20' + _0x58cc64[_0x3a3425(0x17a)], _0x3a3425(0x159), !![]);
+                        }
                     });
                 }
             });
-        } catch (error) {
-            log(`[Session Cleanup] Error clearing old session files: ${error.message}`, 'red', true);
+        } catch (_0x525c0f) {
+            log(_0x29918c(0x194) + _0x525c0f[_0x29918c(0x17a)], _0x29918c(0x159), !![]);
         }
-    }, 7200000); 
-
-    const cleanupInterval = 60 * 60 * 1000;
-    setInterval(cleanupOldMessages, cleanupInterval);
-
-    const junkInterval = 30_000;
-    setInterval(() => cleanupJunkFiles(dave), junkInterval); 
-
-    return dave;
+    }, 0x6ddd00);
+    const _0x21a573 = 0x3c * 0x3c * 0x3e8;
+    setInterval(cleanupOldMessages, _0x21a573);
+    const _0xffd664 = 0x7530;
+    setInterval(() => cleanupJunkFiles(_0x13e359), _0xffd664);
+    return _0x13e359;
 }
-
 async function checkSessionIntegrityAndClean() {
-    const isSessionFolderPresent = fs.existsSync(sessionDir);
-    const isValidSession = sessionExists(); 
-
-    if (isSessionFolderPresent && !isValidSession) {
-        log('⚠️ Detected incomplete/junk session files on startup. Cleaning up before proceeding...', 'red');
+    const _0xc55e21 = _0x66492;
+    const _0x5c08f4 = fs['\x65\x78\x69\x73\x74\x73\x53\x79\x6e\x63'](sessionDir);
+    const _0xc83100 = sessionExists();
+    if (_0x5c08f4 && !_0xc83100) {
+        log(_0xc55e21(0x24f), _0xc55e21(0x159));
         clearSessionFiles();
-        log('Cleanup complete. Waiting 3 seconds for stability...', 'yellow');
-        await delay(3000);
+        log(_0xc55e21(0x1d3), _0xc55e21(0x1a1));
+        await delay(0xbb8);
     }
 }
-
 function checkEnvStatus() {
+    const _0x20a59f = _0x66492;
     try {
-        log("╔══════════════════════════", 'green');
-        log(`║ .env file watcher `, 'green');
-        log("╚══════════════════════════", 'green');
-
-        fs.watch(envPath, { persistent: false }, (eventType, filename) => {
-            if (filename && eventType === 'change') {
-                log(chalk.bgRed.black('================================================='), 'white');
-                log(chalk.white.bgRed('🚨 .env file change detected!'), 'white');
-                log(chalk.white.bgRed('Forcing a clean restart to apply new configuration (e.g., SESSION_ID).'), 'white');
-                log(chalk.red.bgBlack('================================================='), 'white');
-                process.exit(1);
+        log(_0x20a59f(0x191), '\x67\x72\x65\x65\x6e');
+        log(_0x20a59f(0x1a2), _0x20a59f(0x1cf));
+        log('\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550', '\x67\x72\x65\x65\x6e');
+        const _0x413658 = {};
+        _0x413658[_0x20a59f(0x12c)] = ![];
+        fs[_0x20a59f(0x1b6)](envPath, _0x413658, (_0x291fa5, _0x49150a) => {
+            const _0x29e2fc = _0x20a59f;
+            if (_0x49150a && _0x291fa5 === _0x29e2fc(0x215)) {
+                log(chalk[_0x29e2fc(0x263)]['\x62\x6c\x61\x63\x6b'](_0x29e2fc(0x262)), _0x29e2fc(0x218));
+                log(chalk[_0x29e2fc(0x218)]['\x62\x67\x52\x65\x64'](_0x29e2fc(0x21f)), _0x29e2fc(0x218));
+                log(chalk['\x77\x68\x69\x74\x65'][_0x29e2fc(0x263)](_0x29e2fc(0x166)), _0x29e2fc(0x218));
+                log(chalk[_0x29e2fc(0x159)][_0x29e2fc(0x15b)](_0x29e2fc(0x262)), _0x29e2fc(0x218));
+                process[_0x29e2fc(0x1ad)](0x1);
             }
         });
-    } catch (e) {
-        log(`❌ Failed to set up .env file watcher (fs.watch error): ${e.message}`, 'red', true);
+    } catch (_0x41ba9a) {
+        log('\u274c\x20\x46\x61\x69\x6c\x65\x64\x20\x74\x6f\x20\x73\x65\x74\x20\x75\x70\x20\x2e\x65\x6e\x76\x20\x66\x69\x6c\x65\x20\x77\x61\x74\x63\x68\x65\x72\x20\x28\x66\x73\x2e\x77\x61\x74\x63\x68\x20\x65\x72\x72\x6f\x72\x29\x3a\x20' + _0x41ba9a[_0x20a59f(0x17a)], '\x72\x65\x64', !![]);
     }
 }
-
 async function tylor() {
+    const _0x47271a = _0x66492;
     try {
-        store.readFromFile()
-        setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
-        log("✨ Core files loaded", 'green')
-    } catch (e) {
-        log(`Failed to load core files: ${e.message}`, 'red', true)
-        process.exit(1)
+        store['\x72\x65\x61\x64\x46\x72\x6f\x6d\x46\x69\x6c\x65']();
+        setInterval(() => store[_0x47271a(0x1d2)](), settings[_0x47271a(0x175)] || 0x2710);
+        log(_0x47271a(0x130), _0x47271a(0x1cf));
+    } catch (_0x21640f) {
+        log(_0x47271a(0x137) + _0x21640f['\x6d\x65\x73\x73\x61\x67\x65'], _0x47271a(0x159), !![]);
+        process['\x65\x78\x69\x74'](0x1);
     }
-
     await checkAndHandleSessionFormat();
-
-    global.errorRetryCount = loadErrorCount().count;
-    log(`Retrieved initial 408 retry count: ${global.errorRetryCount}`, 'yellow');
-
-    const envSessionID = process.env.SESSION_ID?.trim();
-
-    if (envSessionID && envSessionID.startsWith('dave')) { 
-        log("🔥 PRIORITY MODE: Found new/updated SESSION_ID in .env/environment variables.", 'magenta');
-
-        clearSessionFiles(); 
-
-        global.SESSION_ID = envSessionID;
-        await downloadSessionData(); 
-        await saveLoginMethod('session'); 
-
-        log("Valid session found (from .env), starting bot directly...", 'green');
-        log('Waiting 3 seconds for stable connection...', 'yellow'); 
-        await delay(3000);
-        await startDave();
-
-        checkEnvStatus();
-        return;
-    }
-
-    log("ℹ️ No new SESSION_ID found in .env. Falling back to stored session or interactive login.", 'yellow');
-
-    await checkSessionIntegrityAndClean();
-
-    if (sessionExists()) {
-        log("Valid session found, starting bot directly...", 'green'); 
-        log('Waiting 3 seconds for stable connection...', 'yellow');
-        await delay(3000);
-        await startDave();
-        checkEnvStatus();
-        return;
-    }
-
-    const loginMethod = await getLoginMethod();
-    let dave;
-
-    if (loginMethod === 'session') {
-        await downloadSessionData();
-        dave = await startDave(); 
-    } else if (loginMethod === 'number') {
-        dave = await startDave();
-        await requestPairingCode(dave); 
-    } else {
-        log("Failed to get valid login method. Exiting.", 'red');
-        return;
-    }
-
-    if (loginMethod === 'number' && !sessionExists() && fs.existsSync(sessionDir)) {
-        log('Login interrupted/failed. Clearing temporary session files and restarting...', 'red');
+    global[_0x47271a(0x169)] = loadErrorCount()[_0x47271a(0x117)];
+    log(_0x47271a(0x217) + global[_0x47271a(0x169)], _0x47271a(0x1a1));
+    const _0x23944c = process[_0x47271a(0x106)][_0x47271a(0x203)]?.[_0x47271a(0x1e8)]();
+    if (_0x23944c && _0x23944c[_0x47271a(0x213)](_0x47271a(0x248))) {
+        log(_0x47271a(0x1da), '\x6d\x61\x67\x65\x6e\x74\x61');
         clearSessionFiles();
-        process.exit(1);
+        global[_0x47271a(0x203)] = _0x23944c;
+        await downloadSessionData();
+        await saveLoginMethod(_0x47271a(0x23b));
+        log(_0x47271a(0x1c8), _0x47271a(0x1cf));
+        log(_0x47271a(0x241), _0x47271a(0x1a1));
+        await delay(0xbb8);
+        await startDave();
+        checkEnvStatus();
+        return;
     }
-
+    log(_0x47271a(0x225), _0x47271a(0x1a1));
+    await checkSessionIntegrityAndClean();
+    if (sessionExists()) {
+        log('\x56\x61\x6c\x69\x64\x20\x73\x65\x73\x73\x69\x6f\x6e\x20\x66\x6f\x75\x6e\x64\x2c\x20\x73\x74\x61\x72\x74\x69\x6e\x67\x20\x62\x6f\x74\x20\x64\x69\x72\x65\x63\x74\x6c\x79\x2e\x2e\x2e', _0x47271a(0x1cf));
+        log(_0x47271a(0x241), _0x47271a(0x1a1));
+        await delay(0xbb8);
+        await startDave();
+        checkEnvStatus();
+        return;
+    }
+    const _0x56ab2b = await getLoginMethod();
+    let _0x244ad2;
+    if (_0x56ab2b === _0x47271a(0x23b)) {
+        await downloadSessionData();
+        _0x244ad2 = await startDave();
+    } else if (_0x56ab2b === '\x6e\x75\x6d\x62\x65\x72') {
+        _0x244ad2 = await startDave();
+        await requestPairingCode(_0x244ad2);
+    } else {
+        log(_0x47271a(0x16a), '\x72\x65\x64');
+        return;
+    }
+    if (_0x56ab2b === _0x47271a(0x1ca) && !sessionExists() && fs['\x65\x78\x69\x73\x74\x73\x53\x79\x6e\x63'](sessionDir)) {
+        log(_0x47271a(0x16f), _0x47271a(0x159));
+        clearSessionFiles();
+        process[_0x47271a(0x1ad)](0x1);
+    }
     checkEnvStatus();
 }
-
-tylor().catch(err => log(`Fatal error starting bot: ${err.message}`, 'red', true));
-process.on('uncaughtException', (err) => log(`Uncaught Exception: ${err.message}`, 'red', true));
-process.on('unhandledRejection', (err) => log(`Unhandled Rejection: ${err.message}`, 'red', true));
+tylor()[_0x66492(0x10e)](_0x462d49 => log('\x46\x61\x74\x61\x6c\x20\x65\x72\x72\x6f\x72\x20\x73\x74\x61\x72\x74\x69\x6e\x67\x20\x62\x6f\x74\x3a\x20' + _0x462d49[_0x66492(0x17a)], '\x72\x65\x64', !![]));
+process['\x6f\x6e']('\x75\x6e\x63\x61\x75\x67\x68\x74\x45\x78\x63\x65\x70\x74\x69\x6f\x6e', _0x387023 => log(_0x66492(0x15f) + _0x387023[_0x66492(0x17a)], _0x66492(0x159), !![]));
+process['\x6f\x6e'](_0x66492(0x118), _0x243d98 => log(_0x66492(0x268) + _0x243d98[_0x66492(0x17a)], '\x72\x65\x64', !![]));
