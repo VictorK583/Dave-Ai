@@ -1,7 +1,7 @@
 {
   "botname": "𝘿𝙖𝙫𝙚𝘼𝙄",
   "ownername": "GIFTED DAVE",
-  "owner": "254104260236",
+  "owner": ["254104260236"],
   "xprefix": ".",
   "packname": "𝘿𝙖𝙫𝙚𝘼𝙄",
   "author": "𝘿𝙖𝙫𝙚𝘼𝙄",
@@ -26,7 +26,6 @@
   "antilinkgc": { "enabled": false },
   "antilink": { "enabled": false },
   "antitag": {},
-  "antidelete": { "enabled": true },
   "antibadword": {},
   "antipromote": { "enabled": false, "mode": "revert" },
   "antidemote": { "enabled": false, "mode": "revert" },
@@ -56,5 +55,11 @@
     "private": "Private chat only.",
     "wait": "Processing...",
     "error": "Error occurred."
-  }
+  },
+  "typebot": "Plugin × case",
+  "session": "davesession",
+  "connect": true,
+  "adminevent": true,
+  "groupevent": true,
+  "hituet": 0
 }
