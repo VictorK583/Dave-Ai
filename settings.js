@@ -1,4 +1,3 @@
-// ==================== MODULES ==================== //
 const fs = require('fs');
 const path = require('path');
 
@@ -40,7 +39,10 @@ function loadSettings() {
       antipromote: { enabled: false, mode: "revert" },
       antidemote: { enabled: false, mode: "revert" },
       antibot: {},
-      autolike: { enabled: false }
+      autolike: { enabled: false },
+
+      // ✅ Show CONNECTED message on bot startup
+      showConnectMsg: true
     };
 
     fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
