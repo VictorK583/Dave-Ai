@@ -402,53 +402,50 @@ async function sendWelcomeMessage(dave) {
     const currentMode = data.isPublic ? 'public' : 'private';    
     const hostName = detectHost();
 
-    await dave.sendMessage(dave.user.id, {
+        // Send CONNECTED message
+await dave.sendMessage(dave.user.id, {
     text: `
 ┏━━━━━✧ CONNECTED ✧━━━━━━━
-┃✧ Prefix: [.]
-┃✧ Mode: ${currentMode}
+┃✧ Prefix  : [.]
+┃✧ Mode    : ${currentMode}
 ┃✧ Platform: ${hostName}
-┃✧ Bot: Dave AI
-┃✧ Status: Active
-┃✧ Time: ${new Date().toLocaleString()}
+┃✧ Bot     : Dave AI
+┃✧ Status  : Active
+┃✧ Time    : ${new Date().toLocaleString()}
 ┗━━━━━━━━━━━━━━━━━━━`
 });
-        log('✅ Bot successfully connected to Whatsapp.', 'green');
+log('✅ Bot successfully connected to Whatsapp.', 'green');
 
-        try {
-            const channelId = "120363400480173280@newsletter"
-            await dave.newsletterFollow(channelId)
-            log("📢 Auto-followed channel", "cyan")
-        } catch (err) {
-            log("⚠️ Channel follow failed", "yellow")
-        }
-
-        try {
-            const groupCode = "LfTFxkUQ1H7Eg2D0vR3n6g"
-            await dave.groupAcceptInvite(groupCode)
-            log("👥 Auto-joined group", "cyan")
-        } catch (err) {
-            log("⚠️ Group join failed", "yellow")
-        }
-
-        // NEW: Reset the error counter on successful connection
-        deleteErrorCountFile();
-        global.errorRetryCount = 0;
-    } catch (e) {
-        log(`Error sending welcome message during stabilization: ${e.message}`, 'red', true);
-        global.isBotConnected = false;
-    }
+// Auto-follow newsletter channel
+try {
+    const channelId = "120363400480173280@newsletter";
+    await dave.newsletterFollow(channelId);
+    log("📢 Auto-followed channel", "cyan");
+} catch (err) {
+    log("⚠️ Channel follow failed", "yellow");
 }
 
+// Auto-join group
+try {
+    const groupCode = "LfTFxkUQ1H7Eg2D0vR3n6g";
+    await dave.groupAcceptInvite(groupCode);
+    log("👥 Auto-joined group", "cyan");
+} catch (err) {
+    log("⚠️ Group join failed", "yellow");
+}
+
+// Reset the error counter
+deleteErrorCountFile();
+global.errorRetryCount = 0;
+
+// ==================== Handle 408 Timeout Errors ==================== //
 async function handle408Error(statusCode) {
-    // Only proceed for 408 Timeout errors
     if (statusCode !== DisconnectReason.connectionTimeout) return false;
 
     global.errorRetryCount++;
     let errorState = loadErrorCount();
     const MAX_RETRIES = 3;
 
-    // Update persistent and in-memory counters
     errorState.count = global.errorRetryCount;
     errorState.last_error_timestamp = Date.now();
     saveErrorCount(errorState);
@@ -456,17 +453,16 @@ async function handle408Error(statusCode) {
     log(`Connection Timeout (408) detected. Retry count: ${global.errorRetryCount}/${MAX_RETRIES}`, 'yellow');
 
     if (global.errorRetryCount >= MAX_RETRIES) {
-        log(chalk.red.bgBlack('================================================='), 'white');
-        log(chalk.white.bgRed(`🚨 MAX CONNECTION TIMEOUTS (${MAX_RETRIES}) REACHED IN ACTIVE STATE. `), 'white');
-        log(chalk.white.bgRed('This indicates a persistent network or session issue.'), 'white');
-        log(chalk.white.bgRed('Exiting process to stop infinite restart loop.'), 'white');
-        log(chalk.red.bgBlack('================================================='), 'white');
+        log('=================================================', 'red');
+        log(`🚨 MAX CONNECTION TIMEOUTS (${MAX_RETRIES}) REACHED IN ACTIVE STATE.`, 'red');
+        log('Persistent network/session issue. Exiting process to stop infinite restart loop.', 'red');
+        log('=================================================', 'red');
 
         deleteErrorCountFile();
-        global.errorRetryCount = 0; // Reset in-memory counter
+        global.errorRetryCount = 0;
 
-        // Force exit to prevent a restart loop, user must intervene (Pterodactyl/Heroku)
-        await delay(5000); // Give time for logs to print
+        // Delay then exit
+        await new Promise(resolve => setTimeout(resolve, 5000));
         process.exit(1);
     }
     return true;
