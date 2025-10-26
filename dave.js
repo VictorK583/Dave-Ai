@@ -43,9 +43,8 @@ const { smsg, fetchJson, getBuffer, fetchBuffer, getGroupAdmins, TelegraPh, isUr
 // ==================== MAIN SETTINGS (ADMIN & PREFIX) ==================== //
 const budy = (typeof m.text === 'string') ? m.text : '';
 
-// Define default prefixes
-const prefixes = ['.', '/']; // Add more symbols if needed
-const prefix = prefixes.find(p => budy.startsWith(p)) || global.xprefix;
+// Use only global prefix
+const prefix = global.xprefix || '.';
 
 // Check if message is a command
 const isCmd = budy.startsWith(prefix);
@@ -63,7 +62,9 @@ const senderNumber = sender.split('@')[0];
 
 // Owner check
 const owners = Array.isArray(global.owner) ? global.owner : [global.owner];
-const daveshown = (m && m.sender && [botNumber, ...owners].map(v => v.replace(/[^0-9]/g,'') + '@s.whatsapp.net').includes(m.sender)) || false;
+const daveshown = [botNumber, ...owners.map(v => v.replace(/[^0-9]/g, ''))]
+                    .map(v => v + '@s.whatsapp.net')
+                    .includes(sender);
 
 // Premium check
 const premuser = JSON.parse(fs.readFileSync("./library/database/premium.json"));
