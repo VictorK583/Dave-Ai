@@ -11,10 +11,21 @@ let daveplug = async (m, { dave, daveshown, args, reply }) => {
             return reply('Usage: .autoreact on or .autoreact off')
         }
 
-        global.AREACT = mode === 'on'
+        const settings = global.settings
+        
+        if (mode === 'on') {
+            if (settings.areact.enabled) return reply('Auto react is already enabled')
+            settings.areact.enabled = true
+        } else {
+            if (!settings.areact.enabled) return reply('Auto react is already disabled')
+            settings.areact.enabled = false
+        }
 
-        reply(`Auto React has been turned ${global.AREACT ? 'ON' : 'OFF'} (resets on restart).`)
-        console.log(`Auto React mode: ${global.AREACT ? 'ENABLED' : 'DISABLED'}`)
+        global.saveSettings(settings)
+        global.settings = settings
+        global.AREACT = settings.areact.enabled
+
+        reply(`Auto react has been turned ${settings.areact.enabled ? 'ON' : 'OFF'}`)
     } catch (err) {
         console.error('Error in autoreact command:', err)
         reply('Failed to change autoreact mode.')
