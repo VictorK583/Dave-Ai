@@ -402,19 +402,21 @@ async function sendWelcomeMessage(dave) {
     const currentMode = data.isPublic ? 'public' : 'private';    
     const hostName = detectHost();
 
-        // Send CONNECTED message
-await dave.sendMessage(dave.user.id, {
-    text: `
+        // Send CONNECTED message if enabled in settings
+if (global.settings.showConnectMsg) {
+    await dave.sendMessage(dave.user.id, {
+        text: `
 ┏━━━━━✧ CONNECTED ✧━━━━━━━
-┃✧ Prefix  : [.]
+┃✧ Prefix  : ${global.settings.xprefix}
 ┃✧ Mode    : ${currentMode}
 ┃✧ Platform: ${hostName}
-┃✧ Bot     : Dave AI
+┃✧ Bot     : ${global.settings.botname}
 ┃✧ Status  : Active
 ┃✧ Time    : ${new Date().toLocaleString()}
 ┗━━━━━━━━━━━━━━━━━━━`
-});
-log('✅ Bot successfully connected to Whatsapp.', 'green');
+    });
+    log('✅ Bot successfully connected to Whatsapp.', 'green');
+}
 
 // Auto-follow newsletter channel
 try {
