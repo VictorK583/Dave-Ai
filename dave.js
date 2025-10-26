@@ -945,6 +945,63 @@ case 'antibot': {
     }
 }
 break;
+case 'dictionary':
+case 'define':
+case 'meaning': {
+    try {
+        const word = text ? text.trim() : '';
+        if (!word) return reply("Please provide a word to define.");
+
+        // Add processing reaction
+        await dave.sendMessage(m.chat, { react: { text: '...', key: m.key } });
+
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+        if (!res.ok) return reply("Word not found or invalid.");
+
+        const data = await res.json();
+        const entry = data[0];
+
+        let replyText = `Definition of "${entry.word}"\n`;
+
+        const phonetic = entry.phonetics.find(p => p.text) || {};
+        if (phonetic.text) replyText += `Pronunciation: ${phonetic.text}\n`;
+
+        entry.meanings.slice(0, 2).forEach((meaning, idx) => {
+            replyText += `\n${idx + 1}. ${meaning.partOfSpeech}\n`;
+            meaning.definitions.slice(0, 2).forEach(def => {
+                replyText += `- ${def.definition}\n`;
+                if (def.example) replyText += `  Example: "${def.example}"\n`;
+            });
+        });
+
+        const synonyms = entry.meanings.flatMap(m => m.synonyms).filter(Boolean);
+        const antonyms = entry.meanings.flatMap(m => m.antonyms).filter(Boolean);
+
+        if (synonyms.length) replyText += `\nSynonyms: ${[...new Set(synonyms)].slice(0, 5).join(", ")}`;
+        if (antonyms.length) replyText += `\nAntonyms: ${[...new Set(antonyms)].slice(0, 5).join(", ")}`;
+
+        // Add success reaction
+        await dave.sendMessage(m.chat, { react: { text: '✓', key: m.key } });
+
+        await reply(replyText.trim());
+
+        // Send pronunciation audio if available
+        const audioUrl = entry.phonetics.find(p => p.audio)?.audio;
+        if (audioUrl) {
+            await dave.sendMessage(m.chat, {
+                audio: { url: audioUrl },
+                mimetype: 'audio/mpeg',
+                ptt: true
+            });
+        }
+
+    } catch (error) {
+        console.error('Dictionary Command Error:', error);
+        await dave.sendMessage(m.chat, { react: { text: '✗', key: m.key } });
+        reply("Failed to fetch definition.");
+    }
+}
+break;
 
 case 'request':
 case 'joinrequests': {
