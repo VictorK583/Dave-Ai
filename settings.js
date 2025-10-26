@@ -9,7 +9,7 @@ function loadSettings() {
         const defaultSettings = {
             botname: "𝘿𝙖𝙫𝙚𝘼𝙄",
             ownername: "GIFTED DAVE",
-            owner: ["254104260236"], // make this an array
+            owner: ["254104260236"],
             xprefix: ".",
             packname: "𝘿𝙖𝙫𝙚𝘼𝙄",
             author: "𝘿𝙖𝙫𝙚𝘼𝙄",
@@ -60,7 +60,14 @@ function loadSettings() {
                 private: "Private chat only.",
                 wait: "Processing...",
                 error: "Error occurred."
-            }
+            },
+            // ==== YOUR ADDITIONAL GLOBALS ====
+            typebot: "Plugin × case",
+            session: "davesession",
+            connect: true,
+            adminevent: true,
+            groupevent: true,
+            hituet: 0
         };
 
         fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
@@ -70,7 +77,6 @@ function loadSettings() {
     return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
 }
 
-// Save function
 function saveSettings(settings) {
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 }
@@ -78,8 +84,16 @@ function saveSettings(settings) {
 // Attach to global
 global.settings = loadSettings();
 global.saveSettings = saveSettings;
-global.owner = global.settings.owner; // now global.owner is available
-global.mess = global.settings.mess;   // now global.mess is available
+
+// Make sure these are globally accessible
+global.owner = global.settings.owner;
+global.mess = global.settings.mess;
 global.xprefix = global.settings.xprefix;
+global.typebot = global.settings.typebot;
+global.session = global.settings.session;
+global.connect = global.settings.connect;
+global.adminevent = global.settings.adminevent;
+global.groupevent = global.settings.groupevent;
+global.hituet = global.settings.hituet;
 
 module.exports = { loadSettings, saveSettings };
