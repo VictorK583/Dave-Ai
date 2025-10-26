@@ -507,7 +507,36 @@ if (m.isGroup && global.antibadword && global.antibadword[from]) {
 // Save settings
     
 
-    if (!dave.isPublic && !daveshown) return;
+    
+// --- anti-tag auto check ---
+if (m.isGroup && global.settings?.antitag?.[m.chat]?.enabled) {
+    const settings = global.settings.antitag[m.chat];
+    const groupMeta = await dave.groupMetadata(m.chat);
+    const groupAdmins = groupMeta.participants.filter(p => p.admin).map(p => p.id);
+    const botNumber = dave.user.id.split(":")[0] + "@s.whatsapp.net";
+    const isBotAdmin = groupAdmins.includes(botNumber);
+    const isSenderAdmin = groupAdmins.includes(m.sender);
+
+    const mentionedUsers = m.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+
+    if (mentionedUsers.length > 0) {
+        if (!isSenderAdmin && isBotAdmin) {
+            try {
+                await dave.sendMessage(m.chat, { delete: m.key });
+                await dave.sendMessage(m.chat, {
+                    text: `Tagging others is not allowed\nUser: @${m.sender.split('@')[0]}\nAction: ${settings.mode.toUpperCase()}`,
+                    mentions: [m.sender],
+                });
+
+                if (settings.mode === "kick") {
+                    await dave.groupParticipantsUpdate(m.chat, [m.sender], "remove");
+                }
+            } catch (err) {
+                console.error("antitag enforcement error:", err);
+            }
+        }
+    }
+}
 
 
 
