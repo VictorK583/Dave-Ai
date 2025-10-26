@@ -1035,34 +1035,36 @@ break
 case 'welcomemessage':
 case 'connectmessage': 
 case 'inboxmessage': {
-    if (!daveshown) return reply(mess.owner)
-    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
-    
-    const settings = global.settings
-    
+    if (!daveshown) return reply(global.settings.mess.owner); // owner only
+    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`);
+
+    const settings = global.settings;
+    const q = args[0].toLowerCase();
+
     if (q === 'on') {
-        if (settings.showConnectMsg) return reply('Connection message is already enabled')
-        
-        settings.showConnectMsg = true
-        global.saveSettings(settings)
-        global.settings = settings
-        reply('Connection message enabled')
+        if (settings.showConnectMsg) 
+            return reply('Connection message is already enabled ');
+
+        settings.showConnectMsg = true;
+        global.saveSettings(settings);
+        global.settings = settings;
+        return reply('Connection message enabled ✅');
     } 
     else if (q === 'off') {
-        if (!settings.showConnectMsg) return reply('Connection message is already disabled')
-        
-        settings.showConnectMsg = false
-        global.saveSettings(settings)
-        global.settings = settings
-        reply('Connection message disabled')
+        if (!settings.showConnectMsg) 
+            return reply('Connection message is already disabled');
+
+        settings.showConnectMsg = false;
+        global.saveSettings(settings);
+        global.settings = settings;
+        return reply('Connection message disabled ');
     } 
     else {
-        const status = settings.showConnectMsg ? 'enabled' : 'disabled'
-        reply(`Connection message is currently ${status}. Use: ${prefix}connectmessage on/off`)
+        const status = settings.showConnectMsg ? 'enabled ✅' : 'disabled ❌';
+        return reply(`Connection message is currently ${status}. Use: ${prefix}connectmessage on/off`);
     }
 }
-break
-
+break;
 case 'checkphone': {
     try {
         let target;
@@ -1606,7 +1608,7 @@ const kualatshort = async (url) => {
 
 case 'anticallwhitelist':
 case 'allowedcallers': {
-    if (!daveshown) return reply(mess.owner);
+    if (!daveshown) return reply(global.settings.mess.owner);
 
     const ANTICALL_PATH = './library/database/anticall.json';
 
@@ -1619,41 +1621,39 @@ case 'allowedcallers': {
         }
         if (!data.whitelist) data.whitelist = [];
 
-        // Check if user is mentioned or quoted
+        // Determine target user (mentioned or replied)
         let targetUser;
         if (m.mentionedJid && m.mentionedJid.length > 0) {
             targetUser = m.mentionedJid[0];
-        } else if (m.quoted) {
+        } else if (m.quoted && m.quoted.sender) {
             targetUser = m.quoted.sender;
         } else {
-            return reply('Please mention a user or reply to their message\nExample: .anticallwhitelist @user');
+            return reply(`Please mention a user or reply to their message\nExample: ${prefix}anticallwhitelist @user`);
         }
 
         const username = targetUser.split('@')[0];
 
         // Toggle user in whitelist
         if (data.whitelist.includes(targetUser)) {
-            // Remove from whitelist
             data.whitelist = data.whitelist.filter(u => u !== targetUser);
             fs.writeFileSync(ANTICALL_PATH, JSON.stringify(data, null, 2));
-            reply(`❌ Removed @${username} from call whitelist\nThey will now be blocked if they call.`);
+            return reply(`❌ Removed @${username} from call whitelist\nThey will now be blocked if they call.`);
         } else {
-            // Add to whitelist
             data.whitelist.push(targetUser);
             fs.writeFileSync(ANTICALL_PATH, JSON.stringify(data, null, 2));
-            reply(`✅ Added @${username} to call whitelist\nThey can now call without being blocked.`);
+            return reply(`✅ Added @${username} to call whitelist\nThey can now call without being blocked.`);
         }
 
     } catch (err) {
         console.error('Whitelist error:', err);
-        reply('❌ Error managing call whitelist');
+        return reply('❌ Error managing call whitelist');
     }
 }
 break;
 
 case 'callwhitelist':
 case 'showallowed': {
-    if (!daveshown) return reply(mess.owner);
+    if (!daveshown) return reply(global.settings.mess.owner);
 
     const ANTICALL_PATH = './library/database/anticall.json';
 
@@ -1666,20 +1666,18 @@ case 'showallowed': {
         if (!data.whitelist) data.whitelist = [];
 
         if (data.whitelist.length === 0) {
-            reply('📝 Call whitelist is empty\nNo users are allowed to call.');
+            return reply('📝 Call whitelist is empty\nNo users are allowed to call.');
         } else {
             const userList = data.whitelist.map(u => `• @${u.split('@')[0]}`).join('\n');
-            reply(`📝 Call Whitelist (${data.whitelist.length} users):\n\n${userList}`);
+            return reply(`📝 Call Whitelist (${data.whitelist.length} users):\n\n${userList}`);
         }
 
     } catch (err) {
         console.error('Whitelist view error:', err);
-        reply('❌ Error reading call whitelist');
+        return reply('❌ Error reading call whitelist');
     }
 }
 break;
-
-
              
 //==================================================// 
 case 'goodbye': {
