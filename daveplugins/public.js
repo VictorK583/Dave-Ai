@@ -2,8 +2,13 @@ const axios = require("axios");
 
 let daveplug = async (m, { daveshown, reply, dave }) => {
     if (!daveshown) return reply(mess.owner);
-    dave.private = false;
-    reply('Successful in Changing To Public Usage');
+    
+    const settings = global.settings;
+    settings.public = true;
+    global.saveSettings(settings);
+    global.settings = settings;
+
+    reply('Successfully changed to Public Usage');
 };
 
 daveplug.help = ['public'];
