@@ -1,61 +1,41 @@
 const fs = require('fs');
 const path = require('path');
 
-// Anti-delete settings storage
-const antiDelSettingsPath = path.join(__dirname, '../library/database/antidelete.json');
-
-function loadAntiDelSettings() {
-  try {
-    if (fs.existsSync(antiDelSettingsPath)) {
-      const data = fs.readFileSync(antiDelSettingsPath, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Error loading anti-delete settings:', error);
-  }
-  // Default settings - anti-delete ON by default
-  return { enabled: true };
-}
-
-function saveAntiDelSettings(settings) {
-  try {
-    fs.writeFileSync(antiDelSettingsPath, JSON.stringify(settings, null, 2));
-  } catch (error) {
-    console.error('Error saving anti-delete settings:', error);
-  }
-}
-
 let daveplug = async (m, { command, xprefix, q, daveshown, reply, args, mess }) => {
     if (!daveshown) return reply(mess.owner);
-    
-    // Load current settings
-    let antiDelSettings = loadAntiDelSettings();
-    
+
+    // Use global settings
+    const settings = global.settings;
+
     if (!args || args.length < 1) {
-        const status = antiDelSettings.enabled ? 'ON ✅' : 'OFF ❌';
+        const status = settings.antidelete.enabled ? 'ON' : 'OFF';
         return reply(
-            `*Anti-Delete Status:* ${status}\n\n` +
-            `*Usage:*\n` +
-            `• ${xprefix + command} on - Enable anti-delete\n` +
-            `• ${xprefix + command} off - Disable anti-delete\n\n` +
-            `_When enabled, deleted messages will be recovered and resent._`
+            `Antidelete Status: ${status}\n\n` +
+            `Usage:\n` +
+            `• ${xprefix + command} on - Enable antidelete\n` +
+            `• ${xprefix + command} off - Disable antidelete\n\n` +
+            `When enabled, deleted messages will be recovered and resent.`
         );
     }
 
-    let option = q.toLowerCase(); // handles ON / On / on
+    let option = q.toLowerCase();
 
     if (option === 'on') {
-        antiDelSettings.enabled = true;
-        saveAntiDelSettings(antiDelSettings);
-        global.antiDelSettings = antiDelSettings;
-        reply(`✅ *Anti-Delete is now ON*\n\nDeleted messages will be recovered and resent.`);
+        if (settings.antidelete.enabled) return reply('Antidelete is already enabled');
+        
+        settings.antidelete.enabled = true;
+        global.saveSettings(settings);
+        global.settings = settings;
+        reply('Antidelete is now ON. Deleted messages will be recovered and resent.');
     } else if (option === 'off') {
-        antiDelSettings.enabled = false;
-        saveAntiDelSettings(antiDelSettings);
-        global.antiDelSettings = antiDelSettings;
-        reply(`❌ *Anti-Delete is now OFF*\n\nDeleted messages will not be recovered.`);
+        if (!settings.antidelete.enabled) return reply('Antidelete is already disabled');
+        
+        settings.antidelete.enabled = false;
+        global.saveSettings(settings);
+        global.settings = settings;
+        reply('Antidelete is now OFF. Deleted messages will not be recovered.');
     } else {
-        reply(`❌ Invalid option. Use ${xprefix + command} on/off`);
+        reply(`Invalid option. Use ${xprefix + command} on/off`);
     }
 };
 
