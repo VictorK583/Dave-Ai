@@ -46,7 +46,7 @@
   "public": true,
   "onlygroup": false,
   "onlypc": false,
-  "messages": {
+  "mess": {
     "success": "✅ Done.",
     "admin": "Admin only.",
     "premium": "Premium user only.",
