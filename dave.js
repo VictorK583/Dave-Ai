@@ -40,32 +40,51 @@ var body = (m.mtype === 'interactiveResponseMessage') ? JSON.parse(m.message.int
 var msgR = m.message.extendedTextMessage?.contextInfo?.quotedMessage;  
 //////////Libraryfunction///////////////////////
 const { smsg, fetchJson, getBuffer, fetchBuffer, getGroupAdmins, TelegraPh, isUrl, hitungmundur, sleep, clockString, checkBandwidth, runtime, tanggal, getRandom } = require('./library/lib/function')
-// Main Setting (Admin And Prefix )///////
+// ==================== MAIN SETTINGS (ADMIN & PREFIX) ==================== //
 const budy = (typeof m.text === 'string') ? m.text : '';
-        const prefix = ['.', '/'] ? /^[°•π÷×¶∆£¢€¥®™+✓_=|~!?@#$%^&.©^]/gi.test(body) ? body.match(/^[°•π÷×¶∆£¢€¥®™+✓_=|~!?@#$%^&.©^]/gi)[0] : "" : global.xprefix
-const isCmd = body.startsWith(global.xprefix);
-const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLowerCase() : '';
-const args = body.trim().split(/ +/).slice(1)
-const text = q = args.join(" ")
-const sender = m.key.fromMe ? (dave.user.id.split(':')[0]+'@s.whatsapp.net' || dave.user.id) : (m.key.participant || m.key.remoteJid)
+
+// Define default prefixes
+const prefixes = ['.', '/']; // Add more symbols if needed
+const prefix = prefixes.find(p => budy.startsWith(p)) || global.xprefix;
+
+// Check if message is a command
+const isCmd = budy.startsWith(prefix);
+
+// Extract command name and arguments
+const command = isCmd ? budy.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : '';
+const args = isCmd ? budy.slice(prefix.length).trim().split(/\s+/).slice(1) : [];
+const text = args.join(" ");
+const q = text; // optional alias for text
+
+// Sender info
+const sender = m.key.fromMe ? (dave.user.id.split(':')[0]+'@s.whatsapp.net') : (m.key.participant || m.key.remoteJid);
 const botNumber = dave.user.id.split(':')[0];
-const senderNumber = sender.split('@')[0]
-const daveshown = (m && m.sender && [botNumber, ...global.owner].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)) || false;
-    const premuser = JSON.parse(fs.readFileSync("./library/database/premium.json"));
-const isNumber = x => typeof x === 'number' && !isNaN(x)
-const formatJid = num => num.replace(/[^0-9]/g, '') + "@s.whatsapp.net";
+const senderNumber = sender.split('@')[0];
+
+// Owner check
+const owners = Array.isArray(global.owner) ? global.owner : [global.owner];
+const daveshown = (m && m.sender && [botNumber, ...owners].map(v => v.replace(/[^0-9]/g,'') + '@s.whatsapp.net').includes(m.sender)) || false;
+
+// Premium check
+const premuser = JSON.parse(fs.readFileSync("./library/database/premium.json"));
+const formatJid = num => num.replace(/[^0-9]/g,'') + "@s.whatsapp.net";
 const isPremium = daveshown || premuser.map(u => formatJid(u.id)).includes(m.sender);
-const pushname = m.pushName || `${senderNumber}`
-const isBot = botNumber.includes(senderNumber)
-const quoted = m.quoted ? m.quoted : m
-const mime = (quoted.msg || quoted).mimetype || ''
-const qmsg = (quoted.msg || quoted)
-const groupMetadata = m.isGroup ? await dave.groupMetadata(from).catch(e => {}) : ''
-const groupName = m.isGroup ? groupMetadata.subject : ''
-const participants = m.isGroup ? await groupMetadata.participants : ''
-const groupAdmins = m.isGroup ? await getGroupAdmins(participants) : ''
-const isBotAdmins = m.isGroup ? groupAdmins.includes(botNumber) : false
-const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
+
+// Pushname & quoted
+const pushname = m.pushName || senderNumber;
+const isBot = botNumber === senderNumber;
+const quoted = m.quoted || m;
+const mime = (quoted.msg || quoted).mimetype || '';
+const qmsg = (quoted.msg || quoted);
+
+// Group info
+const groupMetadata = m.isGroup ? await dave.groupMetadata(from).catch(() => ({})) : {};
+const groupName = m.isGroup ? groupMetadata.subject || '' : '';
+const participants = m.isGroup ? groupMetadata.participants || [] : [];
+const groupAdmins = m.isGroup ? await getGroupAdmins(participants) : [];
+const isBotAdmins = m.isGroup ? groupAdmins.includes(botNumber + '@s.whatsapp.net') : false;
+const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false;
+
 /////////////Setting Console//////////////////
 console.log(chalk.black(chalk.bgWhite(!command ? '[ MESSAGE ]' : '[ COMMAND ]')), chalk.black(chalk.bgGreen(new Date)), chalk.black(chalk.bgBlue(budy || m.mtype)) + '\n' + chalk.magenta('=> From'), chalk.green(pushname), chalk.yellow(m.sender) + '\n' + chalk.blueBright('=> In'), chalk.green(m.isGroup ? pushname : 'Private Chat', m.chat))
 /////////quoted functions//////////////////
