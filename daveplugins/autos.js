@@ -8,7 +8,7 @@ let daveplug = async (m, { dave, daveshown, args, command, reply }) => {
     if (command === 'autostatusreact' || command === 'autoreactstatus') {
       feature = 'react';
       mode = args[0]?.toLowerCase();
-    } else if (command === 'autostatusview' || command === 'autosview') {
+    } else if (command === 'autostatusview' || command === 'autosview' || command === 'autoviewstatus') {
       feature = 'view';
       mode = args[0]?.toLowerCase();
     } else if (command === 'autostatus') {
@@ -19,7 +19,7 @@ let daveplug = async (m, { dave, daveshown, args, command, reply }) => {
     }
 
     if (!feature || !mode)
-      return reply('Usage:\n.autostatus <view|react> <on|off>\n.autoreactstatus <on|off>\n.autostatusreact <on|off>\n.autostatusview <on|off>');
+      return reply('Usage:\n.autostatus <view|react> <on|off>\n.autoreactstatus <on|off>\n.autostatusreact <on|off>\n.autostatusview <on|off>\n.autoviewstatus <on|off>');
 
     if (!['view', 'react'].includes(feature))
       return reply('Invalid feature. Use: view or react');
@@ -27,23 +27,24 @@ let daveplug = async (m, { dave, daveshown, args, command, reply }) => {
     if (!['on', 'off'].includes(mode))
       return reply('Invalid mode. Use: on or off');
 
+    const settings = global.settings
     const state = mode === 'on';
 
-    // Initialize globals if not defined
-    if (typeof global.AUTOVIEWSTATUS === 'undefined') global.AUTOVIEWSTATUS = false;
-    if (typeof global.AUTOREACTSTATUS === 'undefined') global.AUTOREACTSTATUS = false;
-
-    // Apply changes
-    if (feature === 'view') global.AUTOVIEWSTATUS = state;
-    if (feature === 'react') global.AUTOREACTSTATUS = state;
-
-    reply(
-      `Auto-status updated:\n` +
-      `View status: ${global.AUTOVIEWSTATUS ? 'ON' : 'OFF'}\n` +
-      `React status: ${global.AUTOREACTSTATUS ? 'ON' : 'OFF'}`
-    );
-
-    console.log(`AUTOVIEWSTATUS: ${global.AUTOVIEWSTATUS}, AUTOREACTSTATUS: ${global.AUTOREACTSTATUS}`);
+    // Apply changes to settings
+    if (feature === 'view') {
+        if (settings.autoviewstatus === state) return reply(`auto view status is already ${state ? 'enabled' : 'disabled'}`)
+        settings.autoviewstatus = state
+        global.saveSettings(settings)
+        global.settings = settings
+        return reply(`auto view status has been turned ${state ? 'on' : 'off'}`)
+    }
+    if (feature === 'react') {
+        if (settings.autoreactstatus === state) return reply(`auto react status is already ${state ? 'enabled' : 'disabled'}`)
+        settings.autoreactstatus = state
+        global.saveSettings(settings)
+        global.settings = settings
+        return reply(`auto react status has been turned ${state ? 'on' : 'off'}`)
+    }
   } catch (err) {
     console.error('Autostatus error:', err);
     reply('An error occurred while processing the command.');
@@ -54,7 +55,8 @@ daveplug.help = [
   'autostatus <view|react> <on|off>',
   'autostatusreact <on|off>',
   'autoreactstatus <on|off>',
-  'autostatusview <on|off>'
+  'autostatusview <on|off>',
+  'autoviewstatus <on|off>'
 ];
 daveplug.tags = ['owner'];
 daveplug.command = [
@@ -62,7 +64,8 @@ daveplug.command = [
   'autostatusreact',
   'autoreactstatus',
   'autostatusview',
-  'autosview'
+  'autosview',
+  'autoviewstatus'
 ];
 
 module.exports = daveplug;
