@@ -1637,68 +1637,43 @@ break;
 
              
 //==================================================// 
-case 'bass':
-case 'blown':
-case 'deep':
-case 'earrape':
-case 'fast':
-case 'fat':
-case 'nightcore':
-case 'reverse':
-case 'robot':
-case 'slow':
-case 'smooth':
-case 'tupai': {
-    try {
-        if (!quoted || !quoted.message) return reply(`Reply to an audio you want to convert with the caption *${prefix + command}*`);
-        const mime = Object.keys(quoted.message)[0];
-        if (!/audio/.test(mime)) return reply('❌ Reply to an audio file!');
+case 'goodbye': {
+  if (!m.isGroup) return reply(mess.OnlyGrup)
+  if (!isAdmins) return reply(mess.admin)
 
-        // React to show processing
-        dave.sendMessage(m.chat, { react: { text: "⏱️", key: m.key } }).catch(() => {});
+  // Load current settings
+  const settings = loadSettings()
 
-        // Set ffmpeg filter
-        let set;
-        if (/bass/.test(command)) set = '-af equalizer=f=54:width_type=o:width=2:g=20';
-        if (/blown/.test(command)) set = '-af acrusher=.1:1:64:0:log';
-        if (/deep/.test(command)) set = '-af atempo=4/4,asetrate=44500*2/3';
-        if (/earrape/.test(command)) set = '-af volume=12';
-        if (/fast/.test(command)) set = '-filter:a "atempo=1.63,asetrate=44100"';
-        if (/fat/.test(command)) set = '-filter:a "atempo=1.6,asetrate=22100"';
-        if (/nightcore/.test(command)) set = '-filter:a atempo=1.06,asetrate=44100*1.25';
-        if (/reverse/.test(command)) set = '-filter_complex "areverse"';
-        if (/robot/.test(command)) set = '-filter_complex "afftfilt=real=\'hypot(re,im)*sin(0)\':imag=\'hypot(re,im)*cos(0)\':win_size=512:overlap=0.75"';
-        if (/slow/.test(command)) set = '-filter:a "atempo=0.7,asetrate=44100"';
-        if (/smooth/.test(command)) set = '-filter:v "minterpolate=\'mi_mode=mci:mc_mode=aobmc:vsbmc=1:fps=120\'"';
-        if (/tupai/.test(command)) set = '-filter:a "atempo=0.5,asetrate=65100"';
+  if (args[0] === "on") {
+    if (settings.goodbye === true)
+      return reply('Goodbye feature is already activated.')
 
-        // Process audio
-        (async () => {
-            const mediaPath = await dave.downloadAndSaveMediaMessage(quoted);
-            const outputPath = getRandom('.mp3');
+    settings.goodbye = true
+    saveSettings(settings)
+    global.settings = settings
+    reply('Successfully activated goodbye messages.')
+  } 
+  else if (args[0] === "off") {
+    if (settings.goodbye === false)
+      return reply('Goodbye feature is already deactivated.')
 
-            exec(`ffmpeg -i "${mediaPath}" ${set} "${outputPath}"`, (err) => {
-                fs.unlinkSync(mediaPath); // Delete original
-
-                if (err) return reply('❌ Error processing audio: ' + err.message);
-
-                const buffer = fs.readFileSync(outputPath);
-                dave.sendMessage(m.chat, { audio: buffer, mimetype: 'audio/mpeg' }, { quoted: m })
-                    .catch(() => {})
-                    .finally(() => fs.unlinkSync(outputPath));
-            });
-        })();
-
-    } catch (error) {
-        console.error('Audio effect error:', error);
-        reply('❌ Something went wrong while processing the audio.');
-    }
+    settings.goodbye = false
+    saveSettings(settings)
+    global.settings = settings
+    reply('Successfully deactivated goodbye messages.')
+  } 
+  else {
+    const status = settings.goodbye ? 'activated' : 'deactivated'
+    reply(
+      `Goodbye feature is currently *${status}*.\nUse:\n• ${prefix}goodbye on – activate\n• ${prefix}goodbye off – deactivate`
+    )
+  }
 }
-break;
+break
 
 // ============Converter
-   
-            case 'sound1':
+  
+case 'sound1':
 case 'sound2':
 case 'sound3':
 case 'sound4':
@@ -1744,6 +1719,207 @@ case 'getpastebin': case 'getpb': {
     }
 }
 break;
+
+case 'antitag': {
+    if (!m.isGroup) return reply(mess.group)
+    if (!isAdmins) return reply(mess.admin)
+    if (!daveshown) return reply(mess.owner)
+    
+    const settings = global.settings
+    settings.antitag = settings.antitag || {}
+    
+    const option = args[0]?.toLowerCase()
+    const mode = args[1]?.toLowerCase() || "delete"
+
+    if (option === "on") {
+        settings.antitag[m.chat] = { enabled: true, mode }
+        global.saveSettings(settings)
+        global.settings = settings
+        reply(`Antitag enabled. Mode: ${mode}. Messages with tags will be ${mode === "kick" ? "deleted and user kicked" : "deleted"}`)
+    } 
+    else if (option === "off") {
+        if (settings.antitag[m.chat]) {
+            delete settings.antitag[m.chat]
+            global.saveSettings(settings)
+            global.settings = settings
+        }
+        reply("Antitag disabled for this group")
+    } 
+    else {
+        const current = settings.antitag[m.chat]
+        reply(`Antitag Settings for This Group\nStatus: ${current?.enabled ? "ON" : "OFF"}\nMode: ${current?.mode?.toUpperCase() || "DELETE"}\n\nUsage: ${prefix}antitag on [delete/kick] or ${prefix}antitag off`)
+    }
+}
+break
+
+case 'antidemote': {
+    if (!m.isGroup) return reply(mess.group)
+    if (!isAdmins) return reply(mess.admin)
+    if (!daveshown) return reply(mess.owner)
+
+    const settings = global.settings
+    settings.antidemote = settings.antidemote || {}
+
+    const option = args[0]?.toLowerCase()
+    const mode = args[1]?.toLowerCase() || "revert"
+
+    if (option === "on") {
+        settings.antidemote[m.chat] = { enabled: true, mode }
+        global.saveSettings(settings)
+        global.settings = settings
+        reply(`Antidemote enabled. Mode: ${mode}`)
+    } 
+    else if (option === "off") {
+        delete settings.antidemote[m.chat]
+        global.saveSettings(settings)
+        global.settings = settings
+        reply("Antidemote disabled")
+    } 
+    else {
+        const current = settings.antidemote[m.chat]?.enabled ? `ON (${settings.antidemote[m.chat].mode})` : "OFF"
+        reply(`Antidemote Settings\nStatus: ${current}\n\nUsage: ${prefix}antidemote on revert or ${prefix}antidemote on kick or ${prefix}antidemote off`)
+    }
+}
+break
+
+case 'antipromote': {
+    if (!m.isGroup) return reply(mess.group)
+    if (!isAdmins) return reply(mess.admin)
+    if (!daveshown) return reply(mess.owner)
+
+    const settings = global.settings
+    settings.antipromote = settings.antipromote || {}
+
+    const option = args[0]?.toLowerCase()
+    const mode = args[1]?.toLowerCase() || "revert"
+
+    if (option === "on") {
+        settings.antipromote[m.chat] = { enabled: true, mode }
+        global.saveSettings(settings)
+        global.settings = settings
+        reply(`Antipromote enabled. Mode: ${mode}`)
+    } 
+    else if (option === "off") {
+        delete settings.antipromote[m.chat]
+        global.saveSettings(settings)
+        global.settings = settings
+        reply("Antipromote disabled")
+    } 
+    else {
+        const current = settings.antipromote[m.chat]?.enabled ? `ON (${settings.antipromote[m.chat].mode})` : "OFF"
+        reply(`Antipromote Settings\nStatus: ${current}\n\nUsage: ${prefix}antipromote on revert or ${prefix}antipromote on kick or ${prefix}antipromote off`)
+    }
+}
+break
+
+case 'antibadword': {
+    if (!m.isGroup) return reply(mess.group)
+    if (!isAdmins) return reply(mess.admin)
+    if (!daveshown) return reply(mess.owner)
+
+    const settings = global.settings
+    settings.antibadword = settings.antibadword || {}
+
+    const option = args[0]?.toLowerCase()
+
+    if (option === "on") {
+        settings.antibadword[m.chat] = {
+            enabled: true,
+            words: settings.antibadword[m.chat]?.words || [],
+            warnings: {}
+        }
+        global.saveSettings(settings)
+        global.settings = settings
+        reply("Antibadword enabled for this group")
+    } 
+    else if (option === "off") {
+        delete settings.antibadword[m.chat]
+        global.saveSettings(settings)
+        global.settings = settings
+        reply("Antibadword disabled for this group")
+    } 
+    else if (option === "add") {
+        const word = args.slice(1).join(" ").toLowerCase()
+        if (!word) return reply(`Usage: ${prefix}antibadword add <word>`)
+        settings.antibadword[m.chat] = settings.antibadword[m.chat] || { enabled: true, words: [], warnings: {} }
+        settings.antibadword[m.chat].words.push(word)
+        global.saveSettings(settings)
+        global.settings = settings
+        reply(`Added bad word: ${word}`)
+    } 
+    else if (option === "remove") {
+        const word = args.slice(1).join(" ").toLowerCase()
+        if (!word) return reply(`Usage: ${prefix}antibadword remove <word>`)
+        if (!settings.antibadword[m.chat]?.words?.includes(word)) return reply("Word not found in list")
+        settings.antibadword[m.chat].words = settings.antibadword[m.chat].words.filter(w => w !== word)
+        global.saveSettings(settings)
+        global.settings = settings
+        reply(`Removed bad word: ${word}`)
+    } 
+    else if (option === "list") {
+        const list = settings.antibadword[m.chat]?.words || []
+        if (list.length === 0) return reply("No bad words added yet")
+        reply(`Bad Words List:\n${list.map((w, i) => `${i + 1}. ${w}`).join("\n")}`)
+    } 
+    else {
+        const status = settings.antibadword[m.chat]?.enabled ? "ON" : "OFF"
+        const wordCount = settings.antibadword[m.chat]?.words?.length || 0
+        reply(`Antibadword Settings\nStatus: ${status}\nWords: ${wordCount}\n\nUsage: ${prefix}antibadword on/off/add/remove/list`)
+    }
+}
+break
+
+case 'add': {
+    if (!m.isGroup) return reply(mess.group)
+    if (!isAdmins) return reply(mess.admin)
+
+    if (!text && !m.quoted) {
+        return reply(`Example: ${prefix}add 2547xxxxxxx`)
+    }
+
+    const numbersOnly = text
+        ? text.replace(/\D/g, '') + '@s.whatsapp.net'
+        : m.quoted?.sender
+
+    try {
+        const res = await dave.groupParticipantsUpdate(from, [numbersOnly], 'add')
+        for (let i of res) {
+            const invv = await dave.groupInviteCode(from)
+
+            if (i.status == 408) return reply("User is already in the group")
+            if (i.status == 401) return reply("Bot is blocked by the user")
+            if (i.status == 409) return reply("User recently left the group")
+            if (i.status == 500) return reply("Invalid request. Try again later")
+
+            if (i.status == 403) {
+                await dave.sendMessage(
+                    from,
+                    {
+                        text: `@${numbersOnly.split('@')[0]} cannot be added because their account is private. An invite link will be sent to their private chat.`,
+                        mentions: [numbersOnly],
+                    },
+                    { quoted: m }
+                )
+
+                await dave.sendMessage(
+                    numbersOnly,
+                    {
+                        text: `Group Invite: https://chat.whatsapp.com/${invv}\nAdmin: wa.me/${m.sender.split('@')[0]}\nYou have been invited to join this group.`,
+                        detectLink: true,
+                        mentions: [numbersOnly],
+                    },
+                    { quoted: m }
+                ).catch((err) => reply('Failed to send invitation'))
+            } else {
+                reply(mess.success)
+            }
+        }
+    } catch (e) {
+        console.error(e)
+        reply('Could not add user')
+    }
+}
+break
 
 
 // === SNACKVIDEO DOWNLOADER ===
@@ -1822,60 +1998,14 @@ break;
 
 
 // ============ WAIFU/NSFW IMAGES ============ //
-case 'neko':
-case 'shinobu':
-case 'megumin':
-case 'bully':
-case 'cuddle':
-case 'cry':
-case 'hug':
-case 'awoo':
-case 'kiss':
-case 'lick':
-case 'pat':
-case 'smug':
-case 'bonk':
-case 'yeet':
-case 'blush':
-case 'smile':
-case 'wave':
-case 'highfive':
-case 'handhold':
-case 'nom':
-case 'bite':
-case 'glomp':
-case 'slap':
-case 'kill':
-case 'happy':
-case 'wink':
-case 'poke':
-case 'dance':
-case 'cringe':
-case 'trap':
-case 'blowjob':
-case 'hentai':
-case 'boobs':
-case 'ass':
-case 'pussy':
-case 'thighs':
-case 'lesbian':
-case 'lewdneko':
-case 'cum': {
+case 'neko': case 'megumin': case 'trap': case 'blowjob': 
+case 'hentai': case 'boobs': case 'ass': case 'pussy': 
+case 'thighs': case 'lesbian': case 'lewdneko': case 'cum': {
     if (!daveshown && !isPremium) return reply('❌ This command is for Premium users only.');
     reply("🔄 Loading...");
 
     try {
-        // Try Rule34 first
-        let data = await fetchJson(`https://rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${command}&json=1`);
-        if (data && data[0]?.file_url) {
-            return await dave.sendMessage(
-                m.chat,
-                { image: { url: data[0].file_url }, caption: foother },
-                { quoted: m }
-            );
-        }
-
-        // Try NSFW endpoint next
+        // Try NSFW endpoint first
         let nsfw = await fetchJson(`https://api.waifu.pics/nsfw/${command}`);
         if (nsfw?.url) {
             return await dave.sendMessage(
@@ -1885,7 +2015,7 @@ case 'cum': {
             );
         }
 
-        // Fallback to SFW endpoint
+        // Fallback to SFW endpoint if NSFW fails
         let sfw = await fetchJson(`https://api.waifu.pics/sfw/${command}`);
         if (sfw?.url) {
             return await dave.sendMessage(
@@ -1895,11 +2025,10 @@ case 'cum': {
             );
         }
 
-        // If nothing found
-        reply("❌ Sorry, no result found for that tag.");
+        reply("Sorry, no result found for that tag.");
     } catch (err) {
         console.error(err);
-        reply("⚠️ Failed to fetch image. Try again later.");
+        reply("Failed to fetch image. Try again later.");
     }
 }
 break;
@@ -1943,45 +2072,61 @@ case 'bingimg': {
 }
 break;
 
-
-        
-                
-                case 'autorecordtype':
+case 'autorecordtype': {
     if (!daveshown) return reply(mess.owner)
     if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
+    
+    // Use global settings
+    const settings = global.settings
+    
     if (q === 'on') {
-        autorecordtype = true
-        reply(`✅ Successfully turned *auto recording & typing* ${q}`)
-    } else if (q === 'off') {
-        autorecordtype = false
-        reply(`✅ Successfully turned *auto recording & typing* ${q}`)
-    } else {
-        reply(`Usage: ${prefix + command} on/off`)
+        if (settings.autorecord.enabled && settings.autotyping.enabled) 
+            return reply('Auto recording and typing is already activated')
+        
+        settings.autorecord.enabled = true
+        settings.autotyping.enabled = true
+        global.saveSettings(settings)
+        global.settings = settings
+        
+        reply('Successfully activated auto recording and typing')
+    } 
+    else if (q === 'off') {
+        if (!settings.autorecord.enabled && !settings.autotyping.enabled) 
+            return reply('Auto recording and typing is already deactivated')
+        
+        settings.autorecord.enabled = false
+        settings.autotyping.enabled = false
+        global.saveSettings(settings)
+        global.settings = settings
+        
+        reply('Successfully deactivated auto recording and typing')
+    } 
+    else {
+        const recordStatus = settings.autorecord.enabled ? 'activated' : 'deactivated'
+        const typeStatus = settings.autotyping.enabled ? 'activated' : 'deactivated'
+        reply(
+            `Auto Record: ${recordStatus}\n` +
+            `Auto Type: ${typeStatus}\n\n` +
+            `Use: ${prefix}autorecordtype on/off`
+        )
     }
-    break
+}
+break
+        
+                
+                
 //==================================================//              
         case "desc": case "setdesc": { 
                  if (!m.isGroup) return reply (mess.group)
                  if (!isAdmins) return reply ("bot must be admin in this group")
                  if (!text) throw 'Provide the text for the group description' 
                  await dave.groupUpdateDescription(m.chat, text); 
- m.reply('Group description successfully updated! 🥶'); 
+ m.reply('Group description successfully updated!'); 
              } 
  break; 
 //==================================================//      
 
-case "setnamabot":
-case "setbotname": {
-    if (!daveshown) return reply(mess.owner);
-    if (!text) return reply(`Where is the name?\nExample: ${prefix + command} 𝘿𝙖𝙫𝙚𝘼𝙄`);
-    
-    await dave.updateProfileName(text);
-    global.botname = text;   // update main bot name
-    global.packname = text;  // update sticker packname
-    global.footer = text;    // update footer used in menus
-    reply(`Successfully changed the bot's profile name to *${text}*`);
-}
-break;
+
 
 case "setbiobot":
 case "setbotbio": {
@@ -1995,16 +2140,7 @@ case "setbotbio": {
 }
 break;
 
-// === Delete Bot Profile Picture ===
-case "delppbot": {
-    if (!daveshown) return reply(mess.owner);
-    
-    await dave.removeProfilePicture(sock.user.id);
-    reply(`🗑️ Successfully deleted the bot's profile picture`);
-}
-break;
 
-// === Set Bot Profile Picture ===
 
 case 'removal':
 case 'removebackground': {
@@ -2513,19 +2649,35 @@ break;
  } 
  break; 
 //==================================================//  
-case 'autotyping':
-if (!daveshown) return reply(mess.owner)
-if (args.length < 1) return reply(`Example ${prefix + command} on/off`)
-if (q == 'on') {
-db.data.settings[botNumber].autoTyping = true
-reply(`Successfully Changed Auto Typing To ${q}`)
-} else if (q == 'off') {
-db.data.settings[botNumber].autoTyping = false
-reply(`Successfully Changed Auto Typing To ${q}`)
+case 'autotyping': {
+    if (!daveshown) return reply(mess.owner)
+    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
+    
+    // Use global settings
+    const settings = global.settings
+    
+    if (q == 'on') {
+        if (settings.autotyping.enabled) 
+            return reply('Auto typing is already activated')
+        
+        settings.autotyping.enabled = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully activated auto typing')
+    } else if (q == 'off') {
+        if (!settings.autotyping.enabled) 
+            return reply('Auto typing is already deactivated')
+        
+        settings.autotyping.enabled = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully deactivated auto typing')
+    } else {
+        const status = settings.autotyping.enabled ? 'activated' : 'deactivated'
+        reply(`Auto typing is currently ${status}. Use: ${prefix}autotyping on/off`)
+    }
 }
 break
-
-
 
 
 //==================================================//
@@ -2664,88 +2816,153 @@ break
 //==================================================//
 //==================================================//       
         case 'onlygroup':
-case 'onlygc':
-if (!daveshown) return reply(mess.owner)
-if (args.length < 1) return reply(`Example ${prefix + command} on / off`)
-if (q == 'on') {
-db.data.settings[botNumber].onlygrub = true
-reply(`Successfully Changed Onlygroup To ${q}`)
-} else if (q == 'off') {
-db.data.settings[botNumber].onlygrub = false
-reply(`Successfully Changed Onlygroup To ${q}`)
+case 'onlygc': {
+    if (!daveshown) return reply(mess.owner)
+    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
+    
+    const settings = global.settings
+    
+    if (q == 'on') {
+        if (settings.onlygroup) return reply('Only group is already enabled')
+        
+        settings.onlygroup = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully enabled only group mode')
+    } else if (q == 'off') {
+        if (!settings.onlygroup) return reply('Only group is already disabled')
+        
+        settings.onlygroup = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully disabled only group mode')
+    } else {
+        const status = settings.onlygroup ? 'enabled' : 'disabled'
+        reply(`Only group mode is currently ${status}. Use: ${prefix}${command} on/off`)
+    }
 }
 break
-//==================================================//             
-case 'onlypc':
-if (!daveshown) return reply(mess.owner)
-if (args.length < 1) return reply(`Example ${prefix + command} on/off`)
-if (q == 'on') {
-db.data.settings[botNumber].onlypc = true
-reply(`Successfully Changed Onlypc To ${q}`)
-} else if (q == 'off') {
-db.data.settings[botNumber].onlypc = false
-reply(`Successfully Changed Onlypc To ${q}`)
+
+case 'onlypc': {
+    if (!daveshown) return reply(mess.owner)
+    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
+    
+    const settings = global.settings
+    
+    if (q == 'on') {
+        if (settings.onlypc) return reply('Only pc is already enabled')
+        
+        settings.onlypc = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully enabled only pc mode')
+    } else if (q == 'off') {
+        if (!settings.onlypc) return reply('Only pc is already disabled')
+        
+        settings.onlypc = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully disabled only pc mode')
+    } else {
+        const status = settings.onlypc ? 'enabled' : 'disabled'
+        reply(`Only pc mode is currently ${status}. Use: ${prefix}${command} on/off`)
+    }
 }
 break
+
 //==================================================//      
        case 'unavailable':
-       case 'offline':
-                if (!daveshown) return reply(mess.owner)
-                if (args.length < 1) return reply(`Example ${prefix + command} on/off`)
-                if (q === 'on') {
-                    db.data.settings[botNumber].online = true
-                    reply(`Successfully changed unavailable to ${q}`)
-                } else if (q === 'off') {
-                    db.data.settings[botNumber].online = false
-                    reply(`Successfully changed unavailable to ${q}`)
-                }
-            break
-
+case 'offline': {
+    if (!daveshown) return reply(mess.owner)
+    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
+    
+    // Use global settings - Note: You'll need to add 'online' to your settings
+    const settings = global.settings
+    
+    if (q === 'on') {
+        if (settings.online === true) 
+            return reply('Online status is already activated')
+        
+        settings.online = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully changed to online status')
+    } else if (q === 'off') {
+        if (settings.online === false) 
+            return reply('Online status is already deactivated')
+        
+        settings.online = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully changed to unavailable status')
+    } else {
+        const status = settings.online ? 'online' : 'unavailable'
+        reply(`Bot is currently ${status}. Use: ${prefix}${command} on/off`)
+    }
+}
+break
 
 //==================================================//           
         case 'antilink': {
-               if (!m.isGroup) return reply(mess.group)
-if (!isAdmins && !daveshown) return reply(mess.admins)
-               if (args.length < 1) return reply('on/off?')
-               if (args[0] === 'on') {
-                  db.data.chats[from].antilink = true
-                  reply(`${command} is enabled`)
-               } else if (args[0] === 'off') {
-                  db.data.chats[from].antilink = false
-                  reply(`${command} is disabled`)
-               }
-            }
-            break
-//==================================================//    
-
+    if (!m.isGroup) return reply(mess.group)
+    if (!isAdmins && !daveshown) return reply(mess.admins)
+    if (args.length < 1) return reply('on/off?')
+    
+    const settings = global.settings
+    
+    if (args[0] === 'on') {
+        if (settings.antilink.enabled) return reply('Antilink is already enabled')
         
-
-        case 'antilinkgc': {
-               if (!m.isGroup) return m.reply(mess.group)
-if (!isAdmins && !daveshown) return m.reply(mess.owner)
-               if (args.length < 1) return m.reply('on/off?')
-               if (args[0] === 'on') {
-                  db.data.chats[from].antilinkgc = true
-                  m.reply(`${command} is enabled`)
-               } else if (args[0] === 'off') {
-                  db.data.chats[from].antilinkgc = false
-                  m.reply(`${command} is disabled`)
-               }
-            }
-            break
-
-
-            case 'statuscheck':
-case 'checkstatus': {
-    if (!daveshown) return reply(mess.owner);
-
-    const viewStatus = global.AUTOVIEWSTATUS ? '✅ Enabled' : '❌ Disabled';
-    const reactStatus = global.AREACT ? '✅ Enabled' : '❌ Disabled';
-
-    reply(`Auto Status Settings:\n\n👀 Auto View: ${viewStatus}\n💫 Auto React: ${reactStatus}`);
+        settings.antilink.enabled = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Antilink is enabled')
+    } else if (args[0] === 'off') {
+        if (!settings.antilink.enabled) return reply('Antilink is already disabled')
+        
+        settings.antilink.enabled = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Antilink is disabled')
+    }
 }
-break;
+break
 
+case 'antilinkgc': {
+    if (!m.isGroup) return reply(mess.group)
+    if (!isAdmins && !daveshown) return reply(mess.owner)
+    if (args.length < 1) return reply('on/off?')
+    
+    const settings = global.settings
+    
+    if (args[0] === 'on') {
+        if (settings.antilinkgc.enabled) return reply('Antilinkgc is already enabled')
+        
+        settings.antilinkgc.enabled = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Antilinkgc is enabled')
+    } else if (args[0] === 'off') {
+        if (!settings.antilinkgc.enabled) return reply('Antilinkgc is already disabled')
+        
+        settings.antilinkgc.enabled = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Antilinkgc is disabled')
+    }
+}
+break
+
+case 'statuscheck':
+case 'checkstatus': {
+    if (!daveshown) return reply(mess.owner)
+
+    const viewStatus = global.settings.autoviewstatus ? 'Enabled' : 'Disabled'
+    const reactStatus = global.settings.areact.enabled ? 'Enabled' : 'Disabled'
+
+    reply(`Auto Status Settings:\n\nAuto View: ${viewStatus}\nAuto React: ${reactStatus}`)
+}
+break
 
 case 'autoview':
 case 'statusview': {
@@ -2753,11 +2970,21 @@ case 'statusview': {
     if (!args[0]) return reply('Usage: on/off');
     const mode = args[0].toLowerCase();
 
+    const settings = global.settings;
+
     if (mode === 'on') {
-        global.AUTOVIEWSTATUS = true;
+        if (settings.autoviewstatus) return reply('Auto view status is already enabled');
+        
+        settings.autoviewstatus = true;
+        global.saveSettings(settings);
+        global.settings = settings;
         reply('Auto view status enabled');
     } else if (mode === 'off') {
-        global.AUTOVIEWSTATUS = false;
+        if (!settings.autoviewstatus) return reply('Auto view status is already disabled');
+        
+        settings.autoviewstatus = false;
+        global.saveSettings(settings);
+        global.settings = settings;
         reply('Auto view status disabled');
     } else {
         return reply('Invalid option, use "on" or "off"');
@@ -2770,11 +2997,21 @@ case 'areact': {
     if (!args[0]) return reply('Usage: on/off');
     const mode = args[0].toLowerCase();
 
+    const settings = global.settings;
+
     if (mode === 'on') {
-        global.AREACT = true;
+        if (settings.areact.enabled) return reply('Auto react is already enabled');
+        
+        settings.areact.enabled = true;
+        global.saveSettings(settings);
+        global.settings = settings;
         reply('Auto react enabled');
     } else if (mode === 'off') {
-        global.AREACT = false;
+        if (!settings.areact.enabled) return reply('Auto react is already disabled');
+        
+        settings.areact.enabled = false;
+        global.saveSettings(settings);
+        global.settings = settings;
         reply('Auto react disabled');
     } else {
         return reply('Invalid option, use "on" or "off"');
@@ -2785,87 +3022,56 @@ break;
 //==================================================//
 //==================================================//        
         case 'unwarning':
-    case 'unwarn': {
-      if (!m.isGroup) return reply(mess.owner)
-      if (!isAdmins) return reply(mess.admin)
+case 'unwarn': {
+    if (!m.isGroup) return reply(mess.OnlyGrup)
+    if (!isAdmins) return reply(mess.admin)
 
-
-      let users = m.mentionedJid[0] ?
+    let users = m.mentionedJid[0] ?
         m.mentionedJid[0] :
         m.quoted ?
         m.quoted.sender :
         text.replace(/[^0-9]/g, '') + '@s.whatsapp.net'
 
-      if (!users) return reply(`Tag/Reply target${command}`)
-      if (daveshown) return reply('feature reserved for owner or sudo numbers only')
+    if (!users) return reply(`Tag or reply to a user to ${command}`)
+    if (!daveshown) return reply('Feature reserved for owner or sudo numbers only')
 
-      if (!db.data.chats[m.chat].warn) db.data.chats[m.chat].warn = {}
+    const settings = global.settings
 
-      if (!db.data.chats[m.chat].warn[users] || db.data.chats[m.chat].warn[users] === 0) {
-        return reply(`User is already in the warning list.`)
-      }
-
-      db.data.chats[m.chat].warn[users] -= 1
-
-      const sisa = db.data.chats[m.chat].warn[users]
-
-      dave.sendTextWithMentions(m.chat, `✅ Success *${command}* @${users.split('@')[0]}\nRemoved Warning: ${sisa}/${setting.warnCount}`, m)
-      if (db.data.chats[m.chat].warn[users] === 0) {
-        delete db.data.chats[m.chat].warn[m.sender];
-      }
+    // Initialize warnings structure if it doesn't exist
+    if (!settings.warnings) {
+        settings.warnings = {
+            enabled: true,
+            maxWarnings: 3,
+            chats: {}
+        }
     }
-    break
-        case 'ch': {
-  try {
-    const carouselCards = [
-      {
-        image: trashpic,                          
 
-        title: "Card 1",
-        description: "This is card 1",
-        id: "card_1"
-      },
-      {
-        image: trashpic,
-        title: "Card 2",
-        description: "This is card 2",
-        id: "card_2"
-      },
-      {
-        image: trashpic,                        
+    if (!settings.warnings.chats[m.chat]) {
+        settings.warnings.chats[m.chat] = {}
+    }
 
-        title: "Card 3",
-        description: "This is card 3",
-        id: "card_3"
-      }
-    ];
+    if (!settings.warnings.chats[m.chat][users] || settings.warnings.chats[m.chat][users] === 0) {
+        return reply(`User has no warnings to remove.`)
+    }
 
-    const cards = carouselCards.map(card => ({
-      image: {
-        link: card.image
-      },
-      title: card.title,
-      subtitle: card.description
-    }));
+    settings.warnings.chats[m.chat][users] -= 1
 
-    await dave.relayMessage(from, {
-      template: {
-        type: "media",
-        media: {
-          type: "image",
-          image: {
-            link: cards[0].image.link
-          }
-        },
-        carousel: cards
-      }
-    }, { quoted: m });
+    const remainingWarnings = settings.warnings.chats[m.chat][users]
 
-  } catch (error) {
-    console.error("Error sending carousel:", error);
-  }
+    // Save settings
+    global.saveSettings(settings)
+    global.settings = settings
+
+    dave.sendTextWithMentions(m.chat, `Success ${command} @${users.split('@')[0]}\nRemaining Warnings: ${remainingWarnings}/${settings.warnings.maxWarnings}`, m)
+    
+    if (settings.warnings.chats[m.chat][users] === 0) {
+        delete settings.warnings.chats[m.chat][users];
+        global.saveSettings(settings)
+        global.settings = settings
+    }
 }
-break;
+break
+        
 //==================================================//   
 
 
@@ -3224,63 +3430,111 @@ break;
 
 
         case 'warning':
-    case 'warn': {
-      if (!m.isGroup) reply(mess.group)
-      if (!isAdmins) reply(mess.admin)
+case 'warn': {
+    if (!m.isGroup) return reply(mess.group)
+    if (!isAdmins) return reply(mess.admin)
 
-      let users = m.mentionedJid[0] ?
+    let users = m.mentionedJid[0] ?
         m.mentionedJid[0] :
         m.quoted ?
         m.quoted.sender :
         text.replace(/[^0-9]/g, '') + '@s.whatsapp.net'
 
-      if (!users) return reply(`Tag/Reply target with${command}`)
-      if (!daveshown) return reply('feature reserved for owner or sudo numbers only')
+    if (!users) return reply(`Tag or reply to a user with ${command}`)
+    if (!daveshown) return reply('Feature reserved for owner or sudo numbers only')
 
-      if (!db.data.chats[m.chat].warn) db.data.chats[m.chat].warn = {}
-      db.data.chats[m.chat].warn[users] = (db.data.chats[m.chat].warn[users] || 0) + 1
+    const settings = global.settings
 
-      const total = db.data.chats[m.chat].warn[users]
+    // Initialize warnings structure if it doesn't exist
+    if (!settings.warnings) {
+        settings.warnings = {
+            enabled: true,
+            maxWarnings: 3,
+            chats: {}
+        }
+    }
 
-      dave.sendTextWithMentions(m.chat, `⚠️ Success *${command}* @${users.split('@')[0]}\nTotal Warning: ${total}/3`, m)
+    if (!settings.warnings.chats[m.chat]) {
+        settings.warnings.chats[m.chat] = {}
+    }
 
-      if (total >= setting.warnCount) {
+    settings.warnings.chats[m.chat][users] = (settings.warnings.chats[m.chat][users] || 0) + 1
+
+    const total = settings.warnings.chats[m.chat][users]
+
+    // Save settings
+    global.saveSettings(settings)
+    global.settings = settings
+
+    dave.sendTextWithMentions(m.chat, `Success ${command} @${users.split('@')[0]}\nTotal Warning: ${total}/${settings.warnings.maxWarnings}`, m)
+
+    if (total >= settings.warnings.maxWarnings) {
         if (!isAdmins) return
 
         await dave.sendMessage(m.chat, {
-          text: `🚫 @${users.split('@')[0]} your ${total}/${setting.warnCount} warning is on count.`,
-          mentions: [users]
+            text: `@${users.split('@')[0]} your ${total}/${settings.warnings.maxWarnings} warning limit has been reached.`,
+            mentions: [users]
         })
 
         await dave.groupParticipantsUpdate(m.chat, [users], 'remove')
-        delete db.data.chats[m.chat].warn[users]
-      }
+        delete settings.warnings.chats[m.chat][users]
+        global.saveSettings(settings)
+        global.settings = settings
     }
-    break
-
-//==================================================//      
-        case 'autorecording':
-if (!daveshown) return reply(mess.owner)
-if (args.length < 1) return reply(`Example ${prefix + command} on/off`)
-if (q == 'on') {
-db.data.settings[botNumber].autoRecord = true
-reply(`Successfully Changed Auto Record To ${q}`)
-} else if (q == 'off') {
-db.data.settings[botNumber].autoRecord = false
-reply(`Successfully Changed Auto Record To ${q}`)
 }
-break;
+break
 
-//==================================================//      
-        case 'autobio':
-if (!daveshown) return reply(mess.owner)
-if (args.length < 1) return reply(`Example ${prefix + command} on/off`)
-if (q == 'on') {
-db.data.settings[botNumber].autobio = true
-reply(`Successfully Changed Auto Bio To ${q}`)
-} else if (q == 'off') {
-db.data.settings[botNumber].autobio = false
-reply(`Successfully Changed Auto Bio To ${q}`)
+case 'autorecording': {
+    if (!daveshown) return reply(mess.owner)
+    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
+    
+    const settings = global.settings
+    
+    if (q == 'on') {
+        if (settings.autorecord.enabled) return reply('Auto recording is already enabled')
+        
+        settings.autorecord.enabled = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully enabled auto recording')
+    } else if (q == 'off') {
+        if (!settings.autorecord.enabled) return reply('Auto recording is already disabled')
+        
+        settings.autorecord.enabled = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully disabled auto recording')
+    } else {
+        const status = settings.autorecord.enabled ? 'enabled' : 'disabled'
+        reply(`Auto recording is currently ${status}. Use: ${prefix}autorecording on/off`)
+    }
+}
+break
+
+case 'autobio': {
+    if (!daveshown) return reply(mess.owner)
+    if (args.length < 1) return reply(`Example: ${prefix + command} on/off`)
+    
+    const settings = global.settings
+    
+    if (q == 'on') {
+        if (settings.autobio) return reply('Auto bio is already enabled')
+        
+        settings.autobio = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully enabled auto bio')
+    } else if (q == 'off') {
+        if (!settings.autobio) return reply('Auto bio is already disabled')
+        
+        settings.autobio = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully disabled auto bio')
+    } else {
+        const status = settings.autobio ? 'enabled' : 'disabled'
+        reply(`Auto bio is currently ${status}. Use: ${prefix}autobio on/off`)
+    }
 }
 break
 //==================================================//
@@ -3420,21 +3674,31 @@ quoted: m
 break
 //==================================================//  
         case 'welcome': {
-  if (!m.isGroup) return reply(mess.group)
-  if (!isAdmins) return reply(mess.admin)
-  if (args[0] === "on") {
-    if (db.data.chats[m.chat].welcome) return reply('Already activated previously')
-    db.data.chats[m.chat].welcome = true
-    reply('Successfully activated welcome!')
-  } else if (args[0] === "off") {
-    if (!db.data.chats[m.chat].welcome) return reply('Already deactivated previously')
-    db.data.chats[m.chat].welcome = false
-    reply('Successfully deactivated welcome!')
-  } else {
-    reply('Command not recognized. Use "on" to activate or "off" to deactivate.')
-  }
+    if (!m.isGroup) return reply(mess.group)
+    if (!isAdmins) return reply(mess.admin)
+    
+    const settings = global.settings
+    
+    if (args[0] === "on") {
+        if (settings.welcome) return reply('Welcome is already activated')
+        
+        settings.welcome = true
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully activated welcome')
+    } else if (args[0] === "off") {
+        if (!settings.welcome) return reply('Welcome is already deactivated')
+        
+        settings.welcome = false
+        global.saveSettings(settings)
+        global.settings = settings
+        reply('Successfully deactivated welcome')
+    } else {
+        const status = settings.welcome ? 'activated' : 'deactivated'
+        reply(`Welcome is currently ${status}. Use: ${prefix}welcome on/off`)
+    }
 }
-break;
+break
 //==================================================//
 case 'kick': {
 if (!m.isGroup) return reply(mess.group)
@@ -4424,6 +4688,77 @@ await trashgc(m.chat);
 `)   
 }
 break;
+
+case 'checksettings': {
+  try {
+    const settings = global.settings
+
+    // Count how many groups have each feature enabled
+    const countEnabled = (obj) => {
+      if (!obj || typeof obj !== 'object') return 0
+      if (obj.enabled !== undefined) return obj.enabled ? 1 : 0
+      return Object.values(obj).filter((v) => v && v.enabled).length
+    }
+
+    const summary = `
+BOT SETTINGS STATUS
+
+Anti Features:
+Antilink: ${countEnabled(settings.antilink)} group(s)
+Antilinkgc: ${countEnabled(settings.antilinkgc)} group(s)
+Antitag: ${countEnabled(settings.antitag)} group(s)
+Antibadword: ${countEnabled(settings.antibadword)} group(s)
+Antipromote: ${countEnabled(settings.antipromote)} group(s)
+Antidemote: ${countEnabled(settings.antidemote)} group(s)
+
+Global Presence Settings:
+Autoread: ${settings.autoread.enabled ? 'ON' : 'OFF'}
+Autotyping: ${settings.autotyping.enabled ? 'ON' : 'OFF'}
+Autorecord: ${settings.autorecord.enabled ? 'ON' : 'OFF'}
+Autoviewstatus: ${settings.autoviewstatus ? 'ON' : 'OFF'}
+Areact: ${settings.areact.enabled ? 'ON' : 'OFF'}
+
+Group Features:
+Welcome: ${settings.welcome ? 'ON' : 'OFF'}
+Goodbye: ${settings.goodbye ? 'ON' : 'OFF'}
+Anticall: ${settings.anticall ? 'ON' : 'OFF'}
+
+Settings File: library/database/settings.json
+Last updated: ${new Date().toLocaleString()}
+`
+
+    reply(summary.trim())
+  } catch (err) {
+    console.error('CheckSettings Error:', err)
+    reply('Error while checking bot settings')
+  }
+}
+break
+
+case 'private':
+case 'self': {
+    if (!daveshown) return reply(mess.owner)
+    
+    const settings = global.settings
+    settings.publicMode = false
+    global.saveSettings(settings)
+    global.settings = settings
+    
+    reply("Bot switched to private mode. Only the owner can use commands now")
+}
+break
+
+case 'public': {
+    if (!daveshown) return reply(mess.owner)
+    
+    const settings = global.settings
+    settings.publicMode = true
+    global.saveSettings(settings)
+    global.settings = settings
+    
+    reply("Bot switched to public mode. Everyone can use commands now")
+}
+break
 //==================================================//     
         case 'cry': case 'kill': case 'hug': case 'pat': case 'lick': 
 case 'kiss': case 'bite': case 'yeet': case 'bully': case 'bonk':
