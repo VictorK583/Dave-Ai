@@ -7,10 +7,20 @@ let daveplug = async (m, { dave, daveshown, args, reply }) => {
       return reply('Usage: .autoread <on|off>');
     }
 
-    global.AUTO_READ = mode === 'on';
+    const settings = global.settings
+    
+    if (mode === 'on') {
+        if (settings.autoread.enabled) return reply('Auto read is already enabled')
+        settings.autoread.enabled = true
+    } else {
+        if (!settings.autoread.enabled) return reply('Auto read is already disabled')
+        settings.autoread.enabled = false
+    }
 
-    reply(`Auto-read has been turned ${global.AUTO_READ ? 'ON' : 'OFF'} (temporary until restart).`);
-    console.log(`Auto-read mode: ${global.AUTO_READ ? 'ENABLED' : 'DISABLED'}`);
+    global.saveSettings(settings)
+    global.settings = settings
+
+    reply(`Auto read has been turned ${settings.autoread.enabled ? 'ON' : 'OFF'}`)
   } catch (err) {
     console.error('Autoread error:', err);
     reply('Failed to change autoread mode.');
