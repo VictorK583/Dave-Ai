@@ -61,7 +61,6 @@ function loadSettings() {
                 wait: "Processing...",
                 error: "Error occurred."
             },
-            // ==== YOUR ADDITIONAL GLOBALS ====
             typebot: "Plugin × case",
             session: "davesession",
             connect: true,
