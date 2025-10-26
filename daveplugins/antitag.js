@@ -2,67 +2,72 @@ const { setAntitag, getAntitag, removeAntitag } = require('../library/lib/index'
 
 let daveplug = async (m, { dave, daveshown, isAdmins, reply, text, xprefix }) => {
     try {
-        if (!m.isGroup) return reply("This command only works in groups.");
-        if (!daveshown && !isAdmins) return reply("Only group admins can use this command.");
+        if (!m.isGroup) return reply("this command only works in groups")
+        if (!daveshown && !isAdmins) return reply("only group admins can use this command")
 
-        const args = text ? text.trim().split(' ') : [];
-        const action = args[0];
+        const args = text ? text.trim().split(' ') : []
+        const action = args[0]
 
         if (!action) {
-            return await reply(
-`🛡️ ANTITAG SETUP
+            return reply(
+`antitag setup
 
 ${xprefix}antitag on
 ${xprefix}antitag off
 ${xprefix}antitag set delete | kick
 ${xprefix}antitag get`
-            );
+            )
         }
 
-        await dave.sendMessage(m.chat, { react: { text: '.', key: m.key } });
+        const settings = global.settings
+        settings.antitag = settings.antitag || {}
 
         switch (action) {
             case 'on':
-                const existingConfig = await getAntitag(m.chat, 'on');
-                if (existingConfig?.enabled) return reply("Antitag is already ON.");
-                const result = await setAntitag(m.chat, 'on', 'delete');
-                await reply(result ? "Antitag has been turned ON." : "Failed to enable Antitag.");
-                break;
+                if (settings.antitag[m.chat]?.enabled) return reply("antitag is already on")
+                settings.antitag[m.chat] = { enabled: true, mode: 'delete' }
+                global.saveSettings(settings)
+                global.settings = settings
+                reply("antitag has been turned on")
+                break
 
             case 'off':
-                await removeAntitag(m.chat, 'on');
-                await reply("Antitag has been turned OFF.");
-                break;
+                if (!settings.antitag[m.chat]) return reply("antitag is already off")
+                delete settings.antitag[m.chat]
+                global.saveSettings(settings)
+                global.settings = settings
+                reply("antitag has been turned off")
+                break
 
             case 'set':
-                if (args.length < 2) return reply(`Usage: ${xprefix}antitag set delete | kick`);
-                const setAction = args[1].toLowerCase();
-                if (!['delete', 'kick'].includes(setAction)) return reply("Invalid action. Choose delete or kick.");
-                const setResult = await setAntitag(m.chat, 'on', setAction);
-                await reply(setResult ? `Antitag action set to "${setAction}".` : "Failed to set Antitag action.");
-                break;
+                if (args.length < 2) return reply(`usage: ${xprefix}antitag set delete | kick`)
+                const setAction = args[1].toLowerCase()
+                if (!['delete', 'kick'].includes(setAction)) return reply("invalid action. choose delete or kick")
+                if (!settings.antitag[m.chat]) return reply("antitag is not enabled. turn it on first")
+                settings.antitag[m.chat].mode = setAction
+                global.saveSettings(settings)
+                global.settings = settings
+                reply(`antitag action set to ${setAction}`)
+                break
 
             case 'get':
-                const status = await getAntitag(m.chat, 'on');
-                if (!status) return reply("Antitag is OFF.");
-                await reply(`Antitag Configuration:\nStatus: ON\nAction: ${status.action || 'delete'}`);
-                break;
+                const status = settings.antitag[m.chat]
+                if (!status) return reply("antitag is off")
+                reply(`antitag configuration\nstatus: on\naction: ${status.mode || 'delete'}`)
+                break
 
             default:
-                await reply(`Usage: ${xprefix}antitag on | off | set | get`);
+                reply(`usage: ${xprefix}antitag on | off | set | get`)
         }
 
-        await dave.sendMessage(m.chat, { react: { text: '✓', key: m.key } });
-
     } catch (error) {
-        console.error('Antitag Command Error:', error);
-        await dave.sendMessage(m.chat, { react: { text: '✗', key: m.key } });
-        await reply("Error processing Antitag command.");
+        console.error('antitag command error:', error)
+        reply("error processing antitag command")
     }
-};
+}
 
-daveplug.help = ['antitag'];
-daveplug.tags = ['group'];
-daveplug.command = ['antitag'];
+daveplug.help = ['antitag']
+daveplug.tags = ['group']
+daveplug.command = ['antitag']
 
-module.exports = daveplug;
+module.exports = daveplug
