@@ -122,6 +122,25 @@ const Menu = `
 ┃ ✦ Commands : *{cmds}*
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
+╰┈➤ *ꜱᴛɪᴄᴋᴇʀꜱ*
+> ${global.xprefix}sticker
+> ${global.xprefix}smeme
+> ${global.xprefix}stickerwm
+> ${global.xprefix}stickermeme
+> ${global.xprefix}trigger
+> ${global.xprefix}wasted
+> ${global.xprefix}wm
+> ${global.xprefix}enhance
+> ${global.xprefix}tohd
+
+╰┈➤ *ꜰᴜɴ & ᴍᴇᴍᴇꜱ*
+> ${global.xprefix}trash
+> ${global.xprefix}wanted
+> ${global.xprefix}hitler
+> ${global.xprefix}meme
+> ${global.xprefix}trigger
+> ${global.xprefix}wasted
+
 ╰┈➤ *ʙᴜɢ ᴀɴᴅʀᴏɪᴅ*
 > ${global.xprefix}daveandroid
 > ${global.xprefix}daveandroid2
@@ -215,8 +234,6 @@ const Menu = `
 > ${global.xprefix}Bible
 
 ╰┈➤ *ᴄᴏɴᴠᴇʀᴛ ᴍᴇɴᴜ*
-> ${global.xprefix}sticker
-> ${global.xprefix}smeme
 > ${global.xprefix}take
 > ${global.xprefix}toimage
 > ${global.xprefix}toaudio
@@ -228,8 +245,6 @@ const Menu = `
 > ${global.xprefix}toqr
 > ${global.xprefix}tovideo
 > ${global.xprefix}emojimix
-> ${global.xprefix}stickerwm
-> ${global.xprefix}stickermeme
 > ${global.xprefix}hd
 > ${global.xprefix}remini
 > ${global.xprefix}hdvideo
@@ -248,6 +263,7 @@ const Menu = `
 > ${global.xprefix}playdoc
 > ${global.xprefix}apk
 > ${global.xprefix}instagram/ig
+> ${global.xprefix}gitclone
 
 ╰┈➤ *ᴀɪ / ᴄʜᴀᴛɢᴘᴛ*
 > ${global.xprefix}ai
@@ -283,6 +299,7 @@ const Menu = `
 > ${global.xprefix}whatsong
 > ${global.xprefix}getpastebin
 > ${global.xprefix}getpp
+> ${global.xprefix}movie
 
 ╰┈➤ *ꜱᴘᴏʀᴛꜱ*
 > ${global.xprefix}fixtures
@@ -294,7 +311,6 @@ const Menu = `
 
 ╰┈➤ *ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴍᴇɴᴜ*
 > ${global.xprefix}githubstalk
-> ${global.xprefix}gitclone
 > ${global.xprefix}getfile
 > ${global.xprefix}setvar
 > ${global.xprefix}getvar
@@ -324,7 +340,6 @@ const Menu = `
 ╰┈➤ *ɢᴀᴍᴇꜱ & ꜰᴜɴ*
 > ${global.xprefix}truth
 > ${global.xprefix}dare
-> ${global.xprefix}meme
 > ${global.xprefix}brat
 > ${global.xprefix}neko
 > ${global.xprefix}shinobu
@@ -377,10 +392,17 @@ const Menu = `
 > ${global.xprefix}meow
 > ${global.xprefix}tickle
 
-╰┈➤ *ᴛᴇxᴛ ᴇꜰꜰᴇᴄᴛꜱ*
+╰┈➤ *ᴛᴇxᴛ ᴇꜰꜰᴇᴄᴛꜱ & ʟᴏɢᴏꜱ*
 > ${global.xprefix}glitchtext
 > ${global.xprefix}writetext
 > ${global.xprefix}advancedglow
+> ${global.xprefix}blackpinklogo
+> ${global.xprefix}effectclouds
+> ${global.xprefix}galaxystyle
+> ${global.xprefix}lighteffect
+> ${global.xprefix}sandsummer
+> ${global.xprefix}underwater
+> ${global.xprefix}glossysilver
 > ${global.xprefix}typographytext
 > ${global.xprefix}pixelglitch
 > ${global.xprefix}neonglitch
@@ -394,20 +416,15 @@ const Menu = `
 > ${global.xprefix}cartoonstyle
 > ${global.xprefix}papercutstyle
 > ${global.xprefix}watercolortext
-> ${global.xprefix}effectclouds
-> ${global.xprefix}blackpinklogo
 > ${global.xprefix}gradienttext
 > ${global.xprefix}summerbeach
 > ${global.xprefix}luxurygold
 > ${global.xprefix}multicoloredneon
-> ${global.xprefix}sandsummer
 > ${global.xprefix}galaxywallpaper
 > ${global.xprefix}1917style
 > ${global.xprefix}makingneon
 > ${global.xprefix}royaltext
 > ${global.xprefix}freecreate
-> ${global.xprefix}galaxystyle
-> ${global.xprefix}lighteffects
 
 ╰┈➤ *ꜱᴘᴀᴍ & ᴛᴏᴏʟꜱ*
 > ${global.xprefix}nglspam
