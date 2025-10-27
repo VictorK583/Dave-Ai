@@ -1931,19 +1931,36 @@ await m.reply(`❄️ Weather in ${cityName}
   }
    break;
 //==================================================//        
-  case 'gitclone': {
-                      if (!text) return m.reply(`Where is the link?`)
-if (!text.includes('github.com')) return reply(`Is that a GitHub repo link ?!`)
-let regex1 = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i
+  //==================================================//        
+case 'gitclone': {
+    if (!text) return m.reply(`Where is the link?`)
+    if (!text.includes('github.com')) return m.reply(`Is that a GitHub repo link?!`)
+    
+    let regex1 = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i
     let [, user3, repo] = text.match(regex1) || []
     repo = repo.replace(/.git$/, '')
     let url = `https://api.github.com/repos/${user3}/${repo}/zipball`
-    let filename = (await fetch(url, {method: 'HEAD'})).headers.get('content-disposition').match(/attachment; filename=(.*)/)[1]
-    await dave.sendMessage(m.chat, { document: { url: url }, fileName: filename+'.zip', mimetype: 'application/zip' }, { quoted: m }).catch((err) => reply("error"))
-
-                    }
-                      break; //==================================================//     
+    
+    try {
+        let response = await fetch(url, { method: 'HEAD' })
+        let headers = Object.fromEntries(response.headers)
+        let filename = headers['content-disposition']?.match(/attachment; filename=(.*)/)?.[1]
         
+        if (!filename) {
+            return m.reply("Could not get filename from GitHub")
+        }
+        
+        await dave.sendMessage(m.chat, { 
+            document: { url: url }, 
+            fileName: filename + '.zip', 
+            mimetype: 'application/zip' 
+        }, { quoted: m })
+    } catch (err) {
+        console.log(err)
+        m.reply("Error downloading repository")
+    }
+}
+break;
 
 //==================================================//           
       
