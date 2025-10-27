@@ -34,59 +34,97 @@ async function restartProcess(dave, m) {
     }
 }
 
-// Delete old backups & temp folders
-function deleteOldBackupsAndTemps(excludeDir = '') {
-    const items = fs.readdirSync('.');
-    for (const item of items) {
-        if (
-            (item.startsWith('backup_') || item.startsWith('tmp_')) &&
-            item !== path.basename(excludeDir) &&
-            fs.lstatSync(item).isDirectory()
-        ) {
-            fs.rmSync(item, { recursive: true, force: true });
+// Clean ALL temp files (no backups kept)
+function cleanAllTempFiles() {
+    try {
+        const items = fs.readdirSync('.');
+        for (const item of items) {
+            if (
+                (item.startsWith('backup_') || 
+                 item.startsWith('tmp_') || 
+                 item.startsWith('temp_') ||
+                 item === 'tmp_update' ||
+                 item === 'tmp' ||
+                 item.endsWith('.tmp') ||
+                 item.endsWith('.backup') ||
+                 item.endsWith('.zip')) &&
+                fs.lstatSync(item).isDirectory()
+            ) {
+                fs.rmSync(item, { recursive: true, force: true });
+            }
         }
+        
+        // Clean leftover files
+        const files = fs.readdirSync('.');
+        for (const file of files) {
+            if (file.endsWith('.zip') || file.endsWith('.tmp') || file.endsWith('.backup')) {
+                fs.unlinkSync(file);
+            }
+        }
+    } catch (error) {
+        console.log('Cleanup warning:', error.message);
     }
 }
 
-// Backup critical files
-function backupCriticalFiles() {
-    const backupDir = path.join(process.cwd(), 'backup_' + Date.now());
-    fs.mkdirSync(backupDir, { recursive: true });
+// Read current config files to memory (no file backups)
+function readConfigFilesToMemory() {
+    const configFiles = {
+        'settings.js': null,
+        'config.js': null, 
+        '.env': null,
+        'library/database/menuSettings.json': null,
+        'library/database/users.json': null,
+        'messageCount.json': null
+    };
     
-    // Include session and database folders
-    const critical = [
-        'settings.js', 'config.js', '.env', 
-        'session', 'library/database'
-    ];
-    
-    for (const f of critical) {
-        if (fs.existsSync(f)) {
-            const dest = path.join(backupDir, f);
-            if (fs.lstatSync(f).isDirectory()) {
-                fs.cpSync(f, dest, { recursive: true });
-            } else {
-                fs.copyFileSync(f, dest);
+    for (const [filePath, _] of Object.entries(configFiles)) {
+        if (fs.existsSync(filePath)) {
+            try {
+                configFiles[filePath] = fs.readFileSync(filePath, 'utf8');
+            } catch (error) {
+                console.log(`Failed to read ${filePath}:`, error.message);
             }
         }
     }
-    return backupDir;
+    
+    return configFiles;
+}
+
+// Restore config files from memory
+function restoreConfigFilesFromMemory(configFiles) {
+    for (const [filePath, content] of Object.entries(configFiles)) {
+        if (content !== null) {
+            try {
+                // Ensure directory exists
+                const dir = path.dirname(filePath);
+                if (!fs.existsSync(dir)) {
+                    fs.mkdirSync(dir, { recursive: true });
+                }
+                // Write content back
+                fs.writeFileSync(filePath, content, 'utf8');
+            } catch (error) {
+                console.log(`Failed to restore ${filePath}:`, error.message);
+            }
+        }
+    }
 }
 
 // Download ZIP
 async function downloadFile(url, dest) {
-    const writer = fs.createWriteStream(dest);
-    const response = await axios({ 
-        url, 
-        method: 'GET', 
-        responseType: 'stream', 
-        timeout: 60000,
-        headers: { 'User-Agent': 'DaveAI-Updater' }
-    });
-    response.data.pipe(writer);
     return new Promise((resolve, reject) => {
-        writer.on('finish', resolve);
-        writer.on('error', reject);
-        response.data.on('error', reject);
+        const writer = fs.createWriteStream(dest);
+        axios({
+            url, 
+            method: 'GET', 
+            responseType: 'stream', 
+            timeout: 60000,
+            headers: { 'User-Agent': 'DaveAI-Updater' }
+        }).then(response => {
+            response.data.pipe(writer);
+            writer.on('finish', resolve);
+            writer.on('error', reject);
+        }).catch(reject);
+        
         setTimeout(() => reject(new Error('Download timeout')), 120000);
     });
 }
@@ -102,90 +140,144 @@ async function extractZip(zipPath, outDir) {
     }
 }
 
-// Recursive copy
-async function copyRecursive(src, dest, ignore = []) {
+// Smart copy that preserves config files from memory
+async function smartCopy(src, dest, configFiles) {
     if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+    
+    const ignoreList = [
+        'node_modules', '.git', 'session', 
+        'backup_', 'tmp_', 'temp_'
+    ];
+    
     for (const entry of fs.readdirSync(src)) {
-        if (ignore.includes(entry)) continue;
+        // Skip if in ignore list or is a config file we're preserving
+        if (ignoreList.some(ignore => entry.includes(ignore)) || 
+            Object.keys(configFiles).some(config => entry.includes(path.basename(config)))) {
+            continue;
+        }
+        
         const s = path.join(src, entry);
         const d = path.join(dest, entry);
         const stat = fs.lstatSync(s);
+        
         try {
-            if (stat.isDirectory()) await copyRecursive(s, d, ignore);
-            else fs.copyFileSync(s, d);
-        } catch {}
+            if (stat.isDirectory()) {
+                await smartCopy(s, d, configFiles);
+            } else {
+                fs.copyFileSync(s, d);
+            }
+        } catch (error) {
+            console.log(`Copy warning for ${entry}:`, error.message);
+        }
     }
 }
 
 // ==================== GIT UPDATE ==================== //
-async function updateViaGit(dave, m) {
-    let backupDir = null;
+async function updateViaGit(dave, m, replyMsg) {
+    let configFiles = {};
     try {
-        await dave.sendMessage(m.chat, { text: 'Starting Git update...' });
-        
-        deleteOldBackupsAndTemps();
-        backupDir = backupCriticalFiles();
+        // Edit initial message
+        await dave.sendMessage(m.chat, { 
+            text: 'Starting Git update...',
+            edit: replyMsg.key 
+        });
 
-        await run('git reset --hard');
+        // Clean first
+        cleanAllTempFiles();
+        
+        // Read configs to memory
+        configFiles = readConfigFilesToMemory();
+        
+        // Git operations
+        await run('git stash');
         await run('git pull origin main');
         await run('npm install --omit=dev --no-audit --no-fund --silent');
-
-        await dave.sendMessage(m.chat, { text: 'Update complete. Restarting...' });
+        
+        // Restore configs from memory
+        restoreConfigFilesFromMemory(configFiles);
+        
+        // Final cleanup
+        cleanAllTempFiles();
+        
+        // Edit success message
+        await dave.sendMessage(m.chat, { 
+            text: 'Update complete. Restarting...',
+            edit: replyMsg.key 
+        });
         await restartProcess(dave, m);
     } catch (error) {
         console.error('Git update error:', error);
-        if (backupDir && fs.existsSync(backupDir)) {
-            await copyRecursive(backupDir, process.cwd());
-            await dave.sendMessage(m.chat, { text: 'Update failed. Restored from backup.' });
-        }
-    } finally {
-        if (backupDir && fs.existsSync(backupDir)) {
-            fs.rmSync(backupDir, { recursive: true, force: true });
-        }
+        // Restore configs on error
+        restoreConfigFilesFromMemory(configFiles);
+        cleanAllTempFiles();
+        // Edit error message
+        await dave.sendMessage(m.chat, { 
+            text: 'Update failed. Configs restored.',
+            edit: replyMsg.key 
+        });
     }
 }
 
 // ==================== ZIP UPDATE ==================== //
-async function updateViaZip(dave, m) {
-    let backupDir = null;
-    const tmpDir = path.join(process.cwd(), 'tmp_update');
+async function updateViaZip(dave, m, replyMsg) {
+    let configFiles = {};
+    const tmpDir = path.join(process.cwd(), 'tmp_update_' + Date.now());
+    
     try {
-        await dave.sendMessage(m.chat, { text: 'Starting ZIP update...' });
-        
-        deleteOldBackupsAndTemps();
-        backupDir = backupCriticalFiles();
+        // Edit initial message
+        await dave.sendMessage(m.chat, { 
+            text: 'Starting ZIP update...',
+            edit: replyMsg.key 
+        });
 
+        // Clean first
+        cleanAllTempFiles();
+        
+        // Read configs to memory
+        configFiles = readConfigFilesToMemory();
+        
+        // Create temp directory
         if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
         fs.mkdirSync(tmpDir, { recursive: true });
 
         const zipPath = path.join(tmpDir, 'update.zip');
         const extractTo = path.join(tmpDir, 'update_extract');
 
+        // Download and extract
         await downloadFile(global.updateZipUrl, zipPath);
         await extractZip(zipPath, extractTo);
 
+        // Find main folder
         const folders = fs.readdirSync(extractTo);
         const mainFolder = folders.length === 1 ? path.join(extractTo, folders[0]) : extractTo;
 
-        await copyRecursive(mainFolder, process.cwd(), [
-            'node_modules', '.git', 'session', 'tmp', 'tmp_update', 'backup_*'
-            // .env, config.js, settings.js, database.json will be preserved via backup
-        ]);
-
+        // Copy files (excluding configs)
+        await smartCopy(mainFolder, process.cwd(), configFiles);
+        
+        // Install dependencies
         await run('npm install --omit=dev --no-audit --no-fund --silent');
         
-        await dave.sendMessage(m.chat, { text: 'Update complete. Restarting...' });
+        // Restore configs from memory
+        restoreConfigFilesFromMemory(configFiles);
+        
+        // Edit success message
+        await dave.sendMessage(m.chat, { 
+            text: 'Update complete. Restarting...',
+            edit: replyMsg.key 
+        });
         await restartProcess(dave, m);
     } catch (error) {
         console.error('ZIP update error:', error);
-        if (backupDir && fs.existsSync(backupDir)) {
-            await copyRecursive(backupDir, process.cwd());
-            await dave.sendMessage(m.chat, { text: 'Update failed. Restored from backup.' });
-        }
+        // Restore configs on error
+        restoreConfigFilesFromMemory(configFiles);
+        // Edit error message
+        await dave.sendMessage(m.chat, { 
+            text: 'Update failed. Configs restored.',
+            edit: replyMsg.key 
+        });
     } finally {
-        if (backupDir && fs.existsSync(backupDir)) {
-            fs.rmSync(backupDir, { recursive: true, force: true });
-        }
+        // Always clean up (no backups left behind)
+        cleanAllTempFiles();
         if (fs.existsSync(tmpDir)) {
             fs.rmSync(tmpDir, { recursive: true, force: true });
         }
@@ -195,28 +287,46 @@ async function updateViaZip(dave, m) {
 // ==================== COMMAND HANDLER ==================== //
 let daveplug = async (m, { dave, daveshown, command, reply }) => {
     if (!daveshown) return reply('Owner only command.');
+    
+    // Send initial message and get its key for editing
+    const replyMsg = await reply('Checking update method...');
+    
     try {
         if (command === 'update') {
-            await reply('Checking update method...');
             if (hasGitRepo()) {
-                await updateViaGit(dave, m);
+                await updateViaGit(dave, m, replyMsg);
             } else {
-                await updateViaZip(dave, m);
+                await updateViaZip(dave, m, replyMsg);
             }
         } else if (command === 'restart' || command === 'start') {
-            await reply('Restarting bot...');
+            await dave.sendMessage(m.chat, { 
+                text: 'Restarting bot...',
+                edit: replyMsg.key 
+            });
             await restartProcess(dave, m);
+        } else if (command === 'clean') {
+            cleanAllTempFiles();
+            await dave.sendMessage(m.chat, { 
+                text: 'All temp files cleaned!',
+                edit: replyMsg.key 
+            });
         } else {
-            reply('Usage: .update or .restart');
+            await dave.sendMessage(m.chat, { 
+                text: 'Usage: .update or .restart or .clean',
+                edit: replyMsg.key 
+            });
         }
     } catch (error) {
         console.error('Update command error:', error);
-        await reply('Update failed: ' + error.message);
+        await dave.sendMessage(m.chat, { 
+            text: 'Update failed: ' + error.message,
+            edit: replyMsg.key 
+        });
     }
 };
 
-daveplug.command = ['update', 'redeploy', 'start'];
+daveplug.command = ['update', 'redeploy', 'start', 'clean'];
 daveplug.tags = ['system'];
-daveplug.help = ['update', 'redeploy', 'start'];
+daveplug.help = ['update', 'redeploy', 'start', 'clean'];
 
 module.exports = daveplug;
