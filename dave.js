@@ -1018,23 +1018,24 @@ case 'antibot': {
     }
 }
 break;
+
 case 'dictionary':
 case 'define':
 case 'meaning': {
     try {
+        const axios = require('axios');
         const word = text ? text.trim() : '';
-        if (!word) return reply("Please provide a word to define.");
+        if (!word) return await reply("Please provide a word to define.");
 
-        // Add processing reaction
-        await dave.sendMessage(m.chat, { react: { text: '...', key: m.key } });
+        // Optional: send processing message
+        await reply("🔎 Fetching definition...");
 
-        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
-        if (!res.ok) return reply("Word not found or invalid.");
+        const res = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+        if (!res.data || !Array.isArray(res.data) || !res.data.length) return reply("Word not found or invalid.");
 
-        const data = await res.json();
-        const entry = data[0];
+        const entry = res.data[0];
 
-        let replyText = `Definition of "${entry.word}"\n`;
+        let replyText = `📖 Definition of "${entry.word}"\n`;
 
         const phonetic = entry.phonetics.find(p => p.text) || {};
         if (phonetic.text) replyText += `Pronunciation: ${phonetic.text}\n`;
@@ -1047,14 +1048,11 @@ case 'meaning': {
             });
         });
 
-        const synonyms = entry.meanings.flatMap(m => m.synonyms).filter(Boolean);
-        const antonyms = entry.meanings.flatMap(m => m.antonyms).filter(Boolean);
+        const synonyms = entry.meanings.flatMap(m => m.synonyms || []).filter(Boolean);
+        const antonyms = entry.meanings.flatMap(m => m.antonyms || []).filter(Boolean);
 
         if (synonyms.length) replyText += `\nSynonyms: ${[...new Set(synonyms)].slice(0, 5).join(", ")}`;
         if (antonyms.length) replyText += `\nAntonyms: ${[...new Set(antonyms)].slice(0, 5).join(", ")}`;
-
-        // Add success reaction
-        await dave.sendMessage(m.chat, { react: { text: '✓', key: m.key } });
 
         await reply(replyText.trim());
 
@@ -1069,9 +1067,8 @@ case 'meaning': {
         }
 
     } catch (error) {
-        console.error('Dictionary Command Error:', error);
-        await dave.sendMessage(m.chat, { react: { text: '✗', key: m.key } });
-        reply("Failed to fetch definition.");
+        console.error('Dictionary Command Error:', error.message);
+        await reply("❌ Failed to fetch definition. Ensure the word is valid.");
     }
 }
 break;
@@ -1932,35 +1929,6 @@ await m.reply(`❄️ Weather in ${cityName}
    break;
 //==================================================//        
   //==================================================//        
-case 'gitclone': {
-    if (!text) return m.reply(`Where is the link?`)
-    if (!text.includes('github.com')) return m.reply(`Is that a GitHub repo link?!`)
-    
-    let regex1 = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i
-    let [, user3, repo] = text.match(regex1) || []
-    repo = repo.replace(/.git$/, '')
-    let url = `https://api.github.com/repos/${user3}/${repo}/zipball`
-    
-    try {
-        let response = await fetch(url, { method: 'HEAD' })
-        let headers = Object.fromEntries(response.headers)
-        let filename = headers['content-disposition']?.match(/attachment; filename=(.*)/)?.[1]
-        
-        if (!filename) {
-            return m.reply("Could not get filename from GitHub")
-        }
-        
-        await dave.sendMessage(m.chat, { 
-            document: { url: url }, 
-            fileName: filename + '.zip', 
-            mimetype: 'application/zip' 
-        }, { quoted: m })
-    } catch (err) {
-        console.log(err)
-        m.reply("Error downloading repository")
-    }
-}
-break;
 
 //==================================================//           
       
@@ -2711,14 +2679,14 @@ break;
     );
 
     // Confirm in chat
-    return m.reply(`✅  ${mediaType} Saved by 𝘿𝙖𝙫𝙚𝘼𝙄!`);
+    return m.reply(`${mediaType} Saved by 𝘿𝙖𝙫𝙚𝘼𝙄!`);
 
   } catch (error) {
     console.error('Save error:', error);
     if (error.message.includes('404') || error.message.includes('not found')) {
       return m.reply('The status may have expired or been deleted.');
     }
-    return m.reply('❌ Failed to save status. Error: ' + error.message);
+    return m.reply('Failed to save status. Error: ' + error.message);
   }
 }
 break;
@@ -2799,7 +2767,7 @@ case 'join': {
   if (!text.includes("chat.whatsapp.com")) return reply("Invalid WhatsApp group link!");
   let result = text.split('https://chat.whatsapp.com/')[1];
   let id = await dave.groupAcceptInvite(result);
-  reply(`✅ Successfully joined group: ${id}`);
+  reply(`Successfully joined group: ${id}`);
 }
 break;
 
@@ -2993,11 +2961,47 @@ case 'upswtag': {
     contextInfo: { mentionedJid: [target + '@s.whatsapp.net'] }
   });
 
-  reply('✅ Successfully uploaded status with mention!');
+  reply('Successfully uploaded status with mention!');
 }
 break
 
 // ================== OFF SETTINGS ==================
+case 'toimage': {
+  try {
+    const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
+    const fs = require('fs');
+    const path = require('path');
+    const { tmpdir } = require('os');
+    const sharp = require('sharp');
+
+    const quotedMsg = m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+    const stickerMsg = (quotedMsg && quotedMsg.stickerMessage) || m.message?.stickerMessage;
+
+    if (!stickerMsg || !stickerMsg.mimetype?.includes('webp')) {
+      return await reply("Reply to a sticker to convert it to an image!");
+    }
+
+    await reply("Converting sticker to image...");
+
+    const stream = await downloadContentFromMessage(stickerMsg, 'sticker');
+    let buffer = Buffer.from([]);
+    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+
+    const outputPath = path.join(tmpdir(), `sticker_${Date.now()}.png`);
+    await sharp(buffer).png().toFile(outputPath);
+
+    const imageBuffer = fs.readFileSync(outputPath);
+    await dave.sendMessage(m.chat, { image: imageBuffer }, { quoted: m });
+
+    fs.unlinkSync(outputPath);
+    await reply("✅ Sticker converted to image!");
+  } catch (err) {
+    console.error("toimage error:", err);
+    await reply("❌ Failed to convert sticker to image.");
+  }
+}
+break;
+
 case 'tovoicenote': {
   try {
     const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
@@ -3016,7 +3020,7 @@ case 'tovoicenote': {
     const mime = msg.mimetype || '';
     if (!/video|audio/.test(mime)) return reply("Only works on video or audio messages!");
 
-    reply("Converting to voice note...");
+    await reply("Converting to voice note...");
 
     const messageType = mime.split("/")[0];
     const stream = await downloadContentFromMessage(msg, messageType);
@@ -3027,65 +3031,34 @@ case 'tovoicenote': {
     const outputPath = path.join(tmpdir(), `output_${Date.now()}.ogg`);
     fs.writeFileSync(inputPath, buffer);
 
+    // Convert using proper OPUS/OGG
     await new Promise((resolve, reject) => {
       ffmpeg(inputPath)
-        .inputOptions('-t 59')
-        .toFormat('opus')
-        .outputOptions(['-c:a libopus', '-b:a 64k'])
+        .inputOptions('-t 59') // limit to 59 seconds
+        .outputOptions(['-c:a libopus', '-b:a 64k', '-f ogg'])
         .on('end', resolve)
         .on('error', reject)
         .save(outputPath);
     });
 
     const audioBuffer = fs.readFileSync(outputPath);
-    await dave.sendMessage(from, { audio: audioBuffer, mimetype: 'audio/ogg', ptt: true }, { quoted: m });
+    await dave.sendMessage(m.chat, { 
+      audio: audioBuffer, 
+      mimetype: 'audio/ogg', 
+      ptt: true 
+    }, { quoted: m });
 
     fs.unlinkSync(inputPath);
     fs.unlinkSync(outputPath);
 
-    reply("Voice note sent!");
+    await reply("✅ Voice note sent!");
   } catch (err) {
     console.error("tovoicenote error:", err);
-    reply("Failed to convert media to voice note. Ensure it is a valid video/audio file.");
+    reply("❌ Failed to convert media to voice note. Ensure it is a valid video/audio file.");
   }
 }
-break
+break;
 
-case 'toimage': {
-  try {
-    const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
-    const fs = require('fs');
-    const path = require('path');
-    const { tmpdir } = require('os');
-    const sharp = require('sharp');
-
-    const quotedMsg = m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-    const stickerMsg = (quotedMsg && quotedMsg.stickerMessage) || m.message?.stickerMessage;
-
-    if (!stickerMsg || !stickerMsg.mimetype?.includes('webp')) {
-      return reply("Reply to a sticker to convert it to an image!");
-    }
-
-    m.reply("Converting sticker to image...");
-
-    const stream = await downloadContentFromMessage(stickerMsg, 'sticker');
-    let buffer = Buffer.from([]);
-    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
-
-    const outputPath = path.join(tmpdir(), `sticker_${Date.now()}.png`);
-    await sharp(buffer).png().toFile(outputPath);
-
-    const imageBuffer = fs.readFileSync(outputPath);
-    await dave.sendMessage(from, { image: imageBuffer }, { quoted: m });
-
-    fs.unlinkSync(outputPath);
-    reply("Sticker converted to image!");
-  } catch (err) {
-    console.error("toimage error:", err);
-    reply("Failed to convert sticker to image.");
-  }
-}
-break
 // ================== LIST CASE ==================
 case "listcase": {
   if (!daveshown) return reply(mess.owner);
@@ -4052,23 +4025,7 @@ case "invite": case "linkgc": {
                  dave.sendText(m.chat, `https://chat.whatsapp.com/${response}\n\nGroup link for  ${groupMetadata.subject}`, m, { detectLink: true }); 
              } 
           break;
-//==================================================//
-case "close": {
-if (!m.isGroup) return reply(mess.group)
-if (!daveshown) return reply(mess.owner)
-await dave.groupSettingUpdate(m.chat, 'announcement')
-reply("Success closed group chat,all members are not allowed to chat for now")
-}
-break
-//==================================================//
-case "open": {
-if (!m.isGroup) return reply(mess.group)
-if (!daveshown) return reply(mess.owner)
-await dave.groupSettingUpdate(m.chat, 'not_announcement')
-reply("Success opened group chat,all members can send messages in group now")
-}
-break
-//==================================================//
+
 case 'tagall': {
       if (!m.isGroup) return (mess.group)
       if (!daveshown && !isAdmins) return reply(mess.owner)
@@ -4345,12 +4302,6 @@ break
 
 
 
-
-
-
-
-
-
 //==================================================//
 case 'fb': case 'facebook': case 'fbdl':
 case 'ig': case 'instagram': case 'igdl': {
@@ -4598,101 +4549,7 @@ try {
 }
 break;
 //==================================================//
-case 'obfuscate':
-case 'obf':
-case 'enc':
-case 'encrypt': {
-    const JsConfuser = require('js-confuser')
 
-    // Better message checking
-    if (!m.quoted) {
-        return reply('❌ Please reply to a JavaScript file to encrypt.');
-    }
-    
-    const quotedMessage = m.quoted.message;
-    if (!quotedMessage?.documentMessage) {
-        return reply('❌ Please reply to a document file.');
-    }
-    
-    const quotedDocument = quotedMessage.documentMessage;
-    if (!quotedDocument.fileName?.endsWith('.js')) {
-        return reply('❌ Please reply to a JavaScript file (.js extension).');
-    }
-    
-    try {
-        const fileName = quotedDocument.fileName;
-        
-        // Send reaction to show processing
-        await dave.sendMessage(m.chat, {
-            react: { text: '🕛', key: m.key }
-        });
-        
-        // Download the file
-        const docBuffer = await m.quoted.download();
-        if (!docBuffer || docBuffer.length === 0) {
-            return reply('❌ Failed to download the file. Please try again.');
-        }
-
-        // Convert buffer to string and obfuscate
-        const fileContent = docBuffer.toString('utf8');
-        if (!fileContent.trim()) {
-            return reply('❌ The file appears to be empty.');
-        }
-
-        const obfuscatedCode = await JsConfuser.obfuscate(fileContent, {
-            target: "node",
-            preset: "high",
-            compact: true,
-            minify: true,
-            flatten: true,
-            identifierGenerator: function () {
-                const originalString = "素GIFTED晴DAVE晴" + "素GIFTED晴DAVE晴";
-                const removeUnwantedChars = (input) => input.replace(/[^a-zA-Z素GIDDY晴TENNOR晴]/g, "");
-                const randomString = (length) => {
-                    let result = "";
-                    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-                    for (let i = 0; i < length; i++) {
-                        result += characters.charAt(Math.floor(Math.random() * characters.length));
-                    }
-                    return result;
-                };
-                return removeUnwantedChars(originalString) + randomString(2);
-            },
-            renameVariables: true,
-            renameGlobals: true,
-            stringEncoding: true,
-            stringSplitting: 0.0,
-            stringConcealing: true,
-            stringCompression: true,
-            duplicateLiteralsRemoval: 1.0,
-            shuffle: { hash: 0.0, true: 0.0 },
-            stack: true,
-            controlFlowFlattening: 1.0,
-            opaquePredicates: 0.9,
-            deadCode: 0.0,
-            dispatcher: true,
-            rgf: false,
-            calculator: true,
-            hexadecimalNumbers: true,
-            movedDeclarations: true,
-            objectExtraction: true,
-            globalConcealing: true,
-        });
-
-        // Send the obfuscated file
-        await dave.sendMessage(m.chat, {
-            document: Buffer.from(obfuscatedCode, 'utf-8'),
-            mimetype: 'application/javascript',
-            fileName: `encrypted_${fileName}`,
-            caption: `✅ Successfully Encrypted\n📁 Type: Hard Code Obfuscation\n👤 By: Dave AI`,
-        }, { quoted: m }); // Changed from fkontak to m for proper quoting
-
-    } catch (err) {
-        console.error('Error during encryption:', err);
-        await reply(`❌ An error occurred: ${err.message}`); // Fixed: err.message instead of error.message
-    }
-}
-break;
   //==================================================//   
 
           
@@ -4901,28 +4758,6 @@ case 'hdvid': {
 }
 break
 
-case 'hd':
-case 'tohd':
-case 'remini': {
-  if (!quoted) return reply('Where is the photo?')
-  if (!/image/.test(mime)) return reply(`Send/Reply to a photo with caption ${prefix + command}`)
-  await dave.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
-
-  await reply('Please wait, your process has started...\n\n⏳ This may take some time, please be patient.')
-
-  let cap = `*Type:* SuperHD\n*Result:* Success`
-  let media = await dave.downloadAndSaveMediaMessage(quoted)
-  try {
-    let catBoxUrl = await CatBox(media)
-    let anjai = await fetchJson(`https://api.vreden.my.id/api/artificial/hdr?url=${catBoxUrl}&pixel=4`)
-    let result = anjai.result.data.downloadUrls[0]
-    dave.sendMessage(m.chat, { image: { url: result }, caption: cap }, { quoted: m })
-  } catch (error) {
-    console.error(error)
-    reply('❌ Error processing HD image.')
-  }
-}
-break
 
 
         case "geturll": { 
