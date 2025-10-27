@@ -559,13 +559,7 @@ if (m.isGroup && global.settings?.antitag?.[m.chat]?.enabled) {
 }
 
 
-
-
-
-
-
- 
-
+// === Temporary folder for message storage ===
 const baseDir = 'message_data';
 if (!fs.existsSync(baseDir)) {
   fs.mkdirSync(baseDir);
@@ -574,9 +568,7 @@ if (!fs.existsSync(baseDir)) {
 function loadChatData(remoteJid, messageId) {
   const chatFilePath = path.join(baseDir, remoteJid, `${messageId}.json`);
   try {
-    if (!fs.existsSync(chatFilePath)) {
-      return null;
-    }
+    if (!fs.existsSync(chatFilePath)) return null;
     const data = fs.readFileSync(chatFilePath, 'utf8');
     return JSON.parse(data);
   } catch (error) {
@@ -587,256 +579,336 @@ function loadChatData(remoteJid, messageId) {
 
 function saveChatData(remoteJid, messageId, chatData) {
   const chatDir = path.join(baseDir, remoteJid);
-
-  if (!fs.existsSync(chatDir)) {
-    fs.mkdirSync(chatDir, { recursive: true });
-  }
-
-  const chatFilePath = path.join(chatDir, `${messageId}.json`);
-
   try {
+    if (!fs.existsSync(chatDir)) fs.mkdirSync(chatDir, { recursive: true });
+    const chatFilePath = path.join(chatDir, `${messageId}.json`);
     fs.writeFileSync(chatFilePath, JSON.stringify(chatData, null, 2));
   } catch (error) {
     console.error('Error saving chat data:', error);
   }
 }
 
+function clearChatData(remoteJid, messageId) {
+  try {
+    const chatFilePath = path.join(baseDir, remoteJid, `${messageId}.json`);
+    if (fs.existsSync(chatFilePath)) fs.unlinkSync(chatFilePath);
+    const chatDir = path.join(baseDir, remoteJid);
+    if (fs.existsSync(chatDir) && fs.readdirSync(chatDir).length === 0) {
+      fs.rmdirSync(chatDir);
+    }
+  } catch (err) {
+    console.error('Error clearing chat data:', err);
+  }
+}
+
+// === Save every incoming message for potential recovery ===
 function handleIncomingMessage(message) {
   try {
     const remoteJid = message.key.remoteJid;
     const messageId = message.key.id;
-
     if (!remoteJid || !messageId || !message.message) return;
-
-    // Save the complete message object
+    
+    // Don't save protocol messages (delete notifications)
+    if (message.message.protocolMessage) return;
+    
     saveChatData(remoteJid, messageId, message);
   } catch (error) {
     console.error('Error in handleIncomingMessage:', error);
   }
 }
 
-async function handleMessageRevocation(dave, revocationMessage) {
+// === Handle deleted messages from both messages.update and protocolMessage ===
+async function handleMessageRevocation(dave, revocationData) {
   try {
-    // The protocolMessage contains the key of the deleted message
-    if (!revocationMessage.message?.protocolMessage) {
-      console.log('Not a protocol message');
-      return;
-    }
+    let deletedMessageKey;
+    let deletedBy;
+    let isFromUpdate = false;
 
-    const protocolMsg = revocationMessage.message.protocolMessage;
-
-    // Type 0 = REVOKE (message deletion)
-    if (protocolMsg.type !== 0) {
-      console.log('Not a revoke message, type:', protocolMsg.type);
-      return;
-    }
-
-    // Get the key of the deleted message
-    const deletedMessageKey = protocolMsg.key;
-    if (!deletedMessageKey || !deletedMessageKey.id) {
-      console.log('No deleted message key found');
-      return;
+    // Check if this is from messages.update event
+    if (revocationData.update && revocationData.update.message?.protocolMessage) {
+      const protocolMsg = revocationData.update.message.protocolMessage;
+      if (protocolMsg.type !== 0) return; // Only handle REVOKE type
+      deletedMessageKey = protocolMsg.key;
+      deletedBy = revocationData.key.participant || revocationData.key.remoteJid;
+      isFromUpdate = true;
+    } 
+    // Check if this is from messages.upsert with protocolMessage
+    else if (revocationData.message?.protocolMessage) {
+      const protocolMsg = revocationData.message.protocolMessage;
+      if (protocolMsg.type !== 0) return; // Only handle REVOKE type
+      deletedMessageKey = protocolMsg.key;
+      deletedBy = revocationData.key.participant || revocationData.key.remoteJid;
+    } else {
+      return; // Not a delete message
     }
 
     const remoteJid = deletedMessageKey.remoteJid;
     const messageId = deletedMessageKey.id;
 
-    // Load the original message
     const originalMessage = loadChatData(remoteJid, messageId);
-
     if (!originalMessage) {
-      console.log('Original message not found for:', messageId);
+      console.log(`Message ${messageId} not found in storage`);
       return;
     }
 
-    // Determine who deleted the message
-    const deletedBy = revocationMessage.key.participant || revocationMessage.key.remoteJid;
     const sentBy = originalMessage.key.participant || originalMessage.key.remoteJid;
-
     const deletedByFormatted = `@${deletedBy.split('@')[0]}`;
     const sentByFormatted = `@${sentBy.split('@')[0]}`;
 
-    // Don't process if bot deleted it
-    const botJid = dave.user.id.split(':')[0];
-    if (deletedBy.includes(botJid) || sentBy.includes(botJid)) {
-      console.log('Bot message, skipping');
+    // Get bot JID correctly
+    const botJid = dave.user.id.split(':')[0] + '@s.whatsapp.net';
+    if (deletedBy === botJid || sentBy === botJid) {
+      clearChatData(remoteJid, messageId);
       return;
     }
 
-    // Get chat name for context
+    // === Send to bot owner's inbox - FIXED ===
+    const ownerJid = dave.user.id.split(':')[0] + '@s.whatsapp.net';
     let chatName = remoteJid;
+
+    // Get proper chat name
     if (remoteJid.endsWith('@g.us')) {
       try {
         const groupMetadata = await dave.groupMetadata(remoteJid);
         chatName = groupMetadata.subject;
-      } catch (error) {
-        console.error('Error getting group metadata:', error);
+      } catch (e) {
+        console.error('Error fetching group metadata:', e);
       }
     } else {
-      chatName = deletedByFormatted;
+      // For private chats, use contact name or phone number
+      try {
+        const contact = await dave.onWhatsApp(sentBy);
+        chatName = contact[0]?.notify || sentByFormatted;
+      } catch {
+        chatName = sentByFormatted;
+      }
     }
 
-    // Send to bot owner's inbox (bot's own number)
-    const ownerJid = dave.user.id;
-
-    let notificationText = `DaveAI-Antidelete\n\n` +
-      `Chat: ${chatName}\n` +
-      `Deleted by: ${deletedByFormatted}\n` +
-      `Sent by: ${sentByFormatted}\n` +
-      `Time: ${new Date().toLocaleString()}\n\n`;
+    let notificationText =
+      `🛡️ *𝘿𝙖𝙫𝙚𝘼𝙄 𝘼𝙣𝙩𝙞-𝘿𝙚𝙡𝙚𝙩𝙚*\n\n` +
+      `👥 Chat: ${chatName}\n` +
+      `🧍‍♂️ Deleted by: ${deletedByFormatted}\n` +
+      `💬 Sent by: ${sentByFormatted}\n` +
+      `🕒 ${new Date().toLocaleString()}\n\n`;
 
     try {
-      // Handle different message types
-      if (originalMessage.message?.conversation) {
-        const messageText = originalMessage.message.conversation;
-        notificationText += `Deleted Message:\n${messageText}`;
-        await dave.sendMessage(ownerJid, { text: notificationText });
-      } 
-      else if (originalMessage.message?.extendedTextMessage) {
-        const messageText = originalMessage.message.extendedTextMessage.text;
-        notificationText += `Deleted Content:\n${messageText}`;
-        await dave.sendMessage(ownerJid, { text: notificationText });
+      const msg = originalMessage.message;
+
+      // === TEXT ===
+      if (msg.conversation) {
+        await dave.sendMessage(ownerJid, {
+          text: notificationText + `💭 Message:\n${msg.conversation}`,
+          mentions: [deletedBy, sentBy]
+        });
       }
-      else if (originalMessage.message?.imageMessage) {
-        notificationText += `Deleted Media: Image`;
+      // === EXTENDED TEXT ===
+      else if (msg.extendedTextMessage) {
+        await dave.sendMessage(ownerJid, {
+          text: notificationText + `💭 Message:\n${msg.extendedTextMessage.text}`,
+          mentions: [deletedBy, sentBy]
+        });
+      }
+      // === IMAGE ===
+      else if (msg.imageMessage) {
         try {
           const buffer = await dave.downloadMediaMessage(originalMessage);
-          const caption = originalMessage.message.imageMessage.caption || '';
-          await dave.sendMessage(ownerJid, { 
+          await dave.sendMessage(ownerJid, {
             image: buffer,
-            caption: `${notificationText}\n\n${caption ? `Caption: ${caption}` : ''}`
+            caption: `${notificationText}🖼️ Deleted Image recovered!`,
+            mentions: [deletedBy, sentBy]
           });
-        } catch (mediaError) {
-          console.error('Failed to download image:', mediaError);
-          notificationText += `\n\nCould not recover deleted image (media may have expired)`;
-          await dave.sendMessage(ownerJid, { text: notificationText });
+        } catch (dlError) {
+          // Try re-upload if download fails
+          console.error('Image download failed, attempting re-upload:', dlError);
+          try {
+            await dave.updateMediaMessage(originalMessage);
+            const buffer = await dave.downloadMediaMessage(originalMessage);
+            await dave.sendMessage(ownerJid, {
+              image: buffer,
+              caption: `${notificationText}🖼️ Deleted Image recovered!`,
+              mentions: [deletedBy, sentBy]
+            });
+          } catch (reuploadError) {
+            await dave.sendMessage(ownerJid, { 
+              text: notificationText + `⚠️ Image was deleted but couldn't be recovered: ${reuploadError.message}`,
+              mentions: [deletedBy, sentBy]
+            });
+          }
         }
-      } 
-      else if (originalMessage.message?.videoMessage) {
-        notificationText += `Deleted Media: Video`;
+      }
+      // === VIDEO ===
+      else if (msg.videoMessage) {
         try {
           const buffer = await dave.downloadMediaMessage(originalMessage);
-          const caption = originalMessage.message.videoMessage.caption || '';
-          await dave.sendMessage(ownerJid, { 
-            video: buffer, 
-            caption: `${notificationText}\n\n${caption ? `Caption: ${caption}` : ''}`
+          await dave.sendMessage(ownerJid, {
+            video: buffer,
+            caption: `${notificationText}🎥 Deleted Video recovered!`,
+            mentions: [deletedBy, sentBy]
           });
-        } catch (mediaError) {
-          console.error('Failed to download video:', mediaError);
-          notificationText += `\n\nCould not recover deleted video (media may have expired)`;
-          await dave.sendMessage(ownerJid, { text: notificationText });
+        } catch (dlError) {
+          console.error('Video download failed, attempting re-upload:', dlError);
+          try {
+            await dave.updateMediaMessage(originalMessage);
+            const buffer = await dave.downloadMediaMessage(originalMessage);
+            await dave.sendMessage(ownerJid, {
+              video: buffer,
+              caption: `${notificationText}🎥 Deleted Video recovered!`,
+              mentions: [deletedBy, sentBy]
+            });
+          } catch (reuploadError) {
+            await dave.sendMessage(ownerJid, { 
+              text: notificationText + `⚠️ Video was deleted but couldn't be recovered: ${reuploadError.message}`,
+              mentions: [deletedBy, sentBy]
+            });
+          }
         }
-      } 
-      else if (originalMessage.message?.stickerMessage) {
-        notificationText += `Deleted Media: Sticker`;
+      }
+      // === STICKER ===
+      else if (msg.stickerMessage) {
         try {
-          const buffer = await dave.downloadMediaMessage(originalMessage);      
+          const buffer = await dave.downloadMediaMessage(originalMessage);
           await dave.sendMessage(ownerJid, { sticker: buffer });
-          await dave.sendMessage(ownerJid, { text: notificationText });
-        } catch (mediaError) {
-          console.error('Failed to download sticker:', mediaError);
-          notificationText += `\n\nCould not recover deleted sticker`;
-          await dave.sendMessage(ownerJid, { text: notificationText });
-        }
-      } 
-      else if (originalMessage.message?.documentMessage) {
-        notificationText += `Deleted Media: Document`;
-        const docMessage = originalMessage.message.documentMessage;
-        const fileName = docMessage.fileName || `document_${Date.now()}.dat`;
-
-        try {
-          const buffer = await dave.downloadMediaMessage(originalMessage);
-          if (!buffer) throw new Error('Empty buffer');
-
           await dave.sendMessage(ownerJid, { 
-            document: buffer, 
-            fileName: fileName,
-            mimetype: docMessage.mimetype || 'application/octet-stream',
-            caption: notificationText
+            text: notificationText,
+            mentions: [deletedBy, sentBy]
           });
-        } catch (mediaError) {
-          console.error('Failed to download document:', mediaError);
-          notificationText += `\n\nCould not recover deleted document (file: ${fileName})`;
-          await dave.sendMessage(ownerJid, { text: notificationText });
+        } catch (dlError) {
+          console.error('Sticker download failed, attempting re-upload:', dlError);
+          try {
+            await dave.updateMediaMessage(originalMessage);
+            const buffer = await dave.downloadMediaMessage(originalMessage);
+            await dave.sendMessage(ownerJid, { sticker: buffer });
+            await dave.sendMessage(ownerJid, { 
+              text: notificationText,
+              mentions: [deletedBy, sentBy]
+            });
+          } catch (reuploadError) {
+            await dave.sendMessage(ownerJid, { 
+              text: notificationText + `⚠️ Sticker was deleted but couldn't be recovered: ${reuploadError.message}`,
+              mentions: [deletedBy, sentBy]
+            });
+          }
         }
-      } 
-      else if (originalMessage.message?.audioMessage) {
-        const isPTT = originalMessage.message.audioMessage.ptt === true;
-        notificationText += `Deleted Media: ${isPTT ? 'Voice Note' : 'Audio'}`;
+      }
+      // === AUDIO ===
+      else if (msg.audioMessage) {
         try {
           const buffer = await dave.downloadMediaMessage(originalMessage);
-          await dave.sendMessage(ownerJid, { 
-            audio: buffer, 
-            ptt: isPTT, 
+          await dave.sendMessage(ownerJid, {
+            audio: buffer,
+            ptt: msg.audioMessage.ptt,
             mimetype: 'audio/mpeg'
           });
-          await dave.sendMessage(ownerJid, { text: notificationText });
-        } catch (mediaError) {
-          console.error('Failed to download audio:', mediaError);
-          notificationText += `\n\nCould not recover deleted audio`;
-          await dave.sendMessage(ownerJid, { text: notificationText });
-        }
-      }
-      else if (originalMessage.message?.contactMessage) {
-        notificationText += `Deleted Media: Contact`;
-        try {
-          const contact = originalMessage.message.contactMessage;
-          const vcard = contact.vcard;
-          await dave.sendMessage(ownerJid, {
-            contacts: {
-              displayName: contact.displayName || 'Contact',
-              contacts: [{ vcard }]
-            }
+          await dave.sendMessage(ownerJid, { 
+            text: notificationText,
+            mentions: [deletedBy, sentBy]
           });
-          await dave.sendMessage(ownerJid, { text: notificationText });
-        } catch (error) {
-          console.error('Failed to send contact:', error);
-          notificationText += `\n\nCould not recover deleted contact`;
-          await dave.sendMessage(ownerJid, { text: notificationText });
+        } catch (dlError) {
+          console.error('Audio download failed, attempting re-upload:', dlError);
+          try {
+            await dave.updateMediaMessage(originalMessage);
+            const buffer = await dave.downloadMediaMessage(originalMessage);
+            await dave.sendMessage(ownerJid, {
+              audio: buffer,
+              ptt: msg.audioMessage.ptt,
+              mimetype: 'audio/mpeg'
+            });
+            await dave.sendMessage(ownerJid, { 
+              text: notificationText,
+              mentions: [deletedBy, sentBy]
+            });
+          } catch (reuploadError) {
+            await dave.sendMessage(ownerJid, { 
+              text: notificationText + `⚠️ Audio was deleted but couldn't be recovered: ${reuploadError.message}`,
+              mentions: [deletedBy, sentBy]
+            });
+          }
         }
       }
-      else if (originalMessage.message?.locationMessage) {
-        notificationText += `Deleted Media: Location`;
+      // === DOCUMENT ===
+      else if (msg.documentMessage) {
         try {
-          const location = originalMessage.message.locationMessage;
+          const buffer = await dave.downloadMediaMessage(originalMessage);
+          const fileName = msg.documentMessage.fileName || 'file';
           await dave.sendMessage(ownerJid, {
-            location: {
-              degreesLatitude: location.degreesLatitude,
-              degreesLongitude: location.degreesLongitude
-            }
+            document: buffer,
+            fileName,
+            mimetype: msg.documentMessage.mimetype || 'application/octet-stream',
+            caption: notificationText,
+            mentions: [deletedBy, sentBy]
           });
-          await dave.sendMessage(ownerJid, { text: notificationText });
-        } catch (error) {
-          console.error('Failed to send location:', error);
-          notificationText += `\n\nCould not recover deleted location`;
-          await dave.sendMessage(ownerJid, { text: notificationText });
+        } catch (dlError) {
+          console.error('Document download failed, attempting re-upload:', dlError);
+          try {
+            await dave.updateMediaMessage(originalMessage);
+            const buffer = await dave.downloadMediaMessage(originalMessage);
+            const fileName = msg.documentMessage.fileName || 'file';
+            await dave.sendMessage(ownerJid, {
+              document: buffer,
+              fileName,
+              mimetype: msg.documentMessage.mimetype || 'application/octet-stream',
+              caption: notificationText,
+              mentions: [deletedBy, sentBy]
+            });
+          } catch (reuploadError) {
+            await dave.sendMessage(ownerJid, { 
+              text: notificationText + `⚠️ Document was deleted but couldn't be recovered: ${reuploadError.message}`,
+              mentions: [deletedBy, sentBy]
+            });
+          }
         }
       }
+      // === CONTACT ===
+      else if (msg.contactMessage) {
+        const contact = msg.contactMessage;
+        await dave.sendMessage(ownerJid, {
+          contacts: {
+            displayName: contact.displayName || 'Contact',
+            contacts: [{ vcard: contact.vcard }]
+          }
+        });
+        await dave.sendMessage(ownerJid, { 
+          text: notificationText,
+          mentions: [deletedBy, sentBy]
+        });
+      }
+      // === LOCATION ===
+      else if (msg.locationMessage) {
+        const location = msg.locationMessage;
+        await dave.sendMessage(ownerJid, {
+          location: {
+            degreesLatitude: location.degreesLatitude,
+            degreesLongitude: location.degreesLongitude
+          }
+        });
+        await dave.sendMessage(ownerJid, { 
+          text: notificationText,
+          mentions: [deletedBy, sentBy]
+        });
+      }
+      // === UNKNOWN MESSAGE TYPE ===
       else {
-        console.log('Unknown message type:', Object.keys(originalMessage.message || {}));
-        notificationText += `Deleted Message: Unknown type\n\nMessage Keys: ${Object.keys(originalMessage.message || {}).join(', ')}`;
-        await dave.sendMessage(ownerJid, { text: notificationText });
+        await dave.sendMessage(ownerJid, { 
+          text: notificationText + `⚠️ Unknown message type was deleted`,
+          mentions: [deletedBy, sentBy]
+        });
       }
-    } catch (error) {
-      console.error('Error handling deleted message:', error);
-      notificationText += `\n\nError recovering deleted content: ${error.message}`;
-      await dave.sendMessage(ownerJid, { text: notificationText });
+    } catch (e) {
+      console.error('Error sending recovered message:', e);
+      await dave.sendMessage(ownerJid, { 
+        text: notificationText + `⚠️ Could not recover message: ${e.message}`,
+        mentions: [deletedBy, sentBy]
+      });
     }
+
+    // === Auto clear saved message immediately ===
+    clearChatData(remoteJid, messageId);
+
   } catch (error) {
     console.error('Error in handleMessageRevocation:', error);
   }
 }
 
-// Use global settings instead of antiDelSettings - COMPLETELY REPLACED
-if (global.settings.antidelete.enabled) {
-  // Check if this is a deletion protocol message (Type 0 = REVOKE)
-  if (m.message?.protocolMessage?.type === 0) {
-    await handleMessageRevocation(dave, m);
-  } else if (m.message) {
-    // Store incoming message for potential future deletion
-    handleIncomingMessage(m);
-  }
-}
 
 
 
