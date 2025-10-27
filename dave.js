@@ -14,7 +14,7 @@ const crypto = require('crypto');
 const nou = require('node-os-utils')
 const moment = require('moment-timezone');
 const path = require ('path');
-const { saveSettings, loadSettings, loadXPrefix, saveXPrefix } = require("./settings");
+const { saveSettings, loadSettings } = require("./settings");
 const { writeFile } = require("./library/utils");
 const didyoumean = require('didyoumean');
 const similarity = require('similarity');
@@ -40,32 +40,30 @@ var body = (m.mtype === 'interactiveResponseMessage') ? JSON.parse(m.message.int
 var msgR = m.message.extendedTextMessage?.contextInfo?.quotedMessage;  
 //////////Libraryfunction///////////////////////
 const { smsg, fetchJson, getBuffer, fetchBuffer, getGroupAdmins, TelegraPh, isUrl, hitungmundur, sleep, clockString, checkBandwidth, runtime, tanggal, getRandom } = require('./library/lib/function')
-// ==================== MAIN SETTINGS (ADMIN & PREFIX) ==================== //
 const budy = (typeof m.text === 'string') ? m.text : '';
-
-// Use only global prefix
 const prefix = global.xprefix || '.';
-
-// Check if message is a command
 const isCmd = budy.startsWith(prefix);
-
-// Extract command name and arguments
 const command = isCmd ? budy.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase() : '';
 const args = isCmd ? budy.slice(prefix.length).trim().split(/\s+/).slice(1) : [];
 const text = args.join(" ");
-const q = text; // optional alias for text
+const q = text;
 
-// Sender info
-const sender = m.key.fromMe ? (dave.user.id.split(':')[0]+'@s.whatsapp.net') : (m.key.participant || m.key.remoteJid);
+const sender = m.key.fromMe 
+  ? (dave.user.id.split(':')[0] + '@s.whatsapp.net') 
+  : (m.key.participant || m.key.remoteJid);
+
 const botNumber = dave.user.id.split(':')[0];
-const senderNumber = sender.split('@')[0];
 
-// Owner check
-const owners = Array.isArray(global.owner) ? global.owner : [global.owner];
-const daveshown = [botNumber, ...owners.map(v => v.replace(/[^0-9]/g, ''))]
-                    .map(v => v + '@s.whatsapp.net')
-                    .includes(sender);
+// Normalize owner to array
+let owners = [];
+if (Array.isArray(global.owner)) {
+  owners = global.owner.map(v => v.toString().replace(/[^0-9]/g, '') + '@s.whatsapp.net');
+} else if (typeof global.owner === 'string' || typeof global.owner === 'number') {
+  owners = [global.owner.toString().replace(/[^0-9]/g, '') + '@s.whatsapp.net'];
+}
 
+// Combine bot + owners
+const daveshown = [botNumber + '@s.whatsapp.net', ...owners].includes(sender);
 // Premium check
 const premuser = JSON.parse(fs.readFileSync("./library/database/premium.json"));
 const formatJid = num => num.replace(/[^0-9]/g,'') + "@s.whatsapp.net";
