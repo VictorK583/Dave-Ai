@@ -74,12 +74,27 @@ function getMenuData() {
         // Count commands dynamically
         let totalCommands = 0
         try {
+            // Count plugin files
             const pluginsDir = path.join(__dirname, '../../daveplugins')
             if (fs.existsSync(pluginsDir)) {
                 const files = fs.readdirSync(pluginsDir)
-                totalCommands = files.filter(file => file.endsWith('.js') && file !== 'menu.js').length
+                totalCommands += files.filter(file => file.endsWith('.js') && file !== 'menu.js').length
+            }
+            
+            // Count case commands from dave.js
+            const daveJsPath = path.join(__dirname, '../../dave.js')
+            if (fs.existsSync(daveJsPath)) {
+                const daveContent = fs.readFileSync(daveJsPath, 'utf8')
+                
+                // Count case statements with both single and double quotes, and handle different formats
+                const caseRegex = /case\s+['"`]([^'"`]+)['"`]\s*:\s*{/g
+                const caseMatches = [...daveContent.matchAll(caseRegex)]
+                const uniqueCaseCommands = new Set(caseMatches.map(match => match[1]))
+                
+                totalCommands += uniqueCaseCommands.size
             }
         } catch (e) {
+            console.error('Error counting commands:', e)
             totalCommands = 100 // fallback
         }
 
@@ -114,12 +129,11 @@ const Menu = `
 ┃ ✦ BotType  : *${global.typebot}*
 ┃ ✦ Prefix   : *${global.xprefix}*
 ┃ ✦ Mode     : *${menuData.mode}*
-┃ ✦ Host     : *{host}*
-┃ ✦ Speed    : *{ping} ms*
-┃ ✦ Uptime   : *{uptime}*
-┃ ✦ RAM      : *{ram} MB*
-┃ ✦ Users    : *{users}*
-┃ ✦ Commands : *{cmds}*
+┃ ✦ Host     : *${menuData.host}*
+┃ ✦ Uptime   : *${menuData.uptime}*
+┃ ✦ RAM      : *${menuData.ram} MB*
+┃ ✦ Users    : *${menuData.users}*
+┃ ✦ Commands : *${menuData.cmds}*
 ╰━━━━━━━━━━━━━━━━━━━━━━━╯
 
 ╰┈➤ *ꜱᴛɪᴄᴋᴇʀꜱ*
@@ -301,6 +315,10 @@ const Menu = `
 > ${global.xprefix}getpp
 > ${global.xprefix}movie
 
+╰┈➤ *ᴜꜱᴇʀ ɪɴꜰᴏ*
+> ${global.xprefix}whois
+> ${global.xprefix}profile
+
 ╰┈➤ *ꜱᴘᴏʀᴛꜱ*
 > ${global.xprefix}fixtures
 > ${global.xprefix}epl
@@ -320,7 +338,7 @@ const Menu = `
 > ${global.xprefix}listcase
 > ${global.xprefix}pair
 
-╰┈➤ *ᴇᴍᴀɪʟ & ᴜᴛɪʟs*
+╰┈➤ *ᴇᴍᴀɪʟ & ᴜᴛɪʟꜱ*
 > ${global.xprefix}sendemail
 > ${global.xprefix}tempmail
 > ${global.xprefix}myip
@@ -431,7 +449,7 @@ const Menu = `
 > ${global.xprefix}sendchat
 
 > *${global.botname}*
-> Enjoy premium performance
+> Total: ${menuData.cmds} Commands | Enjoy premium performance
 `
 
 module.exports = Menu
