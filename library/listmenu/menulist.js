@@ -51,13 +51,13 @@ function getMenuData() {
         // Try to read additional data files
         let messageData = {}
         let userData = []
-        
+
         try {
             messageData = JSON.parse(fs.readFileSync('./messageCount.json', 'utf8'))
         } catch (e) {
             messageData = { isPublic: true }
         }
-        
+
         try {
             userData = JSON.parse(fs.readFileSync('./library/database/users.json', 'utf8'))
         } catch (e) {
@@ -70,7 +70,7 @@ function getMenuData() {
         const hostName = detectHost()
         const ramUsage = (process.memoryUsage().rss / 1024 / 1024).toFixed(2)
         const totalUsers = Array.isArray(userData) ? userData.length : 0
-        
+
         // Count commands dynamically
         let totalCommands = 0
         try {
@@ -82,7 +82,7 @@ function getMenuData() {
         } catch (e) {
             totalCommands = 100 // fallback
         }
-        
+
         return {
             uptime: uptimeFormatted,
             mode: currentMode,
@@ -421,7 +421,7 @@ const Menu = `
 • ${global.xprefix}sendchat
 
 *${global.botname}*
-   *Premium Performance* | 🚀 *Lightning Fast*
+   *Premium Performance* | *Lightning Fast*
 
    *Tip: Use ${global.xprefix}setmenu text/image/video to change display mode!*
 `
@@ -434,4 +434,4 @@ fs.watchFile(file, () => {
     console.log(chalk.redBright(`Update ${__filename}`))
     delete require.cache[file]
     require(file)
-}
+})
