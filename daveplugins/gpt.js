@@ -4,7 +4,7 @@ let daveplug = async (m, { dave, command, reply }) => {
     try {
         // Add reaction to show processing
         await dave.sendMessage(m.chat, {
-            react: { text: '🛰️', key: m.key }
+            react: { text: '🤔', key: m.key }
         });
 
         const text = m.text || m.message?.conversation || m.message?.extendedTextMessage?.text;
