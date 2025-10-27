@@ -449,7 +449,7 @@ const Menu = `
 > ${global.xprefix}sendchat
 
 > *${global.botname}*
-> Total: ${menuData.cmds} Commands | Enjoy premium performance
+> Enjoy premium performance
 `
 
 module.exports = Menu
