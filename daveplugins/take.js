@@ -1,85 +1,67 @@
-const { downloadMediaMessage } = require('@whiskeysockets/baileys');
-const webp = require('node-webpmux');
-const crypto = require('crypto');
+const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter');
+const fs = require('fs').promises;
+const path = require('path');
+const { queue } = require('async');
 
-let daveplug = async (m, { dave, reply, quoted, text, prefix, command }) => {
+const commandQueue = queue(async (task, callback) => {
     try {
-        // Check if message is a reply to a sticker
-        if (!quoted?.message?.stickerMessage) {
-            return await reply('Reply to a sticker with .take <packname>');
-        }
-
-        // Get the packname from text or use default
-        const packname = text ? text.trim() : 'DaveAI';
-
-        // Add processing reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '...', key: m.key }
-        });
-
-        // Download the sticker
-        const stickerBuffer = await downloadMediaMessage(
-            quoted,
-            'buffer',
-            {},
-            {
-                logger: undefined,
-                reuploadRequest: dave.updateMediaMessage
-            }
-        );
-
-        if (!stickerBuffer) {
-            return await reply('Failed to download sticker');
-        }
-
-        // Add metadata using webpmux
-        const img = new webp.Image();
-        await img.load(stickerBuffer);
-
-        // Create metadata
-        const json = {
-            'sticker-pack-id': crypto.randomBytes(32).toString('hex'),
-            'sticker-pack-name': packname,
-            'sticker-pack-publisher': 'DaveAI',
-            'emojis': ['🤖']
-        };
-
-        // Create exif buffer
-        const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00]);
-        const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8');
-        const exif = Buffer.concat([exifAttr, jsonBuffer]);
-        exif.writeUIntLE(jsonBuffer.length, 14, 4);
-
-        // Set the exif data
-        img.exif = exif;
-
-        // Get the final buffer with metadata
-        const finalBuffer = await img.save(null);
-
-        // Add success reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '✓', key: m.key }
-        });
-
-        // Send the sticker
-        await dave.sendMessage(m.chat, {
-            sticker: finalBuffer
-        });
-
+        await task.run(task.context);
     } catch (error) {
-        console.error('Take Command Error:', error);
-        
-        // Add error reaction
-        await dave.sendMessage(m.chat, {
-            react: { text: '✗', key: m.key }
-        });
-        
-        await reply('Error processing sticker. Please try again with a different sticker.');
+        console.error(`WatermarkSticker error: ${error.message}`);
     }
+    callback();
+}, 1);
+
+let daveplug = async (m, { dave, daveshown, reply }) => {
+    if (!daveshown) return reply(mess.owner);
+
+    commandQueue.push({
+        context: { dave, m, reply },
+        run: async ({ dave, m, reply }) => {
+            try {
+                if (!m.quoted) {
+                    return reply("Quote an image, a short video, or a sticker to change watermark.");
+                }
+
+                const mime = m.quoted.mimetype || '';
+                if (!/image|video|image\/webp/.test(mime)) {
+                    return reply("This is neither a sticker, image, nor a short video!");
+                }
+
+                if (m.quoted.videoMessage && m.quoted.videoMessage.seconds > 30) {
+                    return reply("Videos must be 30 seconds or shorter.");
+                }
+
+                const tempFile = path.join(__dirname, `temp-watermark-${Date.now()}.${/image\/webp/.test(mime) ? 'webp' : /image/.test(mime) ? 'jpg' : 'mp4'}`);
+                await reply("A moment, creating the sticker...");
+
+                const media = await m.quoted.download();
+                await fs.writeFile(tempFile, media);
+
+                const stickerResult = new Sticker(media, {
+                    pack: '𝘿𝙖𝙫𝙚𝘼𝙄',
+                    author: 'dave',
+                    type: StickerTypes.FULL,
+                    categories: ['🤩', '🎉'],
+                    id: '12345',
+                    quality: 50,
+                    background: 'transparent'
+                });
+
+                const buffer = await stickerResult.toBuffer();
+                await dave.sendMessage(m.chat, { sticker: buffer }, { quoted: m });
+
+                await fs.unlink(tempFile).catch(() => console.warn('Failed to delete temp file'));
+            } catch (error) {
+                console.error(`WatermarkSticker error: ${error.message}`);
+                reply("An error occurred while creating the sticker. Please try again.");
+            }
+        }
+    });
 };
 
-daveplug.help = ['take'];
-daveplug.tags = ['media'];
-daveplug.command = ['take', 'steal'];
+daveplug.help = ['wm'];
+daveplug.tags = ['sticker'];
+daveplug.command = ['wm'];
 
 module.exports = daveplug;
