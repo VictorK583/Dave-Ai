@@ -1003,6 +1003,134 @@ case 'meaning': {
 }
 break;
 
+case 'setmenu': {
+    try {
+        if (!daveshown) return reply("Owner only command!");
+
+        const type = text ? text.toLowerCase().trim() : '';
+        if (!type || !['text', 'image', 'video'].includes(type)) {
+            return await reply(`Usage:
+${global.xprefix}setmenu text
+${global.xprefix}setmenu image
+${global.xprefix}setmenu video
+
+Current types:
+- text = send menu as plain text
+- image = send menu with a photo
+- video = send menu with a looping gif`);
+        }
+
+        const fs = require('fs');
+        const path = require('path');
+        const settingsFile = path.join(__dirname, 'library/database/menuSettings.json');
+        
+        // Ensure directory exists
+        const databaseDir = path.dirname(settingsFile);
+        if (!fs.existsSync(databaseDir)) {
+            fs.mkdirSync(databaseDir, { recursive: true });
+        }
+
+        // Read existing settings or create new
+        let settings = {};
+        if (fs.existsSync(settingsFile)) {
+            settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+        }
+
+        settings.mode = type;
+        fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
+
+        await reply(`Menu display updated successfully!\nNew mode: ${type.toUpperCase()}`);
+
+    } catch (err) {
+        console.error('Set Menu Command Error:', err);
+        await reply('Failed to update menu settings.');
+    }
+}
+break;
+
+case 'setvideomenu':
+case 'setmenuvideo': {
+    try {
+        if (!daveshown) return reply("Owner only command!");
+        if (!text) return reply(`Usage:\n${global.xprefix}setmenuvideo <video_url>\n\nExample:\n${global.xprefix}setmenuvideo https://example.com/video.mp4`);
+
+        const url = text.trim();
+        if (!/^https?:\/\/\S+\.(mp4|mov|webm|gif)$/i.test(url)) {
+            return reply("Invalid video URL. Please use a valid link ending with .mp4, .mov, .webm, or .gif");
+        }
+
+        const fs = require('fs');
+        const path = require('path');
+        const settingsFile = path.join(__dirname, 'library/database/menuSettings.json');
+
+        // Ensure directory exists
+        const databaseDir = path.dirname(settingsFile);
+        if (!fs.existsSync(databaseDir)) {
+            fs.mkdirSync(databaseDir, { recursive: true });
+        }
+
+        // Read existing settings or create new
+        let settings = { mode: 'video' };
+        if (fs.existsSync(settingsFile)) {
+            settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+        }
+
+        settings.videoUrl = url;
+        settings.mode = 'video'; // Auto-set mode to video
+        fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
+
+        await reply(`Menu video updated successfully!\n🎥 New Video: ${url}`);
+
+    } catch (err) {
+        console.error('Set Menu Video Command Error:', err);
+        await reply('Failed to update menu video.');
+    }
+}
+break;
+
+case 'setppbot':
+case 'setbotpp':
+case 'setmenuimage': {
+    try {
+        if (!daveshown) return reply("Owner only command!");
+        if (!text) return reply(`Usage:\n${global.xprefix}setmenuimage <image_url>\n\nExample:\n${global.xprefix}setmenuimage https://files.catbox.moe/cp8oat.jpg`);
+
+        const url = text.trim();
+        if (!/^https?:\/\/\S+\.(jpg|jpeg|png|gif|webp)$/i.test(url)) {
+            return reply("Invalid image URL. Please use a valid link ending with .jpg, .png, .gif, or .webp");
+        }
+
+        const fs = require('fs');
+        const path = require('path');
+        const settingsFile = path.join(__dirname, 'library/database/menuSettings.json');
+
+        // Ensure directory exists
+        const databaseDir = path.dirname(settingsFile);
+        if (!fs.existsSync(databaseDir)) {
+            fs.mkdirSync(databaseDir, { recursive: true });
+        }
+
+        // Read existing settings or create new
+        let settings = { mode: 'image' };
+        if (fs.existsSync(settingsFile)) {
+            settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+        }
+
+        settings.imageUrl = url;
+        settings.mode = 'image'; // Auto-set mode to image
+        fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
+
+        await reply(`Menu image updated successfully!\n🖼️ New Image: ${url}`);
+
+    } catch (err) {
+        console.error('Set Menu Image Command Error:', err);
+        await reply('Failed to update menu image.');
+    }
+}
+break;
+
+
+
 case 'request':
 case 'joinrequests': {
     try {
