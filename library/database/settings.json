@@ -22,6 +22,8 @@
   "goodbye": false,
   "anticall": false,
   "autobio": true,
+  "sudo": [],
+  "users": [],
   "antidelete": { "enabled": true },
   "antilinkgc": { "enabled": false },
   "antilink": { "enabled": false },
