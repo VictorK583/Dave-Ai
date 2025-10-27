@@ -560,8 +560,8 @@ if (m.isGroup && global.settings?.antitag?.[m.chat]?.enabled) {
 }
 
 
-// === Temporary folder for message storage ===
-const baseDir = 'message_data';
+
+/* const baseDir = 'message_data';
 if (!fs.existsSync(baseDir)) {
   fs.mkdirSync(baseDir);
 }
@@ -908,7 +908,7 @@ async function handleMessageRevocation(dave, revocationData) {
   } catch (error) {
     console.error('Error in handleMessageRevocation:', error);
   }
-}
+} */
 
 
 
