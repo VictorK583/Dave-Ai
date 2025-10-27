@@ -16,12 +16,12 @@ global.antiedit = antieditState;
 
 let daveplug = async (m, { daveshown, args, reply }) => {
   // Only owner can toggle
-  if (!daveshown) return reply('❌ *Owner only command.*');
+  if (!daveshown) return reply('*Owner only command.*');
 
   const mode = args[0]?.toLowerCase();
   if (!mode || !['on', 'off', 'private'].includes(mode)) {
     return reply(
-      '*📝 𝘿𝙖𝙫𝙚𝘼𝙄 ANTIEDIT USAGE*\n\n' +
+      '*𝘿𝙖𝙫𝙚𝘼𝙄 ANTIEDIT USAGE*\n\n' +
       '`.antiedit on` — Enable in all chats\n' +
       '`.antiedit private` — Send edit alerts only to bot owner\n' +
       '`.antiedit off` — Disable the feature'
@@ -38,10 +38,10 @@ let daveplug = async (m, { daveshown, args, reply }) => {
 
   // Feedback message
   if (mode === 'on')
-    return reply('✅ *𝘿𝙖𝙫𝙚𝘼𝙄 Antiedit enabled in all chats.*');
+    return reply('*𝘿𝙖𝙫𝙚𝘼𝙄 Antiedit enabled in all chats.*');
   if (mode === 'private')
-    return reply('✅ *𝘿𝙖𝙫𝙚𝘼𝙄 Antiedit enabled — alerts will be sent privately.*');
-  return reply('❌ *𝘿𝙖𝙫𝙚𝘼𝙄 Antiedit disabled.*');
+    return reply('*𝘿𝙖𝙫𝙚𝘼𝙄 Antiedit enabled — alerts will be sent privately.*');
+  return reply('*𝘿𝙖𝙫𝙚𝘼𝙄 Antiedit disabled.*');
 };
 
 daveplug.help = ['antiedit'];
