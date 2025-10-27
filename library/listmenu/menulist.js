@@ -74,7 +74,7 @@ function getMenuData() {
         // Count commands dynamically
         let totalCommands = 0
         try {
-            const pluginsDir = path.join(__dirname, '../plugins')
+            const pluginsDir = path.join(__dirname, '../daveplugins')
             if (fs.existsSync(pluginsDir)) {
                 const files = fs.readdirSync(pluginsDir)
                 totalCommands = files.filter(file => file.endsWith('.js') && file !== 'menu.js').length
