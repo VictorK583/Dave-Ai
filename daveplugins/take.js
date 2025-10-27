@@ -62,6 +62,6 @@ let daveplug = async (m, { dave, daveshown, reply }) => {
 
 daveplug.help = ['take'];
 daveplug.tags = ['sticker'];
-daveplug.command = ['take,wm'];
+daveplug.command = ['take','wm'];
 
 module.exports = daveplug;
