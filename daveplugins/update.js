@@ -24,22 +24,23 @@ async function restartProcess(dave, m) {
     if (dave && m) {
         await dave.sendMessage(m.chat, { text: 'Restarting bot... Back online shortly.' });
     }
-    try {
-        await run('pm2 restart all');
-    } catch {
-        setTimeout(() => process.exit(0), 2000);
-    }
+    try { await run('pm2 restart all'); } 
+    catch { setTimeout(() => process.exit(0), 2000); }
 }
 
-// Clean temp files
-function cleanAllTempFiles() {
-    const items = fs.readdirSync('.');
-    for (const item of items) {
+// ==================== CLEANUP ==================== //
+function cleanAllTempFiles(base = '.') {
+    if (!fs.existsSync(base)) return;
+    for (const item of fs.readdirSync(base)) {
+        const fullPath = path.join(base, item);
         try {
-            const fullPath = path.join('.', item);
             const stat = fs.lstatSync(fullPath);
-            if (stat.isDirectory() && /^(backup_|tmp_|temp_|tmp_update|tmp)$/.test(item)) {
-                fs.rmSync(fullPath, { recursive: true, force: true });
+            if (stat.isDirectory()) {
+                if (/^(backup_|tmp_|temp_|tmp_update|tmp)$/.test(item)) {
+                    fs.rmSync(fullPath, { recursive: true, force: true });
+                } else {
+                    cleanAllTempFiles(fullPath);
+                }
             } else if (stat.isFile() && /\.(zip|tmp|backup)$/.test(item)) {
                 fs.unlinkSync(fullPath);
             }
@@ -47,7 +48,7 @@ function cleanAllTempFiles() {
     }
 }
 
-// Read configs to memory
+// ==================== CONFIG MEMORY ==================== //
 function readConfigFilesToMemory() {
     const files = [
         'settings.js', 'config.js', '.env',
@@ -56,13 +57,10 @@ function readConfigFilesToMemory() {
         'messageCount.json'
     ];
     const memory = {};
-    for (const f of files) {
-        if (fs.existsSync(f)) memory[f] = fs.readFileSync(f, 'utf8');
-    }
+    for (const f of files) if (fs.existsSync(f)) memory[f] = fs.readFileSync(f, 'utf8');
     return memory;
 }
 
-// Restore configs
 function restoreConfigFilesFromMemory(memory) {
     for (const [file, content] of Object.entries(memory)) {
         if (!content) continue;
@@ -72,7 +70,7 @@ function restoreConfigFilesFromMemory(memory) {
     }
 }
 
-// Download ZIP
+// ==================== FILE HELPERS ==================== //
 async function downloadFile(url, dest) {
     return new Promise((resolve, reject) => {
         const writer = fs.createWriteStream(dest);
@@ -83,19 +81,17 @@ async function downloadFile(url, dest) {
     });
 }
 
-// Extract ZIP
 async function extractZip(zipPath, outDir) {
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
     try { await run(`unzip -o "${zipPath}" -d "${outDir}"`); } 
     catch { new AdmZip(zipPath).extractAllTo(outDir, true); }
 }
 
-// Smart copy preserving config files
 async function smartCopy(src, dest, memory) {
     if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
     const ignore = ['node_modules', '.git', 'session', 'backup_', 'tmp_', 'temp_'];
     for (const e of fs.readdirSync(src)) {
-        if (ignore.some(i => e.includes(i)) || Object.keys(memory).some(f => f.endsWith(e))) continue;
+        if (ignore.some(i => e.includes(i)) || Object.keys(memory).some(f => path.basename(f) === e)) continue;
         const s = path.join(src, e), d = path.join(dest, e);
         const stat = fs.lstatSync(s);
         try { stat.isDirectory() ? await smartCopy(s, d, memory) : fs.copyFileSync(s, d); } 
@@ -103,7 +99,7 @@ async function smartCopy(src, dest, memory) {
     }
 }
 
-// ==================== UPDATE FUNCTIONS ==================== //
+// ==================== UPDATES ==================== //
 async function updateViaGit(dave, m, replyMsg) {
     const memory = readConfigFilesToMemory();
     try {
@@ -163,17 +159,16 @@ let daveplug = async (m, { dave, daveshown, command, reply }) => {
     const replyMsg = await dave.sendMessage(m.chat, { text: 'Checking update method...' });
 
     try {
-        if (command === 'update') {
-            hasGitRepo() ? await updateViaGit(dave, m, replyMsg) : await updateViaZip(dave, m, replyMsg);
-        } else if (command === 'restart' || command === 'start') {
+        if (command === 'update') hasGitRepo() ? await updateViaGit(dave, m, replyMsg) : await updateViaZip(dave, m, replyMsg);
+        else if (command === 'restart' || command === 'start') {
             await dave.sendMessage(m.chat, { text: 'Restarting bot...', edit: replyMsg.key });
             await restartProcess(dave, m);
-        } else if (command === 'clean') {
+        }
+        else if (command === 'clean') {
             cleanAllTempFiles();
             await dave.sendMessage(m.chat, { text: 'All temp files cleaned!', edit: replyMsg.key });
-        } else {
-            await dave.sendMessage(m.chat, { text: 'Usage: .update or .restart or .clean', edit: replyMsg.key });
         }
+        else await dave.sendMessage(m.chat, { text: 'Usage: .update or .restart or .clean', edit: replyMsg.key });
     } catch (e) {
         console.error('Update command error:', e);
         await dave.sendMessage(m.chat, { text: 'Update failed: ' + e.message, edit: replyMsg.key });
