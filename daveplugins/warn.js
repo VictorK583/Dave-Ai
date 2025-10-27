@@ -71,4 +71,4 @@ daveplug.help = ['warn']
 daveplug.tags = ['group']
 daveplug.command = ['warn', 'warning']
 
-module.exports = daveplug;
+module.exports = daveplug
