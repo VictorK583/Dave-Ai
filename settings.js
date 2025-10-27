@@ -80,12 +80,13 @@ function saveSettings(settings) {
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
 }
 
-// Attach to global
+
 global.settings = loadSettings();
 global.saveSettings = saveSettings;
 
-// Make sure these are globally accessible
 global.owner = global.settings.owner;
+global.ownername = global.settings.ownername;
+global.botname = global.settings.botname;
 global.mess = global.settings.mess;
 global.xprefix = global.settings.xprefix;
 global.typebot = global.settings.typebot;
