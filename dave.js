@@ -902,13 +902,12 @@ break;
 
 case 'updatebot': {
     if (!daveshown) return reply(global.mess.owner); // owner only
-    
+
     const { exec } = require('child_process');
     const fs = require('fs');
     const path = require('path');
     const https = require('https');
     const { rmSync } = require('fs');
-    const settings = require('./config');
 
     const run = (cmd) => new Promise((resolve, reject) => {
         exec(cmd, { windowsHide: true }, (err, stdout, stderr) => {
@@ -998,10 +997,10 @@ case 'updatebot': {
         await extractZip(zipPath, extractTo);
         const [root] = fs.readdirSync(extractTo).map(n => path.join(extractTo, n));
         const srcRoot = fs.existsSync(root) && fs.lstatSync(root).isDirectory() ? root : extractTo;
-        
+
         // PROTECT ONLY ESSENTIAL FILES - using your exact ignore pattern
         const ignore = ['node_modules', '.git', 'davesession', 'tmp', 'data', 'library/database'];
-        
+
         const copied = [];
         copyRecursive(srcRoot, process.cwd(), ignore, '', copied);
         try { fs.rmSync(extractTo, { recursive: true, force: true }); } catch {}
@@ -1049,17 +1048,64 @@ case 'updatebot': {
         }
 
         await reply("Restarting bot... Dave-Ai will be back online shortly");
-        
+
         setTimeout(async () => {
             await restartProcess();
         }, 3000);
 
     } catch (err) {
-        log(`UpdateBot Error: ${err.message}`, 'red', true);
+        console.error('UpdateBot Error:', err.message);
         await reply(`Update failed: ${err.message}\nPlease check logs and try again`);
     }
 }
 break;
+
+case 'setmenu': {
+    try {
+        if (!daveshown) return reply("Owner only command!");
+
+        const type = text ? text.toLowerCase().trim() : '';
+        if (!type || !['text', 'image', 'video'].includes(type)) {
+            return await reply(`Usage:
+${global.xprefix}setmenu text
+${global.xprefix}setmenu image
+${global.xprefix}setmenu video
+
+Current types:
+- text = send menu as plain text
+- image = send menu with a photo
+- video = send menu with a looping gif`);
+        }
+
+        const fs = require('fs');
+        const path = require('path');
+        const settingsFile = path.join(__dirname, 'library/database/menuSettings.json');
+
+        // Ensure directory exists
+        const databaseDir = path.dirname(settingsFile);
+        if (!fs.existsSync(databaseDir)) {
+            fs.mkdirSync(databaseDir, { recursive: true });
+        }
+
+        // Read existing settings or create new
+        let settings = {};
+        if (fs.existsSync(settingsFile)) {
+            settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+        }
+
+        settings.mode = type;
+        fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
+
+        await reply(`Menu display updated successfully!\nNew mode: ${type.toUpperCase()}`);
+
+    } catch (err) {
+        console.error('Set Menu Command Error:', err);
+        await reply('Failed to update menu settings.');
+    }
+}
+break;
+                
+
 
 case 'setmenu': {
     try {
