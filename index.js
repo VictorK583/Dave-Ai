@@ -2,20 +2,7 @@ require('./settings')
 require('dotenv').config()
 const config = require('./config');
 // Core Baileys imports
-const {
-    default: makeWASocket,
-    useMultiFileAuthState,
-    DisconnectReason,
-    fetchLatestBaileysVersion,
-    jidNormalizedUser,
-    makeCacheableSignalKeyStore,
-    delay,
-    downloadContentFromMessage,
-    generateForwardMessageContent,
-    generateWAMessageFromContent,
-    jidDecode
-} = require("@whiskeysockets/baileys")
-
+const { default: makeWASocket, getAggregateVotesInPollMessage, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto } = require("@whiskeysockets/baileys")
 // Utilities
 const fs = require('fs')
 const chalk = require('chalk')
@@ -152,26 +139,54 @@ function sessionExists() {
 }
 
 // Cleanup functions
-function cleanupOldMessages() {
-    let storedMessages = loadStoredMessages()
-    let now = Math.floor(Date.now() / 1000)
-    const maxMessageAge = 24 * 60 * 60
-    let cleanedMessages = {}
+function cleanupOldMessages(maxMessageAge = 24 * 60 * 60) { // default 1 day
+    const now = Math.floor(Date.now() / 1000)
+    let totalMessages = 0, removedMessages = 0, keptMessages = 0
 
-    for (let chatId in storedMessages) {
-        let newChatMessages = {}
-        for (let messageId in storedMessages[chatId]) {
-            let message = storedMessages[chatId][messageId]
-            if (now - message.timestamp <= maxMessageAge) {
-                newChatMessages[messageId] = message
+    Object.keys(store.messages).forEach(jid => {
+        const messages = store.messages[jid]
+        totalMessages += messages.length
+
+        // Filter out old messages
+        let filtered = messages.filter(msg => {
+            let ts = msg.messageTimestamp || msg.message?.timestamp || 0
+
+            // Handle Baileys Long object
+            if (typeof ts === 'object' && ts.low !== undefined) ts = ts.low
+
+            // Convert milliseconds to seconds if needed
+            if (ts > 1e12) ts = Math.floor(ts / 1000)
+
+            if (now - ts <= maxMessageAge) {
+                keptMessages++
+                return true
+            } else {
+                removedMessages++
+                return false
             }
+        })
+
+        // Enforce MAX_MESSAGES per chat
+        if (filtered.length > store.MAX_MESSAGES) {
+            filtered = filtered.slice(-store.MAX_MESSAGES)
         }
-        if (Object.keys(newChatMessages).length > 0) {
-            cleanedMessages[chatId] = newChatMessages
+
+        if (filtered.length > 0) {
+            store.messages[jid] = filtered
+        } else {
+            delete store.messages[jid]
         }
-    }
-    saveStoredMessages(cleanedMessages)
-    log("🧹 Old messages cleaned", 'yellow')
+    })
+
+    // Persist changes
+    store.writeToFile()
+
+    // Log cleanup summary
+    log(`[Dave-Ai] 🧹 Message cleanup completed:`, 'yellow')
+    log(`- Total messages processed: ${totalMessages}`, 'yellow')
+    log(`- Messages removed: ${removedMessages}`, 'yellow')
+    log(`- Messages kept: ${keptMessages}`, 'yellow')
+    log(`- Chats remaining: ${Object.keys(store.messages).length}`, 'yellow')
 }
 
 function cleanupJunkFiles(botSocket) {
@@ -473,32 +488,50 @@ async function startDave() {
     });
 
     store.bind(dave.ev);
+    
+    
+// ========== CONFIGURATION & INITIALIZATION ==========
+if (typeof global.settings.autoviewstatus === 'undefined') {
+    global.settings.autoviewstatus = true
+}
 
+const MAX_ANTI_DELETE_MESSAGES = 50;
 const antiDeleteStorage = new Map();
 const processedDeletes = new Set();
+const editedMessages = new Map();
+const EDIT_COOLDOWN = 5 * 60 * 1000;
+const baseDir = 'message_data';
+if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir);
 
-// === ANTI-DELETE FUNCTIONS ===
+const antiCallNotified = new Set()
+
+// ========== UTILITY FUNCTIONS ==========
+// ----------------- SAVE MESSAGE FOR ANTI-DELETE ----------------- //
 function saveMessageForAntiDelete(message) {
     try {
         if (!message.key?.remoteJid || !message.key?.id || !message.message) return;
-        
-        if (message.message.protocolMessage || message.key.remoteJid === 'status@broadcast') return;
-        
+        if (message.message.protocolMessage) return;
+
+        const chatId = message.key.remoteJid;
+        const chatMessages = antiDeleteStorage.get(chatId) || [];
         const messageData = {
             key: { ...message.key },
             message: { ...message.message },
             timestamp: Date.now(),
-            sender: message.key.participant || message.key.remoteJid
+            sender: message.key.participant || chatId
         };
-        
-        antiDeleteStorage.set(message.key.id, messageData);
-        
-        setTimeout(() => {
-            antiDeleteStorage.delete(message.key.id);
-        }, 24 * 60 * 60 * 1000);
-        
-    } catch (error) {
-        console.error('Error saving message for anti-delete:', error);
+
+        chatMessages.push(messageData);
+        if (chatMessages.length > MAX_ANTI_DELETE_MESSAGES)
+            chatMessages.splice(0, chatMessages.length - MAX_ANTI_DELETE_MESSAGES);
+
+        antiDeleteStorage.set(chatId, chatMessages);
+
+        const chatDir = path.join(baseDir, chatId);
+        if (!fs.existsSync(chatDir)) fs.mkdirSync(chatDir, { recursive: true });
+        fs.writeFileSync(path.join(chatDir, `${message.key.id}.json`), JSON.stringify(messageData, null, 2));
+    } catch (err) {
+        log('Error saving message for anti-delete:', 'red', true)
     }
 }
 
@@ -506,103 +539,160 @@ async function handleDeletedMessage(dave, update) {
     try {
         const protocolMessage = update.update?.message?.protocolMessage;
         if (!protocolMessage || protocolMessage.type !== 0) return;
-        
-        const deletedMessageKey = protocolMessage.key;
-        if (!deletedMessageKey?.remoteJid || !deletedMessageKey?.id) return;
-        
-        if (processedDeletes.has(deletedMessageKey.id)) return;
-        processedDeletes.add(deletedMessageKey.id);
-        
-        const originalMessage = antiDeleteStorage.get(deletedMessageKey.id);
+
+        const deletedKey = protocolMessage.key;
+        if (!deletedKey?.remoteJid || !deletedKey?.id) return;
+        if (processedDeletes.has(deletedKey.id)) return;
+
+        processedDeletes.add(deletedKey.id);
+        const chatId = deletedKey.remoteJid;
+
+        // Memory first
+        let originalMessage = (antiDeleteStorage.get(chatId) || []).find(m => m.key.id === deletedKey.id);
+
+        // Fallback to file
+        if (!originalMessage) {
+            const filePath = path.join(baseDir, chatId, `${deletedKey.id}.json`);
+            if (fs.existsSync(filePath)) originalMessage = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        }
         if (!originalMessage) return;
-        
-        const remoteJid = deletedMessageKey.remoteJid;
+
         const deleter = update.key.participant || update.key.remoteJid;
         const sender = originalMessage.sender;
-        
         const botJid = dave.user.id.split(':')[0] + '@s.whatsapp.net';
-        if (deleter === botJid || sender === botJid) {
-            antiDeleteStorage.delete(deletedMessageKey.id);
-            return;
-        }
-        
-        await notifyAboutDeletedMessage(dave, originalMessage, deleter, sender);
-        
-        antiDeleteStorage.delete(deletedMessageKey.id);
-        setTimeout(() => processedDeletes.delete(deletedMessageKey.id), 30000);
-        
-    } catch (error) {
-        console.error('Anti-delete error:', error);
-    }
-}
+        if (deleter === botJid || sender === botJid) return;
 
-async function notifyAboutDeletedMessage(dave, originalMessage, deleter, sender) {
-    try {
-        const remoteJid = originalMessage.key.remoteJid;
+        // Notify owner
+        const ownerJid = botJid;
         const deleterName = `@${deleter.split('@')[0]}`;
         const senderName = `@${sender.split('@')[0]}`;
-        
-        let chatName = 'Private Chat';
-        if (remoteJid.endsWith('@g.us')) {
-            try {
-                const groupMetadata = await dave.groupMetadata(remoteJid);
-                chatName = groupMetadata.subject;
-            } catch (e) {
-                chatName = 'Group Chat';
-            }
-        }
-        
-        const notificationText = 
-            `🛡️ *𝘿𝙖𝙫𝙚𝘼𝙄 𝘼𝙣𝙩𝙞-𝘿𝙚𝙡𝙚𝙩𝙚*\n\n` +
+        let chatName = chatId.endsWith('@g.us') ? (await dave.groupMetadata(chatId).catch(() => ({ subject: 'Group Chat' }))).subject : 'Private Chat';
+
+        let notificationText =
+            `DAVEAI-ANTIDELETE🔥\n\n` +
             `👥 Chat: ${chatName}\n` +
             `🧍‍♂️ Deleted by: ${deleterName}\n` +
             `💬 Sent by: ${senderName}\n` +
             `🕒 Time: ${new Date().toLocaleString()}\n\n`;
-        
-        const ownerJid = dave.user.id.split(':')[0] + '@s.whatsapp.net';
+
         const msg = originalMessage.message;
+
+        if (msg?.conversation) {
+            await dave.sendMessage(ownerJid, { text: notificationText + `💭 Message:\n${msg.conversation}`, mentions: [deleter, sender] });
+        } else if (msg?.extendedTextMessage) {
+            await dave.sendMessage(ownerJid, { text: notificationText + `💭 Message:\n${msg.extendedTextMessage.text}`, mentions: [deleter, sender] });
+        } else if (msg?.imageMessage) {
+            const buffer = await dave.downloadMediaMessage(originalMessage).catch(() => null);
+            if (buffer) await dave.sendMessage(ownerJid, { image: buffer, caption: notificationText + '🖼️ Deleted Image', mentions: [deleter, sender] });
+            else await dave.sendMessage(ownerJid, { text: notificationText + '🖼️ Image deleted (download failed)', mentions: [deleter, sender] });
+        } else if (msg?.videoMessage) {
+            const buffer = await dave.downloadMediaMessage(msg.videoMessage).catch(() => null);
+            if (buffer) await dave.sendMessage(ownerJid, { video: buffer, caption: notificationText + '🎬 Deleted Video', mentions: [deleter, sender] });
+            else await dave.sendMessage(ownerJid, { text: notificationText + '🎬 Video deleted (download failed)', mentions: [deleter, sender] });
+        } else if (msg?.audioMessage) {
+            const buffer = await dave.downloadMediaMessage(msg.audioMessage).catch(() => null);
+            if (buffer) await dave.sendMessage(ownerJid, { audio: buffer, ptt: msg.audioMessage.ptt || false, mentions: [deleter, sender] });
+        } else if (msg?.stickerMessage) {
+            const buffer = await dave.downloadMediaMessage(msg.stickerMessage).catch(() => null);
+            if (buffer) await dave.sendMessage(ownerJid, { sticker: buffer });
+        } else if (msg?.documentMessage) {
+            const buffer = await dave.downloadMediaMessage(msg.documentMessage).catch(() => null);
+            if (buffer) await dave.sendMessage(ownerJid, { document: buffer, fileName: msg.documentMessage.fileName || `document_${Date.now()}.dat` });
+        } else {
+            await dave.sendMessage(ownerJid, { text: notificationText + '📄 Deleted message type not supported', mentions: [deleter, sender] });
+        }
+
+        // Remove from memory + file
+        antiDeleteStorage.set(chatId, (antiDeleteStorage.get(chatId) || []).filter(m => m.key.id !== deletedKey.id));
+        const filePath = path.join(baseDir, chatId, `${deletedKey.id}.json`);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+        setTimeout(() => processedDeletes.delete(deletedKey.id), 30_000);
         
-        if (msg.conversation) {
-            await dave.sendMessage(ownerJid, {
-                text: notificationText + `💭 Message:\n${msg.conversation}`,
-                mentions: [deleter, sender]
-            });
-        }
-        else if (msg.extendedTextMessage) {
-            await dave.sendMessage(ownerJid, {
-                text: notificationText + `💭 Message:\n${msg.extendedTextMessage.text}`,
-                mentions: [deleter, sender]
-            });
-        }
-        else if (msg.imageMessage) {
-            try {
-                const buffer = await dave.downloadMediaMessage(originalMessage);
-                await dave.sendMessage(ownerJid, {
-                    image: buffer,
-                    caption: notificationText + '🖼️ Deleted Image',
-                    mentions: [deleter, sender]
-                });
-            } catch (e) {
-                await dave.sendMessage(ownerJid, {
-                    text: notificationText + `🖼️ Image deleted (download failed)`,
-                    mentions: [deleter, sender]
-                });
-            }
-        }
-        else {
-            const messageType = Object.keys(msg)[0];
-            await dave.sendMessage(ownerJid, {
-                text: notificationText + `📄 Deleted ${messageType.replace('Message', '').toUpperCase()}`,
-                mentions: [deleter, sender]
-            });
-        }
-        
-    } catch (error) {
-        console.error('Error notifying about deleted message:', error);
+        log(`Anti-delete triggered for message from ${senderName} deleted by ${deleterName}`, 'cyan')
+    } catch (err) {
+        log('Anti-delete error:', 'red', true)
     }
 }
 
-// === YOUR EXISTING EVENT LISTENERS ===
+// ----------------- HANDLE MESSAGE EDIT ----------------- //
+async function handleMessageEdit(dave, update) {
+    try {
+        if (!global.settings.antiedit) return;
+        const { key, update: updateData } = update;
+        if (!key?.remoteJid || !updateData?.message) return;
+
+        const chat = key.remoteJid;
+        const sender = key.participant || chat;
+        const botNumber = dave.user.id.split(':')[0];
+        if (sender.includes(botNumber)) return;
+
+        const editedMsg = updateData.message;
+        const type = Object.keys(editedMsg)[0];
+        if (!['conversation', 'extendedTextMessage'].includes(type)) return;
+
+        const newText = type === 'conversation' ? editedMsg.conversation : editedMsg.extendedTextMessage.text;
+        const original = editedMessages.get(key.id);
+        const oldText = original?.text || '_[Old text unavailable]_';
+        const senderName = sender.split('@')[0];
+        const chatName = chat.endsWith('@g.us') ? (await dave.groupMetadata(chat).catch(() => ({ subject: 'Unknown Group' }))).subject : senderName;
+
+        const message = `⚠️ *MESSAGE EDITED*\n\n👤 *Sender:* @${senderName}\n💬 *Old:* ${oldText}\n✏️ *New:* ${newText}\n📍 *Chat:* ${chatName}\n🕐 *Time:* ${new Date().toLocaleTimeString()}\n\n🤖 *From:* ${global.settings.botname}`;
+        const sendTo = global.settings.antiedit === 'private' ? `${botNumber}@s.whatsapp.net` : chat;
+
+        await dave.sendMessage(sendTo, { text: message, mentions: [sender] });
+
+        editedMessages.set(key.id, { chat, sender, text: newText, timestamp: Date.now() });
+        setTimeout(() => editedMessages.delete(key.id), EDIT_COOLDOWN);
+        
+        log(`Anti-edit triggered for message from ${senderName} in ${chatName}`, 'blue')
+    } catch (err) {
+        log('Anti-edit error:', 'red', true)
+    }
+}
+
+// ========== EVENT LISTENERS (REGISTER BEFORE CONNECTION) ==========
+
+// ----------------- STATUS UPDATES HANDLER ----------------- //
+dave.ev.on('messages.upsert', async chatUpdate => {
+    try {
+        if (!chatUpdate.messages || chatUpdate.messages.length === 0) return
+        const mek = chatUpdate.messages[0]
+
+        if (!mek.message) return
+        mek.message =
+            Object.keys(mek.message)[0] === 'ephemeralMessage'
+                ? mek.message.ephemeralMessage.message
+                : mek.message
+
+        // Only process status messages
+        if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+
+            // --------- VIEW STATUS ---------
+            if (global.settings.autoviewstatus) {
+                await dave.readMessages([mek.key])
+                log(`👁️ Viewed status from ${mek.key.participant}`, 'green')
+            }
+
+            // --------- REACT TO STATUS ---------
+            if (global.settings.autoreactstatus) {
+                const emoji = ["💙","❤️","🌚","😍","✅"]
+                const sigma = emoji[Math.floor(Math.random() * emoji.length)]
+
+                await dave.sendMessage(
+                    'status@broadcast',
+                    { react: { text: sigma, key: mek.key } },
+                    { statusJidList: [mek.key.participant] }
+                )
+                log(`💬 Reacted to status from ${mek.key.participant} with ${sigma}`, 'yellow')
+            }
+        }
+    } catch (err) {
+        log(`❌ Status view/react error: ${err.message}`, 'red')
+    }
+})
+
+// ----------------- GROUP PARTICIPANTS UPDATE HANDLER ----------------- //
 dave.ev.on('group-participants.update', async (anu) => {
     try {
         const settings = loadSettings();
@@ -656,78 +746,74 @@ dave.ev.on('group-participants.update', async (anu) => {
     }
 });
 
+// ----------------- CALL HANDLER ----------------- //
+dave.ev.on('call', async (calls) => {
+    try {
+        if (!global.anticall) return
+
+        for (const call of calls) {
+            const callerId = call.from
+            if (!callerId) continue
+
+            const callerNumber = callerId.split('@')[0]
+            if (global.owner?.includes(callerNumber)) continue
+
+            if (call.status === 'offer') {
+                log(`Rejecting ${call.isVideo ? 'video' : 'voice'} call from ${callerNumber}`, 'yellow')
+
+                if (call.id) {
+                    await dave.rejectCall(call.id, callerId).catch(err => 
+                        log(`Reject error: ${err.message}`, 'red', true))
+                }
+
+                if (!antiCallNotified.has(callerId)) {
+                    antiCallNotified.add(callerId)
+
+                    await dave.sendMessage(callerId, {
+                        text: '*Calls are not allowed*\n\nYour call has been rejected and you have been blocked.\nSend a text message instead.'
+                    }).catch(() => {})
+
+                    setTimeout(async () => {
+                        await dave.updateBlockStatus(callerId, 'block').catch(() => {})
+                        log(`Blocked ${callerNumber}`, 'green')
+                    }, 2000)
+
+                    setTimeout(() => antiCallNotified.delete(callerId), 300000)
+                }
+            }
+        }
+    } catch (err) {
+        log(`Anticall handler error: ${err}`, 'red', true)
+    }
+})
+
+// ----------------- MAIN MESSAGE HANDLER ----------------- //
 dave.ev.on('messages.upsert', async (chatUpdate) => {
     try {
         if (!chatUpdate.messages || chatUpdate.messages.length === 0) return;
+
         const mek = chatUpdate.messages[0];
         if (!mek.message) return;
 
-        mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage')
-            ? mek.message.ephemeralMessage.message
+        mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') 
+            ? mek.message.ephemeralMessage.message 
             : mek.message;
 
         const chatId = mek.key.remoteJid;
-        const fromMe = mek.key.fromMe || false;
+        const fromMe = mek.key.fromMe;
 
-        // === ANTI-DELETE: Save messages ===
-        if (global.antidelete && global.antidelete !== 'off') {
-            saveMessageForAntiDelete(mek);
-        }
+        if (!global.settings.public && !fromMe && chatUpdate.type === 'notify') return;
 
-        // === FIXED STATUS REACTION ===
-        if (chatId === 'status@broadcast') {
-            try {
-                const participant = mek.key.participant || mek.participant;
+        // Save for anti-delete
+        if (global.settings.antidelete) saveMessageForAntiDelete(mek);
 
-                if (global.settings.autoviewstatus) {
-                    await dave.readMessages([mek.key]);
-                }
-
-                if (global.settings.autoreactstatus && participant) {
-                    const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
-
-                    if (typeof doReact === 'function') {
-                        await doReact(dave, 'status@broadcast', mek, emoji, participant);
-                    } else {
-                        await dave.sendMessage(
-                            'status@broadcast',
-                            {
-                                react: { text: emoji, key: mek.key },
-                            },
-                            { statusJidList: [participant] }
-                        );
-                    }
-                }
-            } catch (statusErr) {
-                console.log(`Status handling error: ${statusErr.message}`);
-            }
-            return;
-        }
-
-        // === ANTI-EDIT: Cache original messages ===
-        if (!fromMe) {
-            const type = Object.keys(mek.message)[0];
-            if (['conversation', 'extendedTextMessage'].includes(type)) {
-                const text = type === 'conversation'
-                    ? mek.message.conversation
-                    : mek.message.extendedTextMessage.text;
-
-                editedMessages.set(mek.key.id, {
-                    chat: chatId, 
-                    sender: mek.key.participant || chatId, 
-                    text, 
-                    timestamp: Date.now()
-                });
-
-                setTimeout(() => editedMessages.delete(mek.key.id), 5 * 60 * 1000);
-            }
-        }
-
-        if (global.settings.autoread.enabled && !fromMe) {
+        // Auto-read messages
+        if (global.settings.autoread?.enabled && !fromMe) {
             await dave.readMessages([mek.key]).catch(() => {});
         }
 
-        if (!fromMe && (global.settings.areact.enabled || (global.settings.areact.chats && global.settings.areact.chats[chatId]))) {
+        // Auto-react messages
+        if (!fromMe && (global.settings.areact?.enabled || (global.settings.areact?.chats && global.settings.areact.chats[chatId]))) {
             const emoji = areactEmojis[Math.floor(Math.random() * areactEmojis.length)];
             if (typeof doReact === 'function') {
                 await doReact(dave, chatId, mek, emoji);
@@ -736,126 +822,66 @@ dave.ev.on('messages.upsert', async (chatUpdate) => {
             }
         }
 
-        if (mek.key.id && mek.key.id.startsWith('dave') && mek.key.id.length === 16) return;
-        if (mek.key.id && mek.key.id.startsWith('BAE5')) return;
+        // Skip system / special messages
+        if (mek.key.id && ((mek.key.id.startsWith('dave') && mek.key.id.length === 16) || mek.key.id.startsWith('BAE5'))) return;
 
-        if (!global.settings.public && !fromMe && chatUpdate.type === 'notify') return;
-
+        
+        // Forward to main message handler
         const m = smsg(dave, mek, store);
-        require("./dave")(dave, m, chatUpdate, store);
+        require('./dave')(dave, m, chatUpdate, store);
 
     } catch (err) {
-        console.error(`Message handler error: ${err.message}`);
+        log('Message handler error:', 'red', true)
     }
 });
 
-
-
-// === KEEP YOUR EXISTING ANTI-EDIT FUNCTION ===
-const processedEdits = new Map();
-const editedMessages = new Map();
-const EDIT_COOLDOWN = 5000;
-
-async function handleMessageEdit(dave, update) {
-    try {
-        if (!global.antiedit || global.antiedit === 'off') return;
-
-        const { key, update: updateData } = update;
-        if (!key?.remoteJid || !updateData?.message) return;
-
-        const chat = key.remoteJid;
-        const sender = key.participant || key.remoteJid;
-        const botNumber = dave.user.id.split(':')[0];
-        if (sender.includes(botNumber)) return;
-
-        const editedMsg = updateData.message;
-        if (editedMsg.protocolMessage?.type === 0) return;
-
-        const type = Object.keys(editedMsg)[0];
-        if (!['conversation', 'extendedTextMessage'].includes(type)) return;
-
-        const newText = type === 'conversation'
-            ? editedMsg.conversation
-            : editedMsg.extendedTextMessage.text;
-
-        const original = editedMessages.get(key.id);
-        const oldText = original?.text || '_[Old text unavailable]_';
-        const senderName = sender.split('@')[0];
-        const chatName = chat.endsWith('@g.us')
-            ? (await dave.groupMetadata(chat).catch(() => null))?.subject || 'Unknown Group'
-            : senderName;
-
-        const message = `⚠️ *MESSAGE EDITED*\n\n👤 *Sender:* @${senderName}\n💬 *Old:* ${oldText}\n✏️ *New:* ${newText}\n📍 *Chat:* ${chatName}\n🕐 *Time:* ${new Date().toLocaleTimeString()}\n\n🤖 *From:* 𝘿𝙖𝙫𝙚𝘼𝙄`;
-
-        const sendTo = global.antiedit === 'private'
-            ? `${botNumber}@s.whatsapp.net`
-            : chat;
-
-        await dave.sendMessage(sendTo, { text: message, mentions: [sender] });
-    } catch (err) {
-        console.error('ANTIEDIT ERROR:', err.message);
-    }
-}
-
-// === MESSAGES.UPDATE HANDLER - COMBINED ===
+// ----------------- MESSAGE UPDATES HANDLER (DELETE/EDIT) ----------------- //
 dave.ev.on('messages.update', async (updates) => {
     for (const update of updates) {
-        // Handle anti-edit
-        if (global.antiedit && global.antiedit !== 'off') {
-            if (update.update?.message && !update.update.message.protocolMessage) {
-                await handleMessageEdit(dave, update);
+        if (update.update?.message && global.settings.antiedit) await handleMessageEdit(dave, update);
+        if (global.settings.antidelete) await handleDeletedMessage(dave, update);
+    }
+});
+
+// ========== MAINTENANCE & CLEANUP ==========
+// ----------------- CLEANUP OLD MESSAGES EVERY HOUR ----------------- //
+setInterval(() => {
+    try {
+        const now = Date.now();
+        if (!fs.existsSync(baseDir)) return;
+        
+        let deletedCount = 0;
+        for (const chatId of fs.readdirSync(baseDir)) {
+            const chatDir = path.join(baseDir, chatId);
+            if (!fs.statSync(chatDir).isDirectory()) continue;
+            
+            for (const file of fs.readdirSync(chatDir)) {
+                const filePath = path.join(chatDir, file);
+                try {
+                    const stats = fs.statSync(filePath);
+                    // Delete files older than 24 hours
+                    if (now - stats.mtimeMs > 24 * 60 * 60 * 1000) {
+                        fs.unlinkSync(filePath);
+                        deletedCount++;
+                    }
+                } catch (err) {
+                    // Silent fail - file might be in use or already deleted
+                }
+            }
+            
+            // Remove empty chat directories
+            if (fs.readdirSync(chatDir).length === 0) {
+                fs.rmdirSync(chatDir);
             }
         }
         
-        // Handle anti-delete
-        if (global.antidelete && global.antidelete !== 'off') {
-            await handleDeletedMessage(dave, update);
+        if (deletedCount > 0) {
+            log(`Cleanup: Removed ${deletedCount} old message files`, 'yellow');
         }
+    } catch (err) {
+        log('Cleanup error: ' + err.message, 'red', true);
     }
-});
-
-
-    const antiCallNotified = new Set()
-
-    dave.ev.on('call', async (calls) => {
-        try {
-            if (!global.anticall) return
-
-            for (const call of calls) {
-                const callerId = call.from
-                if (!callerId) continue
-
-                const callerNumber = callerId.split('@')[0]
-                if (global.owner?.includes(callerNumber)) continue
-
-                if (call.status === 'offer') {
-                    console.log(`Rejecting ${call.isVideo ? 'video' : 'voice'} call from ${callerNumber}`)
-
-                    if (call.id) {
-                        await dave.rejectCall(call.id, callerId).catch(err => 
-                            console.error('Reject error:', err.message))
-                    }
-
-                    if (!antiCallNotified.has(callerId)) {
-                        antiCallNotified.add(callerId)
-
-                        await dave.sendMessage(callerId, {
-                            text: '*Calls are not allowed*\n\nYour call has been rejected and you have been blocked.\nSend a text message instead.'
-                        }).catch(() => {})
-
-                        setTimeout(async () => {
-                            await dave.updateBlockStatus(callerId, 'block').catch(() => {})
-                            console.log(`Blocked ${callerNumber}`)
-                        }, 2000)
-
-                        setTimeout(() => antiCallNotified.delete(callerId), 300000)
-                    }
-                }
-            }
-        } catch (err) {
-            console.error('Anticall handler error:', err)
-        }
-    })
+}, 60 * 60 * 1000);
 
     dave.ev.on('contacts.update', update => {
         for (let contact of update) {
