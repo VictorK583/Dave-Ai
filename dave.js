@@ -30,7 +30,6 @@ const {
 const speed = require('performance-now')
 const { Sticker } = require('wa-sticker-formatter');
 const yts = require ('yt-search');
-const { appname,antidel, herokuapi} = require("./set.js");
 
 /////////exports////////////////////////////////
 module.exports = async (dave, m) => {
@@ -560,8 +559,183 @@ if (m.isGroup && global.settings?.antitag?.[m.chat]?.enabled) {
 }
 
 
+//I work on this shit alone motherfucker
+
+const baseDir = 'message_data';
+if (!fs.existsSync(baseDir)) {
+  fs.mkdirSync(baseDir);
+}
+
+function loadChatData(remoteJid, messageId) {
+  const chatFilePath = path.join(baseDir, remoteJid, `${messageId}.json`);
+  try {
+    const data = fs.readFileSync(chatFilePath, 'utf8');
+    return JSON.parse(data) || [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveChatData(remoteJid, messageId, chatData) {
+  const chatDir = path.join(baseDir, remoteJid);
+
+  if (!fs.existsSync(chatDir)) {
+    fs.mkdirSync(chatDir, { recursive: true });
+  }
+
+  const chatFilePath = path.join(chatDir, `${messageId}.json`);
+
+  try {
+    fs.writeFileSync(chatFilePath, JSON.stringify(chatData, null, 2));
+  } catch (error) {
+    console.error('Error saving chat data:', error);
+  }
+}
+
+function handleIncomingMessage(message) {
+  const remoteJid = message.key.remoteJid;
+  const messageId = message.key.id;
+
+  const chatData = loadChatData(remoteJid, messageId);
+  chatData.push(message);
+  saveChatData(remoteJid, messageId, chatData);
+}
+
+async function handleMessageRevocation(dave, revocationMessage) {
+  const remoteJid = revocationMessage.key.remoteJid;
+  const messageId = revocationMessage.message.protocolMessage.key.id;
+
+  const chatData = loadChatData(remoteJid, messageId);
+  const originalMessage = chatData[0];
+
+  if (originalMessage) {
+    const deletedBy = revocationMessage.participant || revocationMessage.key.participant || revocationMessage.key.remoteJid;
+    const sentBy = originalMessage.key.participant || originalMessage.key.remoteJid;
+
+    const deletedByFormatted = `@${deletedBy.split('@')[0]}`;
+    const sentByFormatted = `@${sentBy.split('@')[0]}`;
+
+    if (deletedBy.includes(dave.user.id) || sentBy.includes(dave.user.id)) return;
+
+    let notificationText = `DAVEAI-ANTIDELETE🔥\n\n` +
+      ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗯𝘆 : ${deletedByFormatted}\n\n`;
+
+    try {
+      if (originalMessage.message?.conversation) {
+        // Text message
+        const messageText = originalMessage.message.conversation;
+        notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝘀𝘀𝗮𝗴𝗲 : ${messageText}`;
+        await dave.sendMessage(dave.user.id, { text: notificationText });
+      } 
+      else if (originalMessage.message?.extendedTextMessage) {
+        // Extended text message (quoted messages)
+        const messageText = originalMessage.message.extendedTextMessage.text;
+        notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗖𝗼𝗻𝘁𝗲𝗻𝘁 : ${messageText}`;
+        await dave.sendMessage(dave.user.id, { text: notificationText });
+      }
+      else if (originalMessage.message?.imageMessage) {
+        // Image message
+        notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮 : [Image]`;
+        try {
+          const buffer = await dave.downloadMediaMessage(originalMessage.message.imageMessage);
+          await dave.sendMessage(dave.user.id, { 
+            image: buffer,
+            caption: `${notificationText}\n\nImage caption: ${originalMessage.message.imageMessage.caption}`
+          });
+        } catch (mediaError) {
+          console.error('Failed to download image:', mediaError);
+          notificationText += `\n\n⚠️ Could not recover deleted image (media expired)`;
+          await dave.sendMessage(dave.user.id, { text: notificationText });
+        }
+      } 
+      else if (originalMessage.message?.videoMessage) {
+        // Video message
+        notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮 : [Video]`;
+        try {
+          const buffer = await dave.downloadMediaMessage(originalMessage.message.videoMessage);
+          await dave.sendMessage(dave.user.id, { 
+            video: buffer, 
+            caption: `${notificationText}\n\nVideo caption: ${originalMessage.message.videoMessage.caption}`
+          });
+        } catch (mediaError) {
+          console.error('Failed to download video:', mediaError);
+          notificationText += `\n\n⚠️ Could not recover deleted video (media expired)`;
+          await dave.sendMessage(dave.user.id, { text: notificationText });
+        }
+      } else if (originalMessage.message?.stickerMessage) {
+         notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮 : [Sticker]`;
+      // Sticker message
+      const buffer = await dave.downloadMediaMessage(originalMessage.message.stickerMessage);      
+      await dave.sendMessage(dave.user.id, { sticker: buffer, 
+contextInfo: {
+          externalAdReply: {
+          title: notificationText,
+          body: `DELETED BY : ${deletedByFormatted}`,
+          thumbnail: trashpic,
+          sourceUrl: '',
+          mediaType: 1,
+          renderLargerThumbnail: false
+          }}});
+      } else if (originalMessage.message?.documentMessage) {
+        notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮 : [Document]`;
+        // Document message
+        const docMessage = originalMessage.message.documentMessage;
+        const fileName = docMessage.fileName || `document_${Date.now()}.dat`;
+        console.log('Attempting to download document...');
+        const buffer = await dave.downloadMediaMessage(docMessage);
+
+       if (!buffer) {
+            console.log('Download failed - empty buffer');
+            notificationText += ' (Download Failed)';
+            return;
+        }
+
+        console.log('Sending document back...');
+        await dave.sendMessage(dave.user.id, { 
+            document: buffer, 
+            fileName: fileName,
+            mimetype: docMessage.mimetype || 'application/octet-stream',
+contextInfo: {
+          externalAdReply: {
+          title: notificationText,
+          body: `DELETED BY: \n\n ${deletedByFormatted}`,
+          thumbnail: trashpic,
+          sourceUrl: '',
+          mediaType: 1,
+          renderLargerThumbnail: true
+          }}});
+      } else if (originalMessage.message?.audioMessage) {
+              notificationText += ` 𝗗𝗲𝗹𝗲𝘁𝗲𝗱 𝗠𝗲𝗱𝗶𝗮: \n\n [Audio]`;
+      // Audio message
+      const buffer = await dave.downloadMediaMessage(originalMessage.message.audioMessage);
+      const isPTT = originalMessage.message.audioMessage.ptt === true;
+      await dave.sendMessage(dave.user.id, { audio: buffer, ptt: isPTT, mimetype: 'audio/mpeg', 
+contextInfo: {
+          externalAdReply: {
+          title: notificationText,
+          body: `DELETED BY: \n\n ${deletedByFormatted}`,
+          thumbnail: trashpic,
+          sourceUrl: '',
+          mediaType: 1,
+          renderLargerThumbnail: true
+          }}});
+      }              
+    } catch (error) {
+      console.error('Error handling deleted message:', error);
+      notificationText += `\n\n⚠️ Error recovering deleted content 😓`;
+      await dave.sendMessage(dave.user.id, { text: notificationText });
+    }
+  }
+}
 
 
+if (global.antidelete && global.antidelete.enabled) {
+    if (m.message?.protocolMessage?.key) {
+        await handleMessageRevocation(dave, m);
+    } else {
+        handleIncomingMessage(m);
+    }
+}
    
               
               
