@@ -25,7 +25,7 @@ function loadSettings() {
             autorecord: { enabled: false },
             autotyping: { enabled: false },
             autoviewstatus: true,
-            autoreactstatus: false,
+            autoreactstatus: true,
             autolike: { enabled: false },
             welcome: false,
             goodbye: false,
