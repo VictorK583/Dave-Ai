@@ -793,6 +793,36 @@ case 'repo': {
 }
 break
 
+case 'gitclone': {
+    try {
+        if (!args[0]) return reply("Provide a GitHub repo link");
+        if (!args[0].includes('github.com')) return reply("Not a valid GitHub link");
+        
+        const regex = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i;
+        let [, user, repo] = args[0].match(regex) || [];
+        repo = repo.replace(/.git$/, '');
+        
+        const zipUrl = `https://api.github.com/repos/${user}/${repo}/zipball`;
+        const head = await fetch(zipUrl, { method: 'HEAD' });
+        const contentDisp = head.headers.get('content-disposition');
+        const filenameMatch = contentDisp?.match(/attachment; filename=(.*)/);
+        const filename = filenameMatch ? filenameMatch[1] : `${repo}.zip`;
+        
+        await dave.sendMessage(from, { 
+            document: { url: zipUrl }, 
+            fileName: filename, 
+            mimetype: 'application/zip' 
+        }, { quoted: m });
+        
+        await reply(`Successfully fetched repository: ${user}/${repo}`);
+        
+    } catch (err) {
+        console.error("gitclone error:", err);
+        await reply("Failed to clone repository");
+    }
+}
+break;
+
 case 'antibot': {
     if (!m.isGroup) return m.reply(mess.group);
     if (!isAdmins && !daveshown) return m.reply(mess.owner);
