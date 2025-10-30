@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="https://files.catbox.moe/ty9xvk.jpg" alt="Dave-Ai" width="300"/>
+</p>
+
+<p align="center">
   <a href="https://davebotssessionpairsite.onrender.com">
     <img src="https://img.shields.io/badge/Get-Pair_Code-purple?style=for-the-badge&logo=whatsapp" alt="Get Pair Code" width="200">
   </a>
