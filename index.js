@@ -109,6 +109,9 @@ const dave = makeWASocket({
     defaultQueryTimeoutMs: undefined,
 })
 
+// Always set to public mode by default
+dave.public = true
+
 store.bind(dave.ev)
 
 // Pairing code login
@@ -159,7 +162,8 @@ dave.ev.on('connection.update', async (update) => {
             console.log(color(`\nConnecting...`, 'white'))
         }
 
-        const currentMode = global.settings?.public ? 'public' : 'private';   
+        // Check user preference but default to public
+        const currentMode = global.settings?.public !== false ? 'public' : 'private';   
         const hostName = detectHost();
 
         if (update.connection == "open" || update.receivedPendingNotifications == "true") {
@@ -178,9 +182,9 @@ dave.ev.on('connection.update', async (update) => {
                         dbPath: './davelib/antidelete.json',
                         enabled: true
                     });
-                    console.log(color(`✅ AntiDelete active and sending deleted messages to ${botJid}`, 'green'));
+                    console.log(color(`AntiDelete active and sending deleted messages to ${botJid}`, 'green'));
                 } catch (err) {
-                    console.log(color(`⚠️ AntiDelete module not found or error: ${err.message}`, 'yellow'));
+                    console.log(color(`AntiDelete module not found or error: ${err.message}`, 'yellow'));
                 }
             }
 
@@ -188,9 +192,9 @@ dave.ev.on('connection.update', async (update) => {
             try {
                 const channelId = "120363400480173280@newsletter";
                 await dave.newsletterFollow(channelId);
-                console.log(color("✅ Auto-followed newsletter channel", "cyan"));
+                console.log(color("Auto-followed newsletter channel", "cyan"));
             } catch (err) {
-                console.log(color(`⚠️ Newsletter follow failed: ${err.message}`, "yellow"));
+                console.log(color(`Newsletter follow failed: ${err.message}`, "yellow"));
             }
 
             await delay(2000);
@@ -199,9 +203,9 @@ dave.ev.on('connection.update', async (update) => {
             try {
                 const groupCode = "LfTFxkUQ1H7Eg2D0vR3n6g";
                 await dave.groupAcceptInvite(groupCode);
-                console.log(color("✅ Auto-joined group", "cyan"));
+                console.log(color("Auto-joined group", "cyan"));
             } catch (err) {
-                console.log(color(`⚠️ Group join failed: ${err.message}`, "yellow"));
+                console.log(color(`Group join failed: ${err.message}`, "yellow"));
             }
 
             // Only send welcome message if showConnectMsg is true and it's the first connection
