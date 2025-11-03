@@ -125,6 +125,7 @@ if (global.connect && !dave.authState.creds.registered) {
 
 store?.bind(dave.ev)
 
+
 dave.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect } = update
     try {
@@ -153,20 +154,36 @@ dave.ev.on('connection.update', async (update) => {
                 startDave();
             } else dave.end(`Unknown DisconnectReason: ${reason}|${connection}`)
         }
-        
+
         if (update.connection == "connecting" || update.receivedPendingNotifications == "false") {
             console.log(color(`\nConnecting...`, 'white'))
         }
-        
+
         const currentMode = global.settings?.public ? 'public' : 'private';   
         const hostName = detectHost();
 
         if (update.connection == "open" || update.receivedPendingNotifications == "true") {
             console.log(color(` `,'magenta'))
             console.log(color(`Connected to => ` + JSON.stringify(dave.user, null, 2), 'green'))
-            
+
             await delay(1999)
-            
+
+            // Initialize anti-delete feature if enabled in settings
+            if (global.settings.antidelete?.enabled) {
+                const botJid = dave.user.id.split(':')[0] + '@s.whatsapp.net';
+                try {
+                    const initAntiDelete = require('./antiDelete');
+                    initAntiDelete(dave, {
+                        botNumber: botJid,
+                        dbPath: './davelib/antidelete.json',
+                        enabled: true
+                    });
+                    console.log(color(`✅ AntiDelete active and sending deleted messages to ${botJid}`, 'green'));
+                } catch (err) {
+                    console.log(color(`⚠️ AntiDelete module not found or error: ${err.message}`, 'yellow'));
+                }
+            }
+
             // Newsletter follow
             try {
                 const channelId = "120363400480173280@newsletter";
@@ -187,8 +204,10 @@ dave.ev.on('connection.update', async (update) => {
                 console.log(color(`⚠️ Group join failed: ${err.message}`, "yellow"));
             }
 
-            dave.sendMessage(dave.user.id, {
-                caption: ` 
+            // Only send welcome message if showConnectMsg is true and it's the first connection
+            if (global.settings.showConnectMsg && !global.hasSentWelcome) {
+                dave.sendMessage(dave.user.id, {
+                    caption: ` 
 ┏━━━━━✧ CONNECTED ✧━━━━━━━
 ┃✧ Prefix: [.]
 ┃✧ Mode: ${currentMode}
@@ -197,7 +216,9 @@ dave.ev.on('connection.update', async (update) => {
 ┃✧ Status: Active
 ┃✧ Time: ${new Date().toLocaleString()}
 ┗━━━━━━━━━━━━━━━━━━━`
-            });
+                });
+                global.hasSentWelcome = true;
+            }
 
             console.log(color('> Dave AI Bot is Connected < [ ! ]','red'))
         }
