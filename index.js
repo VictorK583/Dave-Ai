@@ -248,7 +248,7 @@ trashcore.ev.on('group-participants.update', async (anu) => {
             if (mek.key.id.startsWith('Xeon') && mek.key.id.length === 16) return
             if (mek.key.id.startsWith('BAE5')) return
             m = smsg(trashcore, mek, store)
-            require("./trashhandler")(trashcore, m, chatUpdate, store)
+            require("./dave")(trashcore, m, chatUpdate, store)
         } catch (err) {
             console.log(err)
         }
